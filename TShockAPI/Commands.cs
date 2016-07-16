@@ -136,7 +136,7 @@ namespace TShockAPI
 			CommandDelegate = cmd;
 			DoLog = true;
 			HelpText = "该指令无可用帮助信息.";
-      HelpDesc = null;
+            HelpDesc = null;
 			Names = new List<string>(names);
 			Permissions = new List<string>();
 		}
@@ -208,41 +208,41 @@ namespace TShockAPI
 				ChatCommands.Add(cmd);
 			};
 
-			add(new Command(AuthToken, "auth")
+			add(new Command(AuthToken, "auth", "验证")
 			{
 				AllowServer = false,
 				HelpText = "首次登入游戏时验证超管."
 			});
-			add(new Command(Permissions.authverify, AuthVerify, "auth-verify")
+			add(new Command(Permissions.authverify, AuthVerify, "auth-verify", "完成验证")
 			{
 				HelpText = "关闭密钥验证超管."
 			});
-			add(new Command(Permissions.user, ManageUsers, "user")
+			add(new Command(Permissions.user, ManageUsers, "user", "用户")
 			{
 				DoLog = false,
 				HelpText = "管理用户账户."
 			});
 
 			#region Account Commands
-			add(new Command(Permissions.canlogin, AttemptLogin, "login")
+			add(new Command(Permissions.canlogin, AttemptLogin, "login", "登录")
 			{
 				AllowServer = false,
 				DoLog = false,
 				HelpText = "登入游戏."
 			});
-			add(new Command(Permissions.canlogout, Logout, "logout")
+			add(new Command(Permissions.canlogout, Logout, "logout", "登出")
 			{
 				AllowServer = false,
 				DoLog = false,
 				HelpText = "退出登录账户."
 			});
-			add(new Command(Permissions.canchangepassword, PasswordUser, "password")
+			add(new Command(Permissions.canchangepassword, PasswordUser, "password", "改密")
 			{
 				AllowServer = false,
 				DoLog = false,
 				HelpText = "更改账户密码."
 			});
-			add(new Command(Permissions.canregister, RegisterUser, "register")
+			add(new Command(Permissions.canregister, RegisterUser, "register", "注册")
 			{
 				AllowServer = false,
 				DoLog = false,
@@ -250,107 +250,107 @@ namespace TShockAPI
 			});
 			#endregion
 			#region Admin Commands
-			add(new Command(Permissions.ban, Ban, "ban")
+			add(new Command(Permissions.ban, Ban, "ban", "封禁")
 			{
 				HelpText = "管理玩家封禁"
 			});
-			add(new Command(Permissions.broadcast, Broadcast, "broadcast", "bc", "say")
+			add(new Command(Permissions.broadcast, Broadcast, "say", "广播", "bc","broadcast")
 			{
 				HelpText = "广播特定信息."
 			});
-			add(new Command(Permissions.logs, DisplayLogs, "displaylogs")
+			add(new Command(Permissions.logs, DisplayLogs, "displaylogs", "显示日志")
 			{
 				HelpText = "控制是否接收日志."
 			});
-			add(new Command(Permissions.managegroup, Group, "group")
+			add(new Command(Permissions.managegroup, Group, "group", "组")
 			{
 				HelpText = "管理用户组."
 			});
-			add(new Command(Permissions.manageitem, ItemBan, "itemban")
+			add(new Command(Permissions.manageitem, ItemBan, "itemban", "禁用物品")
 			{
 				HelpText = "管理物品封禁."
 			});
-            add(new Command(Permissions.manageprojectile, ProjectileBan, "projban")
+            add(new Command(Permissions.manageprojectile, ProjectileBan, "projban", "禁抛射体")
             {
                 HelpText = "管理抛射体封禁."
             });
-			add(new Command(Permissions.managetile, TileBan, "tileban")
+			add(new Command(Permissions.managetile, TileBan, "tileban", "禁用物块")
 			{
 				HelpText = "管理物块封禁."
 			});
-			add(new Command(Permissions.manageregion, Region, "region")
+			add(new Command(Permissions.manageregion, Region, "region", "区域")
 			{
 				HelpText = "管理区域."
 			});
-			add(new Command(Permissions.kick, Kick, "kick")
+			add(new Command(Permissions.kick, Kick, "kick", "驱逐")
 			{
 				HelpText = "从游戏中驱逐玩家."
 			});
-			add(new Command(Permissions.mute, Mute, "mute", "unmute")
+			add(new Command(Permissions.mute, Mute, "mute", "禁言", "unmute")
 			{
 				HelpText = "禁言某玩家."
 			});
-			add(new Command(Permissions.savessc, OverrideSSC, "overridessc", "ossc")
+			add(new Command(Permissions.savessc, OverrideSSC, "ossc", "覆盖云存档", "overridessc")
 			{
 				HelpText = "暂时覆盖某玩家的云存档."
 			});
-			add(new Command(Permissions.savessc, SaveSSC, "savessc")
+			add(new Command(Permissions.savessc, SaveSSC, "savessc", "保存云存档")
 			{
 				HelpText = "保存所有玩家的云存档."
 			});
-			add(new Command(Permissions.settempgroup, TempGroup, "tempgroup")
+			add(new Command(Permissions.settempgroup, TempGroup, "tempgroup", "临时组")
 			{
 				HelpText = "暂时更改用户组."
 			});
-			add(new Command(Permissions.userinfo, GrabUserUserInfo, "userinfo", "ui")
+			add(new Command(Permissions.userinfo, GrabUserUserInfo, "ui", "用户信息", "userinfo")
 			{
 				HelpText = "显示用户信息."
 			});
 			#endregion
 			#region Annoy Commands
-			add(new Command(Permissions.annoy, Annoy, "annoy")
+			add(new Command(Permissions.annoy, Annoy, "annoy", "骚扰")
 			{
 				HelpText = "骚扰玩家一段时间."
 			});
-			add(new Command(Permissions.annoy, Confuse, "confuse")
+			add(new Command(Permissions.annoy, Confuse, "confuse", "混乱")
 			{
 				HelpText = "使玩家在一定时间分不清方向."
 			});
-			add(new Command(Permissions.annoy, Rocket, "rocket")
+			add(new Command(Permissions.annoy, Rocket, "rocket", "上天")
 			{
 				HelpText = "SSC模式下让玩家飞."
 			});
-			add(new Command(Permissions.annoy, FireWork, "firework")
+			add(new Command(Permissions.annoy, FireWork, "firework", "烟花")
 			{
 				HelpText = "在玩家所在位置爆炸."
 			});
 			#endregion
 			#region Configuration Commands
-			add(new Command(Permissions.maintenance, CheckUpdates, "checkupdates")
+			add(new Command(Permissions.maintenance, CheckUpdates, "checkupdates", "检查更新")
 			{
 				HelpText = "检查TShock更新."
 			});
-			add(new Command(Permissions.maintenance, Off, "off", "exit")
+			add(new Command(Permissions.maintenance, Off, "off", "关服","exit")
 			{
 				HelpText = "关闭服务器."
 			});
-			add(new Command(Permissions.maintenance, OffNoSave, "off-nosave", "exit-nosave")
+			add(new Command(Permissions.maintenance, OffNoSave, "off-nosave", "不保存关服","exit-nosave")
 			{
 				HelpText = "不保存地图的情况下关闭服务器."
 			});
-			add(new Command(Permissions.cfgreload, Reload, "reload")
+			add(new Command(Permissions.cfgreload, Reload, "reload", "加载配置")
 			{
 				HelpText = "重载服务器配置."
 			});
-			add(new Command(Permissions.maintenance, Restart, "restart")
+			add(new Command(Permissions.maintenance, Restart, "restart", "重启")
 			{
 				HelpText = "重启服务器."
 			});
-			add(new Command(Permissions.cfgpassword, ServerPassword, "serverpassword")
+			add(new Command(Permissions.cfgpassword, ServerPassword, "serverpassword", "服务器密码")
 			{
 				HelpText = "更改服务器登入密码."
 			});
-			add(new Command(Permissions.maintenance, GetVersion, "version")
+			add(new Command(Permissions.maintenance, GetVersion, "version", "版本")
 			{
 				HelpText = "查看TShock版本."
 			});
@@ -359,160 +359,160 @@ namespace TShockAPI
 			 * add(new Command(Permissions.updateplugins, UpdatePlugins, "updateplugins")
 			{
 			});*/
-			add(new Command(Permissions.whitelist, Whitelist, "whitelist")
+			add(new Command(Permissions.whitelist, Whitelist, "whitelist", "白名单")
 			{
 				HelpText = "更改服务器白名单."
 			});
 			#endregion
 			#region Item Commands
-			add(new Command(Permissions.give, Give, "give", "g")
+			add(new Command(Permissions.give, Give, "g", "给","give")
 			{
 				HelpText = "给别人特定物品."
 			});
-			add(new Command(Permissions.item, Item, "item", "i")
+			add(new Command(Permissions.item, Item, "i", "物", "item")
 			{
 				AllowServer = false,
 				HelpText = "生成特定物品."
 			});
 			#endregion
 			#region NPC Commands
-			add(new Command(Permissions.butcher, Butcher, "butcher")
+			add(new Command(Permissions.butcher, Butcher, "butcher", "清怪")
 			{
 				HelpText = "杀死特定NPC"
 			});
-			add(new Command(Permissions.renamenpc, RenameNPC, "renamenpc")
+			add(new Command(Permissions.renamenpc, RenameNPC, "renamenpc", "重命名NPC")
 			{
 				HelpText = "重命名特定NPC."
 			});
-			add(new Command(Permissions.invade, Invade, "invade")
+			add(new Command(Permissions.invade, Invade, "invade", "入侵")
 			{
 				HelpText = "开启入侵."
 			});
-			add(new Command(Permissions.maxspawns, MaxSpawns, "maxspawns")
+			add(new Command(Permissions.maxspawns, MaxSpawns, "maxspawns", "最大刷怪")
 			{
 				HelpText = "设定NPC最大数量."
 			});
-			add(new Command(Permissions.spawnboss, SpawnBoss, "spawnboss", "sb")
+			add(new Command(Permissions.spawnboss, SpawnBoss, "sb", "刷BOSS","spawnboss")
 			{
 				AllowServer = false,
 				HelpText = "在你周围生成BOSS."
 			});
-			add(new Command(Permissions.spawnmob, SpawnMob, "spawnmob", "sm")
+			add(new Command(Permissions.spawnmob, SpawnMob, "sm", "刷怪", "spawnmob")
 			{
 				AllowServer = false,
 				HelpText = "在你周围生成小怪."
 			});
-			add(new Command(Permissions.spawnrate, SpawnRate, "spawnrate")
+			add(new Command(Permissions.spawnrate, SpawnRate, "spawnrate", "刷怪率")
 			{
 				HelpText = "设定刷怪率."
 			});
-			add(new Command(Permissions.clearangler, ClearAnglerQuests, "clearangler")
+			add(new Command(Permissions.clearangler, ClearAnglerQuests, "clearangler", "清空任务")
 			{
 				HelpText = "清除玩家渔夫任务完成情况."
 			});
 			#endregion
 			#region TP Commands
-			add(new Command(Permissions.home, Home, "home")
+			add(new Command(Permissions.home, Home, "home", "家")
 			{
 				AllowServer = false,
 				HelpText = "传送至你的出生点."
 			});
-			add(new Command(Permissions.spawn, Spawn, "spawn")
+			add(new Command(Permissions.spawn, Spawn, "spawn", "出生点")
 			{
 				AllowServer = false,
 				HelpText = "传送到世界出生点."
 			});
-			add(new Command(Permissions.tp, TP, "tp")
+			add(new Command(Permissions.tp, TP, "tp", "传")
 			{
 				AllowServer = false,
 				HelpText = "传送到另外的玩家位置."
 			});
-			add(new Command(Permissions.tpothers, TPHere, "tphere")
+			add(new Command(Permissions.tpothers, TPHere, "tphere", "传至")
 			{
 				AllowServer = false,
 				HelpText = "传送其他玩家到你的位置处."
 			});
-			add(new Command(Permissions.tpnpc, TPNpc, "tpnpc")
+			add(new Command(Permissions.tpnpc, TPNpc, "tpnpc", "传至NPC")
 			{
 				AllowServer = false,
 				HelpText = "传送至其他的NPC位置."
 			});
-			add(new Command(Permissions.tppos, TPPos, "tppos")
+			add(new Command(Permissions.tppos, TPPos, "tppos", "传坐标")
 			{
 				AllowServer = false,
 				HelpText = "传送至特定坐标点."
 			});
-			add(new Command(Permissions.getpos, GetPos, "pos")
+			add(new Command(Permissions.getpos, GetPos, "pos", "坐标")
 			{
 				AllowServer = false,
 				HelpText = "返回你的或某玩家的坐标."
 			});
-			add(new Command(Permissions.tpallow, TPAllow, "tpallow")
+			add(new Command(Permissions.tpallow, TPAllow, "tpallow", "传送保护")
 			{
 				AllowServer = false,
 				HelpText = "切换别人能不能传送到你那里."
 			});
 			#endregion
 			#region World Commands
-			add(new Command(Permissions.toggleexpert, ToggleExpert, "expert", "expertmode")
+			add(new Command(Permissions.toggleexpert, ToggleExpert, "expert", "专家","expertmode")
 			{
 					HelpText = "转换专家模式."
 			});
-			add(new Command(Permissions.antibuild, ToggleAntiBuild, "antibuild")
+			add(new Command(Permissions.antibuild, ToggleAntiBuild, "antibuild", "禁建筑")
 			{
 				HelpText = "转换世界保护状态."
 			});
-			add(new Command(Permissions.bloodmoon, Bloodmoon, "bloodmoon")
+			add(new Command(Permissions.bloodmoon, Bloodmoon, "bloodmoon", "血月")
 			{
 				HelpText = "切换血月模式."
 			});
-			add(new Command(Permissions.grow, Grow, "grow")
+			add(new Command(Permissions.grow, Grow, "grow", "长")
 			{
 				AllowServer = false,
 				HelpText = "在指定位置长植物."
 			});
-			add(new Command(Permissions.dropmeteor, DropMeteor, "dropmeteor")
+			add(new Command(Permissions.dropmeteor, DropMeteor, "dropmeteor", "陨石")
 			{
 				HelpText = "召唤陨石."
 			});
-			add(new Command(Permissions.eclipse, Eclipse, "eclipse")
+			add(new Command(Permissions.eclipse, Eclipse, "eclipse", "日蚀")
 			{
 				HelpText = "切换日蚀事件."
 			});
-			add(new Command(Permissions.halloween, ForceHalloween, "forcehalloween")
+			add(new Command(Permissions.halloween, ForceHalloween, "forcehalloween", "万圣")
 			{
 				HelpText = "转换万圣节模式."
 			});
-			add(new Command(Permissions.xmas, ForceXmas, "forcexmas")
+			add(new Command(Permissions.xmas, ForceXmas, "forcexmas", "圣诞")
 			{
 				HelpText = "转换圣诞节模式."
 			});
-			add(new Command(Permissions.fullmoon, Fullmoon, "fullmoon")
+			add(new Command(Permissions.fullmoon, Fullmoon, "fullmoon", "满月")
 			{
 				HelpText = "满月模式."
 			});
-			add(new Command(Permissions.hardmode, Hardmode, "hardmode")
+			add(new Command(Permissions.hardmode, Hardmode, "hardmode", "肉后")
 			{
 				HelpText = "转换世界的肉后状态."
 			});
-			add(new Command(Permissions.editspawn, ProtectSpawn, "protectspawn")
+			add(new Command(Permissions.editspawn, ProtectSpawn, "protectspawn", "出生点保护")
 			{
 				HelpText = "开启出生点保护."
 			});
-			add(new Command(Permissions.rain, Rain, "rain")
+			add(new Command(Permissions.rain, Rain, "rain", "雨")
 			{
 				HelpText = "更改下雨."
 			});
-			add(new Command(Permissions.worldsave, Save, "save")
+			add(new Command(Permissions.worldsave, Save, "save", "保存")
 			{
 				HelpText = "保存世界文件."
 			});
-			add(new Command(Permissions.worldspawn, SetSpawn, "setspawn")
+			add(new Command(Permissions.worldspawn, SetSpawn, "setspawn", "设置出生点")
 			{
 				AllowServer = false,
 				HelpText = "设定世界出生点."
 			});
-			add(new Command(Permissions.worldspawn, SetDungeon, "setdungeon")
+			add(new Command(Permissions.worldspawn, SetDungeon, "setdungeon", "设置地牢位置")
 			{
 				AllowServer = false,
 				HelpText = "设定世界地牢位置."
@@ -521,15 +521,15 @@ namespace TShockAPI
 			{
 				HelpText = "强行更新液体状态."
 			});
-			add(new Command(Permissions.time, Time, "time")
+			add(new Command(Permissions.time, Time, "time", "时")
 			{
 				HelpText = "设定世界时间."
 			});
-			add(new Command(Permissions.wind, Wind, "wind")
+			add(new Command(Permissions.wind, Wind, "wind", "风")
 			{
 				HelpText = "更改风速."
 			});
-			add(new Command(Permissions.worldinfo, WorldInfo, "world")
+			add(new Command(Permissions.worldinfo, WorldInfo, "world", "世")
 			{
 				HelpText = "显示当前世界的信息."
 			});
@@ -540,36 +540,36 @@ namespace TShockAPI
 				AllowServer = false,
 				HelpText = "给自己上buff."
 			});
-			add(new Command(Permissions.clear, Clear, "clear")
+			add(new Command(Permissions.clear, Clear, "clear", "清")
 			{
 				HelpText = "清理物品掉落/抛射体/NPC."
 			});
-			add(new Command(Permissions.buffplayer, GBuff, "gbuff", "buffplayer")
+			add(new Command(Permissions.buffplayer, GBuff, "gbuff", "给buff","buffplayer")
 			{
 				HelpText = "给其他玩家上buff."
 			});
-			add(new Command(Permissions.godmode, ToggleGodMode, "godmode")
+			add(new Command(Permissions.godmode, ToggleGodMode, "godmode", "无敌")
 			{
 				HelpText = "转换玩家的无敌模式."
 			});
-			add(new Command(Permissions.heal, Heal, "heal")
+			add(new Command(Permissions.heal, Heal, "heal", "治愈")
 			{
 				HelpText = "治愈玩家生命/魔力."
 			});
-			add(new Command(Permissions.kill, Kill, "kill")
+			add(new Command(Permissions.kill, Kill, "kill", "杀死")
 			{
 				HelpText = "强行杀死玩家."
 			});
-			add(new Command(Permissions.cantalkinthird, ThirdPerson, "me")
+			add(new Command(Permissions.cantalkinthird, ThirdPerson, "me", "我", "第三人")
 			{
 				HelpText = "发送特殊消息."
 			});
-			add(new Command(Permissions.canpartychat, PartyChat, "party", "p")
+			add(new Command(Permissions.canpartychat, PartyChat, "p", "队","party")
 			{
 				AllowServer = false,
 				HelpText = "队内聊天."
 			});
-			add(new Command(Permissions.whisper, Reply, "reply", "r")
+			add(new Command(Permissions.whisper, Reply, "r", "回复","reply")
 			{
 				HelpText = "回复上一条私信."
 			});
@@ -577,41 +577,41 @@ namespace TShockAPI
 			{
 				HelpText = "管理REST接口状态."
 			});
-			add(new Command(Permissions.slap, Slap, "slap")
+			add(new Command(Permissions.slap, Slap, "slap", "打")
 			{
 				HelpText = "造成玩家伤害."
 			});
-			add(new Command(Permissions.serverinfo, ServerInfo, "serverinfo")
+			add(new Command(Permissions.serverinfo, ServerInfo, "serverinfo", "信息")
 			{
 				HelpText = "查看服务器信息."
 			});
-			add(new Command(Permissions.warp, Warp, "warp")
+			add(new Command(Permissions.warp, Warp, "warp", "跳跃")
 			{
 				HelpText = "管理跳跃点."
 			});
-			add(new Command(Permissions.whisper, Whisper, "whisper", "w", "tell")
+			add(new Command(Permissions.whisper, Whisper, "w", "私聊","whisper", "tell")
 			{
 				HelpText = "私信玩家."
 			});
 			#endregion
 
-			add(new Command(Aliases, "aliases")
+			add(new Command(Aliases, "aliases", "别名")
 			{
 				HelpText = "展示某指令的别名."
 			});
-			add(new Command(Help, "help")
+			add(new Command(Help, "help", "帮助")
 			{
 				HelpText = "查看指令列表或获取指令帮助."
 			});
-			add(new Command(Motd, "motd")
+			add(new Command(Motd, "motd", "公告")
 			{
 				HelpText = "查看本日公告."
 			});
-			add(new Command(ListConnectedPlayers, "playing", "online", "who")
+			add(new Command(ListConnectedPlayers, "who", "玩家","online", "playing")
 			{
 				HelpText = "查看在线玩家."
 			});
-			add(new Command(Rules, "rules")
+			add(new Command(Rules, "rules", "规则")
 			{
 				HelpText = "查看服务器规则."
 			});
@@ -1225,6 +1225,7 @@ namespace TShockAPI
 			switch (subcmd)
 			{
 				case "add":
+                case "禁":
 					#region Add ban
 					{
 						if (args.Parameters.Count < 2)
@@ -1264,18 +1265,18 @@ namespace TShockAPI
 										if (args.Silent)
 										{
 											args.Player.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制" : "", reason);
-										}
-										else
+										} 
+										else 
 										{
 											TSPlayer.All.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制" : "", reason);
-                                        }
+										}
 									}
 									else
 									{
 										if (args.Silent)
 										{
-											args.Player.SendInfoMessage("{1} 被{0}封禁了, 原因: {2}.",force ? "强制" : "", user.Name, reason);
-                                        }
+											args.Player.SendInfoMessage("{1} 被{0}封禁了, 原因: {2}.", force ? "强制" : "", user.Name, reason);
+										}
 										else
 										{
 											TSPlayer.All.SendInfoMessage("{0} {1}封禁了 {2}. 原因: {3}.", args.Player.Name, force ? "强制" : "",user.Name,reason);
@@ -1297,6 +1298,7 @@ namespace TShockAPI
 					#endregion
 					return;
 				case "addip":
+                case "禁ip":
 					#region Add IP ban
 					{
 						if (args.Parameters.Count < 2)
@@ -1315,8 +1317,9 @@ namespace TShockAPI
 					#endregion
 					return;
 				case "addtemp":
-					#region Add temp ban
-					{
+                case "临时禁":
+                    #region Add temp ban
+                    {
 						if (args.Parameters.Count < 3)
 						{
 							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban addtemp <玩家名> <时间> [原因]", Specifier);
@@ -1421,8 +1424,9 @@ namespace TShockAPI
 					#endregion
 					return;
 				case "del":
-					#region Delete ban
-					{
+                case "解禁":
+                    #region Delete ban
+                    {
 						if (args.Parameters.Count != 2)
 						{
 							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban del <玩家名>", Specifier);
@@ -1444,8 +1448,9 @@ namespace TShockAPI
 					#endregion
 					return;
 				case "delip":
-					#region Delete IP ban
-					{
+                case "解禁ip":
+                    #region Delete IP ban
+                    {
 						if (args.Parameters.Count != 2)
 						{
 							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban delip <ip>", Specifier);
@@ -1467,6 +1472,7 @@ namespace TShockAPI
 					#endregion
 					return;
 				case "help":
+                case "帮助":
 					#region Help
 					{
 						int pageNumber;
@@ -1475,13 +1481,13 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"add <玩家名> [原因] - 封禁在线用户或离线账户.",
-							"addip <ip> [原因] - 封禁指定IP.",
-							"addtemp <玩家名> <时间> [原因] - 临时封禁某玩家.",
-							"del <玩家名> - 解除对玩家的封禁.",
-							"delip <ip> - 解除对特定IP的封禁.",
-							"list [页码] - 显示所有被封禁的玩家.",
-							"listip [页码] - 显示所有被封禁的IP."
+							"禁(add) <玩家名> [原因] - 封禁在线用户或离线账户.",
+							"禁IP(addip) <ip> [原因] - 封禁指定IP.",
+							"临时禁(addtemp) <玩家名> <时间> [原因] - 临时封禁某玩家.",
+							"解禁(del) <玩家名> - 解除对玩家的封禁.",
+							"解禁IP(delip) <ip> - 解除对特定IP的封禁.",
+							"列表(list) [页码] - 显示所有被封禁的玩家.",
+							"IP列表(listip) [页码] - 显示所有被封禁的IP."
                         };
 						
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
@@ -1495,6 +1501,7 @@ namespace TShockAPI
 					#endregion
 					return;
 				case "list":
+                case "列表":
 					#region List bans
 					{
 						int pageNumber;
@@ -1520,8 +1527,9 @@ namespace TShockAPI
 					#endregion
 					return;
 				case "listip":
-					#region List IP bans
-					{
+                case "ip列表":
+                    #region List IP bans
+                    {
 						int pageNumber;
 						if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out pageNumber))
 						{
@@ -4492,9 +4500,9 @@ namespace TShockAPI
 
 				IEnumerable<string> cmdNames = from cmd in ChatCommands
 											   where cmd.CanRun(args.Player) && (cmd.Name != "auth" || TShock.AuthToken != 0)
-											   select Specifier + cmd.Name;
+											   select cmd.Names.Count>1?$"{Specifier}{cmd.Names[1]}({cmd.Name})" :$"{Specifier}{cmd.Name}";
 
-				PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(cmdNames),
+                PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(cmdNames),
 					new PaginationTools.Settings
 					{
 						HeaderFormat = "指令列表 ({0}/{1}):",

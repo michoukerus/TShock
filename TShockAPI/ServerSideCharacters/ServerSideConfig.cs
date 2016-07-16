@@ -29,21 +29,27 @@ namespace TShockAPI.ServerSideCharacters
 	public class ServerSideConfig
 	{
 		[Description("打开云端存档(SSC)模式, 开启后客户端无法保存! 实验性!!!!!")]
+		[JsonProperty("启用")]
 		public bool Enabled = false;
 
 		[Description("SSC保存的间隔, 单位为分钟.")]
+		[JsonProperty("云存档保存间隔")]
 		public int ServerSideCharacterSave = 5;
 
 		[Description("单位为毫秒的时间间隔, 防止玩家在登录后丢弃物品.")]
+		[JsonProperty("登入后丢物间隔")]
 		public int LogonDiscardThreshold = 250;
 
-		[Description("新玩家SSC存档的生命值.")] 
+		[Description("新玩家SSC存档的生命值.")]
+		[JsonProperty("初始生命值")]
 		public int StartingHealth = 100;
 
-		[Description("新玩家SSC存档的魔法值.")] 
+		[Description("新玩家SSC存档的魔法值.")]
+		[JsonProperty("初始魔法值")]
 		public int StartingMana = 20;
 
-		[Description("新玩家SSC存档的初始物品.")] 
+		[Description("新玩家SSC存档的初始物品.")]
+		[JsonProperty("初始物品")]
 		public List<NetItem> StartingInventory = new List<NetItem>();
 
 		public static ServerSideConfig Read(string path)
@@ -77,12 +83,14 @@ namespace TShockAPI.ServerSideCharacters
 				if (field.IsStatic)
 					continue;
 
-				var name = field.Name;
+				var nameattr =
+					field.GetCustomAttributes(false).FirstOrDefault(o => o is JsonPropertyAttribute) as JsonPropertyAttribute;
+				var name = nameattr != null && !string.IsNullOrWhiteSpace(nameattr.PropertyName) ? nameattr.PropertyName : field.Name;
 				var type = field.FieldType.Name;
 
 				var descattr =
 					field.GetCustomAttributes(false).FirstOrDefault(o => o is DescriptionAttribute) as DescriptionAttribute;
-				var desc = descattr != null && !string.IsNullOrWhiteSpace(descattr.Description) ? descattr.Description : "None";
+				var desc = descattr != null && !string.IsNullOrWhiteSpace(descattr.Description) ? descattr.Description : "无";
 
 				var def = field.GetValue(defaults);
 
@@ -93,7 +101,7 @@ namespace TShockAPI.ServerSideCharacters
 				sb.AppendLine();
 			}
 
-			File.WriteAllText("SSC配置说明.txt", sb.ToString());
+			File.WriteAllText("云存档配置说明.txt", sb.ToString());
 		}
 	}
 }

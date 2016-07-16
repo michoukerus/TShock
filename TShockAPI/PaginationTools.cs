@@ -251,7 +251,7 @@ namespace TShockAPI
 					termString = term.ToString();
 				}
 
-				if (lineBuilder.Length + termString.Length + separator.Length < maxCharsPerLine)
+				if (GetChineseCharLength(lineBuilder.ToString()) + GetChineseCharLength(termString) + separator.Length < maxCharsPerLine)
 				{
 					lineBuilder.Append(termString).Append(separator);
 				}
@@ -286,6 +286,20 @@ namespace TShockAPI
 			}
 
 			return true;
+		}
+
+		private static int GetChineseCharLength(string term)
+		{
+			int length = 0;
+			term.ForEach(c =>
+			{
+				if(c != '\\' && c != '/' && c != '-' && c != ',' && c != ' ' && c != '(' && c != '[' && c != '{' &&
+					c != '}' && c != ']' && c != ')' && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z'))
+					length += 2;
+				else
+					length++;
+			});
+			return length;
 		}
 	}
 }

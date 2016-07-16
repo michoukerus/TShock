@@ -53,7 +53,7 @@ namespace TShockAPI
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
 		public static readonly string VersionCodename = "Yoraiz0r R0cks";
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
-		public static readonly string CNMode = "轻汉化";
+		public static readonly string CNMode = "高级汉化-开发";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
 		public static readonly Version CNVersion = new Version(1, 1, 0, 0);
 

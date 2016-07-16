@@ -53,11 +53,11 @@ namespace TShockAPI
 		/// </summary>
 		public static readonly int MaxInventory = InventorySlots + ArmorSlots + DyeSlots + MiscEquipSlots + MiscDyeSlots + PiggySlots + SafeSlots + 1;
 
-		[JsonProperty("netID")]
+		[JsonProperty("物品")]
 		private int _netId;
-		[JsonProperty("prefix")]
+		[JsonProperty("前缀")]
 		private byte _prefixId;
-		[JsonProperty("stack")]
+		[JsonProperty("数量")]
 		private int _stack;
 
 		/// <summary>
