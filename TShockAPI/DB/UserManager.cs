@@ -105,7 +105,7 @@ namespace TShockAPI.DB
 			}
 			catch (Exception ex)
 			{
-				throw new UserManagerException("RemoveUser SQL returned an error", ex);
+				throw new UserManagerException("删除用户信息过程出现数据库异常.", ex);
 			}
 		}
 
@@ -127,7 +127,7 @@ namespace TShockAPI.DB
 			}
 			catch (Exception ex)
 			{
-				throw new UserManagerException("SetUserPassword SQL returned an error", ex);
+				throw new UserManagerException("设定用户密码过程出现数据库异常.", ex);
 			}
 		}
 
@@ -147,7 +147,7 @@ namespace TShockAPI.DB
 			}
 			catch (Exception ex)
 			{
-				throw new UserManagerException("SetUserUUID SQL returned an error", ex);
+				throw new UserManagerException("设定用户UUID过程出现数据库异常.", ex);
 			}
 		}
 
@@ -175,7 +175,7 @@ namespace TShockAPI.DB
 			}
 			catch (Exception ex)
 			{
-				throw new UserManagerException("SetUserGroup SQL returned an error", ex);
+				throw new UserManagerException("设定用户分组过程出现数据库异常.", ex);
 			}
 		}
 
@@ -190,7 +190,7 @@ namespace TShockAPI.DB
 			}
 			catch (Exception ex)
 			{
-				throw new UserManagerException("UpdateLogin SQL returned an error", ex);
+				throw new UserManagerException("更新用户登录信息过程出现数据库异常.", ex);
 			}
 		}
 
@@ -211,7 +211,7 @@ namespace TShockAPI.DB
 			}
 			catch (Exception ex)
 			{
-				TShock.Log.ConsoleError("FetchHashedPasswordAndGroup SQL returned an error: " + ex);
+				TShock.Log.ConsoleError("读取用户密文密码过程出现数据库异常.: " + ex);
 			}
 			return -1;
 		}
@@ -284,10 +284,10 @@ namespace TShockAPI.DB
 			}
 			catch (Exception ex)
 			{
-				throw new UserManagerException("GetUser SQL returned an error (" + ex.Message + ")", ex);
+				throw new UserManagerException("读取用户信息过程出现数据库异常. (" + ex.Message + ")", ex);
 			}
 			if (multiple)
-				throw new UserManagerException(String.Format("Multiple users found for {0} '{1}'", type, arg));
+				throw new UserManagerException($"数个用户被找到. 条件: {type} '{arg}'");
 
 			throw new UserNotExistException(user.Name);
 		}
@@ -488,7 +488,7 @@ namespace TShockAPI.DB
 			}
 			catch (FormatException)
 			{
-				TShock.Log.ConsoleError("Warning: Not upgrading work factor because bcrypt hash in an invalid format.");
+				TShock.Log.ConsoleError("警告: 没有升级WorkFactor. 解决: Bcrypt hash 无效格式.");
 				return;
 			}
 
@@ -511,7 +511,7 @@ namespace TShockAPI.DB
 		{
 			if (password.Trim().Length < Math.Max(4, TShock.Config.MinimumPasswordLength))
 			{
-				throw new ArgumentOutOfRangeException("password", "Password must be > " + TShock.Config.MinimumPasswordLength + " characters.");
+				throw new ArgumentOutOfRangeException("password", "密码长度必须大于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 			}
 			try
 			{
@@ -519,7 +519,7 @@ namespace TShockAPI.DB
 			}
 			catch (ArgumentOutOfRangeException)
 			{
-				TShock.Log.ConsoleError("Invalid BCrypt work factor in config file! Creating new hash using default work factor.");
+				TShock.Log.ConsoleError("配置文件中BCrypt work factor无效! 已经使用默认因数生成散列.");
 				Password = BCrypt.Net.BCrypt.HashPassword(password.Trim());
 			}
 		}
@@ -531,7 +531,7 @@ namespace TShockAPI.DB
 		{
 			if (password.Trim().Length < Math.Max(4, TShock.Config.MinimumPasswordLength))
 			{
-				throw new ArgumentOutOfRangeException("password", "Password must be > " + TShock.Config.MinimumPasswordLength + " characters.");
+				throw new ArgumentOutOfRangeException("password","密码长度必须大于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 			}
 			Password = BCrypt.Net.BCrypt.HashPassword(password.Trim(), workFactor);
 		}
@@ -560,7 +560,7 @@ namespace TShockAPI.DB
 				throw new NullReferenceException("bytes");
 			Func<HashAlgorithm> func;
 			if (!HashTypes.TryGetValue(TShock.Config.HashAlgorithm.ToLower(), out func))
-				throw new NotSupportedException("Hashing algorithm {0} is not supported".SFormat(TShock.Config.HashAlgorithm.ToLower()));
+				throw new NotSupportedException("不支持散列算法 {0} .".SFormat(TShock.Config.HashAlgorithm.ToLower()));
 
 			using (var hash = func())
 			{
@@ -613,7 +613,7 @@ namespace TShockAPI.DB
 		/// <param name="name">The name of the user that already exists.</param>
 		/// <returns>A UserExistsException object with the user's name passed in the message.</returns>
 		public UserExistsException(string name)
-			: base("User '" + name + "' already exists")
+			: base($"存在 \"{name}\" 玩家.")
 		{
 		}
 	}
@@ -626,8 +626,9 @@ namespace TShockAPI.DB
 		/// <param name="name">The user's name to be pasesd in the message.</param>
 		/// <returns>A new UserNotExistException object with a message containing the user's name that does not exist.</returns>
 		public UserNotExistException(string name)
-			: base("User '" + name + "' does not exist")
-		{
+			: base($"不存在玩家 \"{name}\".")
+
+        {
 		}
 	}
 
@@ -639,8 +640,9 @@ namespace TShockAPI.DB
 		/// <param name="group">The group name.</param>
 		/// <returns>A new GroupNotExistsException with the group that does not exist's name in the message.</returns>
 		public GroupNotExistsException(string group)
-			: base("Group '" + group + "' does not exist")
-		{
+			: base($"不存在用户组 \"{group}\".")
+
+        {
 		}
 	}
 }

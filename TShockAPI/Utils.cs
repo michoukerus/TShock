@@ -153,7 +153,7 @@ namespace TShockAPI
 		{
 			TSPlayer.All.SendMessage(msg, red, green, blue);
 			TSPlayer.Server.SendMessage(msg, red, green, blue);
-			TShock.Log.Info(string.Format("Broadcast: {0}", msg));
+			TShock.Log.Info($"通知: {msg}");
 		}
 
 		/// <summary>>Broadcast - Broadcasts a message to all players on the server, as well as the server console, and the logs.</summary>
@@ -176,7 +176,7 @@ namespace TShockAPI
 		{
 			TSPlayer.All.SendMessageFromPlayer(msg, red, green, blue, ply);
 			TSPlayer.Server.SendMessage(Main.player[ply].name + ": " + msg, red, green, blue);
-			TShock.Log.Info(string.Format("Broadcast: {0}", Main.player[ply].name + ": " + msg));
+			TShock.Log.Info($"通知: {Main.player[ply].name + ": " + msg}");
 		}
 
 		/// <summary>
@@ -203,7 +203,7 @@ namespace TShockAPI
 		/// <returns>The number of active players on the server.</returns>
 		public int ActivePlayers()
 		{
-			return Main.player.Where(p => null != p && p.active).Count();
+			return Main.player.Count(p => null != p && p.active);
 		}
 
 		/// <summary>
@@ -535,8 +535,8 @@ namespace TShockAPI
 		/// Stops the server after kicking all players with a reason message, and optionally saving the world
 		/// </summary>
 		/// <param name="save">bool perform a world save before stop (default: true)</param>
-		/// <param name="reason">string reason (default: "Server shutting down!")</param>
-		public void StopServer(bool save = true, string reason = "Server shutting down!")
+		/// <param name="reason">string reason (default: "服务器已关闭!")</param>
+		public void StopServer(bool save = true, string reason = "服务器已关闭!")
 		{
 			ForceKickAll(reason);
 			if (save)
@@ -557,8 +557,8 @@ namespace TShockAPI
 		/// restart it.
 		/// </summary>
 		/// <param name="save">bool perform a world save before stop (default: true)</param>
-		/// <param name="reason">string reason (default: "Server shutting down!")</param>
-		public void RestartServer(bool save = true, string reason = "Server shutting down!")
+		/// <param name="reason">string reason (default: "服务器已关闭!")</param>
+		public void RestartServer(bool save = true, string reason = "服务器已关闭!")
 		{
 			if (Main.ServerSideCharacter)
 				foreach (TSPlayer player in TShock.Players)
@@ -616,15 +616,15 @@ namespace TShockAPI
 				player.SilentKickInProgress = silent;
 				if (player.IsLoggedIn && saveSSI)
 					player.SaveServerCharacter();
-				player.Disconnect(string.Format("Kicked: {0}", reason));
-				TShock.Log.ConsoleInfo(string.Format("Kicked {0} for : '{1}'", playerName, reason));
-				string verb = force ? "force " : "";
+				player.Disconnect($"你被驱逐. 原因: {reason}.");
+				TShock.Log.ConsoleInfo($"{playerName} 被驱逐. 原因: {reason}.");
+				string verb = force ? "强制" : "";
 				if (!silent)
 				{
 					if (string.IsNullOrWhiteSpace(adminUserName))
-						Broadcast(string.Format("{0} was {1}kicked for '{2}'", playerName, verb, reason.ToLower()), Color.Green);
+						Broadcast($"{playerName} 被{verb}驱逐. 原因: {reason.ToLower()}.", Color.Green);
 					else
-						Broadcast(string.Format("{0} {1}kicked {2} for '{3}'", adminUserName, verb, playerName, reason.ToLower()), Color.Green);
+						Broadcast($"{adminUserName} {verb}驱逐了 {playerName}. 原因: {reason.ToLower()}.", Color.Green);
 				}
 				return true;
 			}
@@ -648,13 +648,13 @@ namespace TShockAPI
 				string uuid = player.UUID;
 				string playerName = player.Name;
 				TShock.Bans.AddBan(ip, playerName, uuid, reason, false, adminUserName);
-				player.Disconnect(string.Format("Banned: {0}", reason));
-				string verb = force ? "force " : "";
-				if (string.IsNullOrWhiteSpace(adminUserName))
-					TSPlayer.All.SendInfoMessage("{0} was {1}banned for '{2}'.", playerName, verb, reason);
-				else
-					TSPlayer.All.SendInfoMessage("{0} {1}banned {2} for '{3}'.", adminUserName, verb, playerName, reason);
-				return true;
+				player.Disconnect($"你被封禁. 原因: {reason}.");
+                string verb = force ? "强制" : "";
+                if(string.IsNullOrWhiteSpace(adminUserName))
+                    Broadcast($"{playerName} 被{verb}封禁. 原因: {reason}.",Color.Yellow);
+                else
+                    Broadcast($"{adminUserName} {verb}封禁了 {playerName}. 原因: {reason}.",Color.Yellow);
+                return true;
 			}
 			return false;
 		}
@@ -768,8 +768,8 @@ namespace TShockAPI
 		/// <param name="matches">An enumerable list with the matches</param>
 		public void SendMultipleMatchError(TSPlayer ply, IEnumerable<object> matches)
 		{
-			ply.SendErrorMessage("More than one match found: {0}", string.Join(",", matches));
-			ply.SendErrorMessage("Use \"my query\" for items with spaces");
+			ply.SendErrorMessage("检索出多个满足条件的项目: {0}", string.Join(",", matches));
+			ply.SendErrorMessage("使用 \"部分1 部分2\" 来输入包含空格的关键词.");
 		}
 
 		/// <summary>
@@ -787,9 +787,9 @@ namespace TShockAPI
 					{"sha512", () => new SHA512Managed()},
 					{"sha256", () => new SHA256Managed()},
 					{"md5", () => new MD5Cng()},
-					{"sha512-xp", () => SHA512.Create()},
-					{"sha256-xp", () => SHA256.Create()},
-					{"md5-xp", () => MD5.Create()},
+					{"sha512-xp", SHA512.Create},
+					{"sha256-xp", SHA256.Create},
+					{"md5-xp", MD5.Create},
 			};
 
 		/// <summary>
@@ -1070,7 +1070,7 @@ namespace TShockAPI
 		/// <returns>The <paramref name="text"/>, surrounded by the color tag with the appropriated hex code.</returns>
 		public string ColorTag(string text, Color color)
 		{
-			return String.Format("[c/{0}:{1}]", color.Hex3(), text);
+			return $"[c/{color.Hex3()}:{text}]";
 		}
 
 		/// <summary>
@@ -1084,7 +1084,7 @@ namespace TShockAPI
 			int stack = item.stack;
 			int prefix = item.prefix;
 			string options = stack > 1 ? "/s" + stack : prefix != 0 ? "/p" + prefix : "";
-			return String.Format("[i{0}:{1}]", options, netID);
+			return $"[i{options}:{netID}]";
 		}
 
 		/// <summary>

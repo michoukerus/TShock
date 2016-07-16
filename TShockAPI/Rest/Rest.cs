@@ -80,7 +80,7 @@ namespace Rests
 			Ip = ip;
 			Port = port;
 			AssemblyName assembly = this.GetType().Assembly.GetName();
-			serverHeader = new StringHeader("Server", String.Format("{0}/{1}", assembly.Name, assembly.Version));
+			serverHeader = new StringHeader("Server", $"{assembly.Name}/{assembly.Version}");
 		}
 
 		public virtual void Start()
@@ -98,9 +98,9 @@ namespace Rests
 			}
 			catch (Exception ex)
 			{
-				TShock.Log.Error("Fatal Startup Exception");
+				TShock.Log.Error("致命的启动错误.");
 				TShock.Log.Error(ex.ToString());
-				TShock.Log.ConsoleError("Invalid REST configuration: \nYou may already have a REST service bound to port {0}. \nPlease adjust your configuration and restart the server. \nPress any key to exit.", Port);
+				TShock.Log.ConsoleError("REST配置无效: \n可能端口{0}被已经启动另外的REST占用. \n请调整REST配置并重启服务器. \n任意键退出.", Port);
 				Console.ReadLine();
 				Environment.Exit(1);
 			}
@@ -247,7 +247,7 @@ namespace Rests
 			object result = cmd.Execute(verbs, parms, request, context);
 			if (cmd.DoLog && TShock.Config.LogRest)
 			{
-				TShock.Log.ConsoleInfo("Anonymous requested REST endpoint: " + BuildRequestUri(cmd, verbs, parms, false));
+				TShock.Log.ConsoleInfo("匿名请求了REST端点: " + BuildRequestUri(cmd, verbs, parms, false));
 			}
 
 			return result;

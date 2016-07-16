@@ -135,7 +135,7 @@ namespace TShockAPI
 			AllowServer = true;
 			CommandDelegate = cmd;
 			DoLog = true;
-			HelpText = "No help available.";
+			HelpText = "该指令无可用帮助信息.";
       HelpDesc = null;
 			Names = new List<string>(names);
 			Permissions = new List<string>();
@@ -152,7 +152,7 @@ namespace TShockAPI
 			}
 			catch (Exception e)
 			{
-				ply.SendErrorMessage("Command failed, check logs for more details.");
+				ply.SendErrorMessage("指令执行失败. 详细信息在日志文件.");
 				TShock.Log.Error(e.ToString());
 			}
 
@@ -211,16 +211,16 @@ namespace TShockAPI
 			add(new Command(AuthToken, "auth")
 			{
 				AllowServer = false,
-				HelpText = "Used to authenticate as superadmin when first setting up TShock."
+				HelpText = "首次登入游戏时验证超管."
 			});
 			add(new Command(Permissions.authverify, AuthVerify, "auth-verify")
 			{
-				HelpText = "Used to verify that you have correctly set up TShock."
+				HelpText = "关闭密钥验证超管."
 			});
 			add(new Command(Permissions.user, ManageUsers, "user")
 			{
 				DoLog = false,
-				HelpText = "Manages user accounts."
+				HelpText = "管理用户账户."
 			});
 
 			#region Account Commands
@@ -228,131 +228,131 @@ namespace TShockAPI
 			{
 				AllowServer = false,
 				DoLog = false,
-				HelpText = "Logs you into an account."
+				HelpText = "登入游戏."
 			});
 			add(new Command(Permissions.canlogout, Logout, "logout")
 			{
 				AllowServer = false,
 				DoLog = false,
-				HelpText = "Logs you out of your current account."
+				HelpText = "退出登录账户."
 			});
 			add(new Command(Permissions.canchangepassword, PasswordUser, "password")
 			{
 				AllowServer = false,
 				DoLog = false,
-				HelpText = "Changes your account's password."
+				HelpText = "更改账户密码."
 			});
 			add(new Command(Permissions.canregister, RegisterUser, "register")
 			{
 				AllowServer = false,
 				DoLog = false,
-				HelpText = "Registers you an account."
+				HelpText = "注册新账户."
 			});
 			#endregion
 			#region Admin Commands
 			add(new Command(Permissions.ban, Ban, "ban")
 			{
-				HelpText = "Manages player bans."
+				HelpText = "管理玩家封禁"
 			});
 			add(new Command(Permissions.broadcast, Broadcast, "broadcast", "bc", "say")
 			{
-				HelpText = "Broadcasts a message to everyone on the server."
+				HelpText = "广播特定信息."
 			});
 			add(new Command(Permissions.logs, DisplayLogs, "displaylogs")
 			{
-				HelpText = "Toggles whether you receive server logs."
+				HelpText = "控制是否接收日志."
 			});
 			add(new Command(Permissions.managegroup, Group, "group")
 			{
-				HelpText = "Manages groups."
+				HelpText = "管理用户组."
 			});
 			add(new Command(Permissions.manageitem, ItemBan, "itemban")
 			{
-				HelpText = "Manages item bans."
+				HelpText = "管理物品封禁."
 			});
             add(new Command(Permissions.manageprojectile, ProjectileBan, "projban")
             {
-                HelpText = "Manages projectile bans."
+                HelpText = "管理抛射体封禁."
             });
 			add(new Command(Permissions.managetile, TileBan, "tileban")
 			{
-				HelpText = "Manages tile bans."
+				HelpText = "管理物块封禁."
 			});
 			add(new Command(Permissions.manageregion, Region, "region")
 			{
-				HelpText = "Manages regions."
+				HelpText = "管理区域."
 			});
 			add(new Command(Permissions.kick, Kick, "kick")
 			{
-				HelpText = "Removes a player from the server."
+				HelpText = "从游戏中驱逐玩家."
 			});
 			add(new Command(Permissions.mute, Mute, "mute", "unmute")
 			{
-				HelpText = "Prevents a player from talking."
+				HelpText = "禁言某玩家."
 			});
 			add(new Command(Permissions.savessc, OverrideSSC, "overridessc", "ossc")
 			{
-				HelpText = "Overrides serverside characters for a player, temporarily."
+				HelpText = "暂时覆盖某玩家的云存档."
 			});
 			add(new Command(Permissions.savessc, SaveSSC, "savessc")
 			{
-				HelpText = "Saves all serverside characters."
+				HelpText = "保存所有玩家的云存档."
 			});
 			add(new Command(Permissions.settempgroup, TempGroup, "tempgroup")
 			{
-				HelpText = "Temporarily sets another player's group."
+				HelpText = "暂时更改用户组."
 			});
 			add(new Command(Permissions.userinfo, GrabUserUserInfo, "userinfo", "ui")
 			{
-				HelpText = "Shows information about a user."
+				HelpText = "显示用户信息."
 			});
 			#endregion
 			#region Annoy Commands
 			add(new Command(Permissions.annoy, Annoy, "annoy")
 			{
-				HelpText = "Annoys a player for an amount of time."
+				HelpText = "骚扰玩家一段时间."
 			});
 			add(new Command(Permissions.annoy, Confuse, "confuse")
 			{
-				HelpText = "Confuses a player for an amount of time."
+				HelpText = "使玩家在一定时间分不清方向."
 			});
 			add(new Command(Permissions.annoy, Rocket, "rocket")
 			{
-				HelpText = "Rockets a player upwards. Requires SSC."
+				HelpText = "SSC模式下让玩家飞."
 			});
 			add(new Command(Permissions.annoy, FireWork, "firework")
 			{
-				HelpText = "Spawns fireworks at a player."
+				HelpText = "在玩家所在位置爆炸."
 			});
 			#endregion
 			#region Configuration Commands
 			add(new Command(Permissions.maintenance, CheckUpdates, "checkupdates")
 			{
-				HelpText = "Checks for TShock updates."
+				HelpText = "检查TShock更新."
 			});
 			add(new Command(Permissions.maintenance, Off, "off", "exit")
 			{
-				HelpText = "Shuts down the server while saving."
+				HelpText = "关闭服务器."
 			});
 			add(new Command(Permissions.maintenance, OffNoSave, "off-nosave", "exit-nosave")
 			{
-				HelpText = "Shuts down the server without saving."
+				HelpText = "不保存地图的情况下关闭服务器."
 			});
 			add(new Command(Permissions.cfgreload, Reload, "reload")
 			{
-				HelpText = "Reloads the server configuration file."
+				HelpText = "重载服务器配置."
 			});
 			add(new Command(Permissions.maintenance, Restart, "restart")
 			{
-				HelpText = "Restarts the server."
+				HelpText = "重启服务器."
 			});
 			add(new Command(Permissions.cfgpassword, ServerPassword, "serverpassword")
 			{
-				HelpText = "Changes the server password."
+				HelpText = "更改服务器登入密码."
 			});
 			add(new Command(Permissions.maintenance, GetVersion, "version")
 			{
-				HelpText = "Shows the TShock version."
+				HelpText = "查看TShock版本."
 			});
 			/* Does nothing atm.
 			 * 
@@ -361,259 +361,259 @@ namespace TShockAPI
 			});*/
 			add(new Command(Permissions.whitelist, Whitelist, "whitelist")
 			{
-				HelpText = "Manages the server whitelist."
+				HelpText = "更改服务器白名单."
 			});
 			#endregion
 			#region Item Commands
 			add(new Command(Permissions.give, Give, "give", "g")
 			{
-				HelpText = "Gives another player an item."
+				HelpText = "给别人特定物品."
 			});
 			add(new Command(Permissions.item, Item, "item", "i")
 			{
 				AllowServer = false,
-				HelpText = "Gives yourself an item."
+				HelpText = "生成特定物品."
 			});
 			#endregion
 			#region NPC Commands
 			add(new Command(Permissions.butcher, Butcher, "butcher")
 			{
-				HelpText = "Kills hostile NPCs or NPCs of a certain type."
+				HelpText = "杀死特定NPC"
 			});
 			add(new Command(Permissions.renamenpc, RenameNPC, "renamenpc")
 			{
-				HelpText = "Renames an NPC."
+				HelpText = "重命名特定NPC."
 			});
 			add(new Command(Permissions.invade, Invade, "invade")
 			{
-				HelpText = "Starts an NPC invasion."
+				HelpText = "开启入侵."
 			});
 			add(new Command(Permissions.maxspawns, MaxSpawns, "maxspawns")
 			{
-				HelpText = "Sets the maximum number of NPCs."
+				HelpText = "设定NPC最大数量."
 			});
 			add(new Command(Permissions.spawnboss, SpawnBoss, "spawnboss", "sb")
 			{
 				AllowServer = false,
-				HelpText = "Spawns a number of bosses around you."
+				HelpText = "在你周围生成BOSS."
 			});
 			add(new Command(Permissions.spawnmob, SpawnMob, "spawnmob", "sm")
 			{
 				AllowServer = false,
-				HelpText = "Spawns a number of mobs around you."
+				HelpText = "在你周围生成小怪."
 			});
 			add(new Command(Permissions.spawnrate, SpawnRate, "spawnrate")
 			{
-				HelpText = "Sets the spawn rate of NPCs."
+				HelpText = "设定刷怪率."
 			});
 			add(new Command(Permissions.clearangler, ClearAnglerQuests, "clearangler")
 			{
-				HelpText = "Resets the list of users who have completed an angler quest that day."
+				HelpText = "清除玩家渔夫任务完成情况."
 			});
 			#endregion
 			#region TP Commands
 			add(new Command(Permissions.home, Home, "home")
 			{
 				AllowServer = false,
-				HelpText = "Sends you to your spawn point."
+				HelpText = "传送至你的出生点."
 			});
 			add(new Command(Permissions.spawn, Spawn, "spawn")
 			{
 				AllowServer = false,
-				HelpText = "Sends you to the world's spawn point."
+				HelpText = "传送到世界出生点."
 			});
 			add(new Command(Permissions.tp, TP, "tp")
 			{
 				AllowServer = false,
-				HelpText = "Teleports a player to another player."
+				HelpText = "传送到另外的玩家位置."
 			});
 			add(new Command(Permissions.tpothers, TPHere, "tphere")
 			{
 				AllowServer = false,
-				HelpText = "Teleports a player to yourself."
+				HelpText = "传送其他玩家到你的位置处."
 			});
 			add(new Command(Permissions.tpnpc, TPNpc, "tpnpc")
 			{
 				AllowServer = false,
-				HelpText = "Teleports you to an npc."
+				HelpText = "传送至其他的NPC位置."
 			});
 			add(new Command(Permissions.tppos, TPPos, "tppos")
 			{
 				AllowServer = false,
-				HelpText = "Teleports you to tile coordinates."
+				HelpText = "传送至特定坐标点."
 			});
 			add(new Command(Permissions.getpos, GetPos, "pos")
 			{
 				AllowServer = false,
-				HelpText = "Returns the user's or specified user's current position."
+				HelpText = "返回你的或某玩家的坐标."
 			});
 			add(new Command(Permissions.tpallow, TPAllow, "tpallow")
 			{
 				AllowServer = false,
-				HelpText = "Toggles whether other people can teleport you."
+				HelpText = "切换别人能不能传送到你那里."
 			});
 			#endregion
 			#region World Commands
 			add(new Command(Permissions.toggleexpert, ToggleExpert, "expert", "expertmode")
 			{
-					HelpText = "Toggles expert mode."
+					HelpText = "转换专家模式."
 			});
 			add(new Command(Permissions.antibuild, ToggleAntiBuild, "antibuild")
 			{
-				HelpText = "Toggles build protection."
+				HelpText = "转换世界保护状态."
 			});
 			add(new Command(Permissions.bloodmoon, Bloodmoon, "bloodmoon")
 			{
-				HelpText = "Sets a blood moon."
+				HelpText = "切换血月模式."
 			});
 			add(new Command(Permissions.grow, Grow, "grow")
 			{
 				AllowServer = false,
-				HelpText = "Grows plants at your location."
+				HelpText = "在指定位置长植物."
 			});
 			add(new Command(Permissions.dropmeteor, DropMeteor, "dropmeteor")
 			{
-				HelpText = "Drops a meteor somewhere in the world."
+				HelpText = "召唤陨石."
 			});
 			add(new Command(Permissions.eclipse, Eclipse, "eclipse")
 			{
-				HelpText = "Sets an eclipse."
+				HelpText = "切换日蚀事件."
 			});
 			add(new Command(Permissions.halloween, ForceHalloween, "forcehalloween")
 			{
-				HelpText = "Toggles halloween mode (goodie bags, pumpkins, etc)."
+				HelpText = "转换万圣节模式."
 			});
 			add(new Command(Permissions.xmas, ForceXmas, "forcexmas")
 			{
-				HelpText = "Toggles christmas mode (present spawning, santa, etc)."
+				HelpText = "转换圣诞节模式."
 			});
 			add(new Command(Permissions.fullmoon, Fullmoon, "fullmoon")
 			{
-				HelpText = "Sets a full moon."
+				HelpText = "满月模式."
 			});
 			add(new Command(Permissions.hardmode, Hardmode, "hardmode")
 			{
-				HelpText = "Toggles the world's hardmode status."
+				HelpText = "转换世界的肉后状态."
 			});
 			add(new Command(Permissions.editspawn, ProtectSpawn, "protectspawn")
 			{
-				HelpText = "Toggles spawn protection."
+				HelpText = "开启出生点保护."
 			});
 			add(new Command(Permissions.rain, Rain, "rain")
 			{
-				HelpText = "Toggles the rain."
+				HelpText = "更改下雨."
 			});
 			add(new Command(Permissions.worldsave, Save, "save")
 			{
-				HelpText = "Saves the world file."
+				HelpText = "保存世界文件."
 			});
 			add(new Command(Permissions.worldspawn, SetSpawn, "setspawn")
 			{
 				AllowServer = false,
-				HelpText = "Sets the world's spawn point to your location."
+				HelpText = "设定世界出生点."
 			});
 			add(new Command(Permissions.worldspawn, SetDungeon, "setdungeon")
 			{
 				AllowServer = false,
-				HelpText = "Sets the dungeon's position to your location."
+				HelpText = "设定世界地牢位置."
 			});
 			add(new Command(Permissions.worldsettle, Settle, "settle")
 			{
-				HelpText = "Forces all liquids to update immediately."
+				HelpText = "强行更新液体状态."
 			});
 			add(new Command(Permissions.time, Time, "time")
 			{
-				HelpText = "Sets the world time."
+				HelpText = "设定世界时间."
 			});
 			add(new Command(Permissions.wind, Wind, "wind")
 			{
-				HelpText = "Changes the wind speed."
+				HelpText = "更改风速."
 			});
 			add(new Command(Permissions.worldinfo, WorldInfo, "world")
 			{
-				HelpText = "Shows information about the current world."
+				HelpText = "显示当前世界的信息."
 			});
 			#endregion
 			#region Other Commands
 			add(new Command(Permissions.buff, Buff, "buff")
 			{
 				AllowServer = false,
-				HelpText = "Gives yourself a buff for an amount of time."
+				HelpText = "给自己上buff."
 			});
 			add(new Command(Permissions.clear, Clear, "clear")
 			{
-				HelpText = "Clears item drops or projectiles."
+				HelpText = "清理物品掉落/抛射体/NPC."
 			});
 			add(new Command(Permissions.buffplayer, GBuff, "gbuff", "buffplayer")
 			{
-				HelpText = "Gives another player a buff for an amount of time."
+				HelpText = "给其他玩家上buff."
 			});
 			add(new Command(Permissions.godmode, ToggleGodMode, "godmode")
 			{
-				HelpText = "Toggles godmode on a player."
+				HelpText = "转换玩家的无敌模式."
 			});
 			add(new Command(Permissions.heal, Heal, "heal")
 			{
-				HelpText = "Heals a player in HP and MP."
+				HelpText = "治愈玩家生命/魔力."
 			});
 			add(new Command(Permissions.kill, Kill, "kill")
 			{
-				HelpText = "Kills another player."
+				HelpText = "强行杀死玩家."
 			});
 			add(new Command(Permissions.cantalkinthird, ThirdPerson, "me")
 			{
-				HelpText = "Sends an action message to everyone."
+				HelpText = "发送特殊消息."
 			});
 			add(new Command(Permissions.canpartychat, PartyChat, "party", "p")
 			{
 				AllowServer = false,
-				HelpText = "Sends a message to everyone on your team."
+				HelpText = "队内聊天."
 			});
 			add(new Command(Permissions.whisper, Reply, "reply", "r")
 			{
-				HelpText = "Replies to a PM sent to you."
+				HelpText = "回复上一条私信."
 			});
 			add(new Command(Rests.RestPermissions.restmanage, ManageRest, "rest")
 			{
-				HelpText = "Manages the REST API."
+				HelpText = "管理REST接口状态."
 			});
 			add(new Command(Permissions.slap, Slap, "slap")
 			{
-				HelpText = "Slaps a player, dealing damage."
+				HelpText = "造成玩家伤害."
 			});
 			add(new Command(Permissions.serverinfo, ServerInfo, "serverinfo")
 			{
-				HelpText = "Shows the server information."
+				HelpText = "查看服务器信息."
 			});
 			add(new Command(Permissions.warp, Warp, "warp")
 			{
-				HelpText = "Teleports you to a warp point or manages warps."
+				HelpText = "管理跳跃点."
 			});
 			add(new Command(Permissions.whisper, Whisper, "whisper", "w", "tell")
 			{
-				HelpText = "Sends a PM to a player."
+				HelpText = "私信玩家."
 			});
 			#endregion
 
 			add(new Command(Aliases, "aliases")
 			{
-				HelpText = "Shows a command's aliases."
+				HelpText = "展示某指令的别名."
 			});
 			add(new Command(Help, "help")
 			{
-				HelpText = "Lists commands or gives help on them."
+				HelpText = "查看指令列表或获取指令帮助."
 			});
 			add(new Command(Motd, "motd")
 			{
-				HelpText = "Shows the message of the day."
+				HelpText = "查看本日公告."
 			});
 			add(new Command(ListConnectedPlayers, "playing", "online", "who")
 			{
-				HelpText = "Shows the currently connected players."
+				HelpText = "查看在线玩家."
 			});
 			add(new Command(Rules, "rules")
 			{
-				HelpText = "Shows the server's rules."
+				HelpText = "查看服务器规则."
 			});
 
 			TShockCommands = new ReadOnlyCollection<Command>(tshockCommands);
@@ -649,24 +649,24 @@ namespace TShockAPI
 					call(new CommandArgs(cmdText, player, args));
 					return true;
 				}
-				player.SendErrorMessage("Invalid command entered. Type {0}help for a list of valid commands.", Specifier);
+				player.SendErrorMessage("键入的指令无效. 使用 {0}help 查看有效指令.", Specifier);
 				return true;
 			}
 			foreach (Command cmd in cmds)
 			{
 				if (!cmd.CanRun(player))
 				{
-					TShock.Utils.SendLogs(string.Format("{0} tried to execute {1}{2}.", player.Name, Specifier, cmdText), Color.PaleVioletRed, player);
-					player.SendErrorMessage("You do not have access to this command.");
+					TShock.Utils.SendLogs(string.Format("{0} 尝试执行 {1}{2}.", player.Name, Specifier, cmdText), Color.PaleVioletRed, player);
+					player.SendErrorMessage("缺少执行该指令的权限.");
 				}
 				else if (!cmd.AllowServer && !player.RealPlayer)
 				{
-					player.SendErrorMessage("You must use this command in-game.");
+					player.SendErrorMessage("你必须在游戏内执行该指令.");
 				}
 				else
 				{
 					if (cmd.DoLog)
-						TShock.Utils.SendLogs(string.Format("{0} executed: {1}{2}.", player.Name, silent ? SilentSpecifier : Specifier, cmdText), Color.PaleVioletRed, player);
+						TShock.Utils.SendLogs(string.Format("{0} 执行: {1}{2}.", player.Name, silent ? SilentSpecifier : Specifier, cmdText), Color.PaleVioletRed, player);
 					cmd.Run(cmdText, silent, player, args);
 				}
 			}
@@ -735,15 +735,15 @@ namespace TShockAPI
 		{
 			if (args.Player.LoginAttempts > TShock.Config.MaximumLoginAttempts && (TShock.Config.MaximumLoginAttempts != -1))
 			{
-				TShock.Log.Warn(String.Format("{0} ({1}) had {2} or more invalid login attempts and was kicked automatically.",
+				TShock.Log.Warn(String.Format("{0} ({1}) 超出尝试登录上限({2}), 已被移除游戏.",
 					args.Player.IP, args.Player.Name, TShock.Config.MaximumLoginAttempts));
-				TShock.Utils.Kick(args.Player, "Too many invalid login attempts.");
+				TShock.Utils.Kick(args.Player, "无效登录次数过多.");
 				return;
 			}
 
 			if (args.Player.IsLoggedIn)
 			{
-				args.Player.SendErrorMessage("You are already logged in, and cannot login again.");
+				args.Player.SendErrorMessage("你已成功登录, 故无法再次登录.");
 				return;
 			}
             
@@ -766,7 +766,7 @@ namespace TShockAPI
 			{
 				if (String.IsNullOrEmpty(args.Parameters[0]))
 				{
-					args.Player.SendErrorMessage("Bad login attempt.");
+					args.Player.SendErrorMessage("无效登录尝试.");
 					return;
 				}
 
@@ -778,17 +778,17 @@ namespace TShockAPI
 			}
 			else
 			{
-				args.Player.SendErrorMessage("Syntax: {0}login - Logs in using your UUID and character name", Specifier);
-				args.Player.SendErrorMessage("        {0}login <password> - Logs in using your password and character name", Specifier);
-				args.Player.SendErrorMessage("        {0}login <username> <password> - Logs in using your username and password", Specifier);
-				args.Player.SendErrorMessage("If you forgot your password, there is no way to recover it.");
+				args.Player.SendErrorMessage("语法: {0}login - 使用人物名和UUID验证登录.", Specifier);
+				args.Player.SendErrorMessage("      {0}login <密码> - 使用人物名和密码验证登录.", Specifier);
+				args.Player.SendErrorMessage("      {0}login <用户名> <密码> - 使用用户名和密码验证登录.", Specifier);
+				args.Player.SendErrorMessage("如果你忘记密码, 我们无法恢复.");
 				return;
 			}
 			try
 			{
 				if (user == null)
 				{
-					args.Player.SendErrorMessage("A user by that name does not exist.");
+					args.Player.SendErrorMessage("不存在相应的账户. 尝试注册?");
 				}
 				else if (user.VerifyPassword(password) ||
 						(usingUUID && user.UUID == args.Player.UUID && !TShock.Config.DisableUUIDLogin &&
@@ -821,9 +821,9 @@ namespace TShockAPI
 					if (args.Player.HasPermission(Permissions.usebanneditem))
 						args.Player.IgnoreActionsForDisabledArmor = "none";
 
-					args.Player.SendSuccessMessage("Authenticated as " + user.Name + " successfully.");
+					args.Player.SendSuccessMessage($"已经验证 {user.Name} 登录完毕.");
 
-					TShock.Log.ConsoleInfo(args.Player.Name + " authenticated successfully as user: " + user.Name + ".");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 成功使用账户 " + user.Name + " 验证登录.");
 					if ((args.Player.LoginHarassed) && (TShock.Config.RememberLeavePos))
 					{
 						if (TShock.RememberedPos.GetLeavePos(args.Player.Name, args.Player.IP) != Vector2.Zero)
@@ -842,19 +842,19 @@ namespace TShockAPI
 				{
 					if (usingUUID && !TShock.Config.DisableUUIDLogin)
 					{
-						args.Player.SendErrorMessage("UUID does not match this character!");
+						args.Player.SendErrorMessage("UUID记录不符, 无法自动登录!");
 					}
 					else
 					{
-						args.Player.SendErrorMessage("Invalid password!");
+						args.Player.SendErrorMessage("密码无效!");
 					}
-					TShock.Log.Warn(args.Player.IP + " failed to authenticate as user: " + user.Name + ".");
+					TShock.Log.Warn(args.Player.IP + " 尝试使用账户 " + user.Name + " 登录失败.");
 					args.Player.LoginAttempts++;
 				}
 			}
 			catch (Exception ex)
 			{
-				args.Player.SendErrorMessage("There was an error processing your request.");
+				args.Player.SendErrorMessage("处理数据出现异常, 请联系管理员.");
 				TShock.Log.Error(ex.ToString());
 			}
 		}
@@ -863,7 +863,7 @@ namespace TShockAPI
 		{
 			if (!args.Player.IsLoggedIn)
 			{
-				args.Player.SendErrorMessage("You are not logged in.");
+				args.Player.SendErrorMessage("你没有登录游戏.");
 				return;
 			}
 
@@ -872,7 +872,7 @@ namespace TShockAPI
 
 			if (Main.ServerSideCharacter)
 			{
-				args.Player.IgnoreActionsForInventory = String.Format("Server side characters is enabled! Please {0}register or {0}login to play!", Commands.Specifier);
+				args.Player.IgnoreActionsForInventory = String.Format("云端存档/强制开荒 模式. 请使用 {0}register \\ {0}login 加入游戏!", Commands.Specifier);
 				if (!args.Player.IgnoreActionsForClearingTrashCan && (!args.Player.Dead || args.Player.TPlayer.difficulty != 2))
 				{
 					args.Player.PlayerData.CopyCharacter(args.Player);
@@ -890,10 +890,10 @@ namespace TShockAPI
 			args.Player.User = null;
 			args.Player.IsLoggedIn = false;
 
-			args.Player.SendSuccessMessage("You have been successfully logged out of your account.");
+			args.Player.SendSuccessMessage("成功登出游戏.");
 			if (Main.ServerSideCharacter)
 			{
-				args.Player.SendWarningMessage("Server side characters are enabled. You need to be logged in to play.");
+				args.Player.SendWarningMessage("云端存档/强制开荒 模式. 你必须登录后才能进入游戏.");
 			}
 		}
 
@@ -908,32 +908,31 @@ namespace TShockAPI
 					{
 						try
 						{
-							args.Player.SendSuccessMessage("You changed your password!");
+							args.Player.SendSuccessMessage("更改密码完毕!");
 							TShock.Users.SetUserPassword(args.Player.User, args.Parameters[1]); // SetUserPassword will hash it for you.
-							TShock.Log.ConsoleInfo(args.Player.IP + " named " + args.Player.Name + " changed the password of account " +
-							                       args.Player.User.Name + ".");
-						}
+							TShock.Log.ConsoleInfo($"玩家 {args.Player.Name}({args.Player.IP}) 更改了账户 {args.Player.User.Name} 的密码.");
+
+                        }
 						catch (ArgumentOutOfRangeException)
 						{
-							args.Player.SendErrorMessage("Password must be greater than or equal to " + TShock.Config.MinimumPasswordLength + " characters.");
+							args.Player.SendErrorMessage("密码位数不能少于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 						}
 					}
 					else
 					{
-						args.Player.SendErrorMessage("You failed to change your password!");
-						TShock.Log.ConsoleError(args.Player.IP + " named " + args.Player.Name + " failed to change password for account: " +
-						                        args.Player.User.Name + ".");
+						args.Player.SendErrorMessage("旧密码错误!");
+						TShock.Log.ConsoleError($"玩家 {args.Player.Name}({args.Player.IP}) 未能更改账户 {args.Player.User.Name} 的密码.");
 					}
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Not logged in or invalid syntax! Proper syntax: {0}password <oldpassword> <newpassword>", Specifier);
+					args.Player.SendErrorMessage("未登录或语法无效! 正确语法: {0}password <旧密码> <新密码>", Specifier);
 				}
 			}
 			catch (UserManagerException ex)
 			{
-				args.Player.SendErrorMessage("Sorry, an error occured: " + ex.Message + ".");
-				TShock.Log.ConsoleError("PasswordUser returned an error: " + ex);
+				args.Player.SendErrorMessage("对不起, 出现了异常: " + ex.Message + ".");
+				TShock.Log.ConsoleError("PasswordUser(更改密码) 方法出现异常: " + ex);
 			}
 		}
 
@@ -953,7 +952,7 @@ namespace TShockAPI
 					}
 					catch (ArgumentOutOfRangeException)
 					{
-						args.Player.SendErrorMessage("Password must be greater than or equal to " + TShock.Config.MinimumPasswordLength + " characters.");
+						args.Player.SendErrorMessage("密码位数不能少于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 						return;
 					}
 				}
@@ -967,13 +966,13 @@ namespace TShockAPI
 					}
 					catch (ArgumentOutOfRangeException)
 					{
-						args.Player.SendErrorMessage("Password must be greater than or equal to " + TShock.Config.MinimumPasswordLength + " characters.");
+						args.Player.SendErrorMessage("密码位数不能少于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 						return;
 					}
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}register <password>", Specifier);
+					args.Player.SendErrorMessage("语法无效! 正确语法: {0}register <密码>", Specifier);
 					return;
 				}
 
@@ -982,21 +981,21 @@ namespace TShockAPI
 
                 if (TShock.Users.GetUserByName(user.Name) == null && user.Name != TSServerPlayer.AccountName) // Cheap way of checking for existance of a user
 				{
-					args.Player.SendSuccessMessage("Account \"{0}\" has been registered.", user.Name);
-					args.Player.SendSuccessMessage("Your password is {0}.", echoPassword);
+					args.Player.SendSuccessMessage("账户 {0} 注册成功.", user.Name);
+					args.Player.SendSuccessMessage("你的密码是 {0}.", echoPassword);
 					TShock.Users.AddUser(user);
-					TShock.Log.ConsoleInfo("{0} registered an account: \"{1}\".", args.Player.Name, user.Name);
+					TShock.Log.ConsoleInfo("玩家 {0} 注册了新账户: {1}.", args.Player.Name, user.Name);
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Account " + user.Name + " has already been registered.");
-					TShock.Log.ConsoleInfo(args.Player.Name + " failed to register an existing account: " + user.Name);
+					args.Player.SendErrorMessage("账户 " + user.Name + " 已经被注册了.");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 尝试注册一个存在的账户: " + user.Name);
 				}
 			}
 			catch (UserManagerException ex)
 			{
-				args.Player.SendErrorMessage("Sorry, an error occured: " + ex.Message + ".");
-				TShock.Log.ConsoleError("RegisterUser returned an error: " + ex);
+				args.Player.SendErrorMessage("对不起, 出现了异常: " + ex.Message + ".");
+				TShock.Log.ConsoleError("RegisterUser 出现异常:: " + ex);
 			}
 		}
 
@@ -1005,7 +1004,7 @@ namespace TShockAPI
 			// This guy needs to be here so that people don't get exceptions when they type /user
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid user syntax. Try {0}user help.", Specifier);
+				args.Player.SendErrorMessage("语法无效! 使用 {0}user help 以获取使用方法.", Specifier);
 				return;
 			}
 
@@ -1023,7 +1022,7 @@ namespace TShockAPI
 				}
 				catch (ArgumentOutOfRangeException)
 				{
-					args.Player.SendErrorMessage("Password must be greater than or equal to " + TShock.Config.MinimumPasswordLength + " characters.");
+					args.Player.SendErrorMessage("密码位数不能少于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 					return;
 				}
 				user.Group = args.Parameters[3];
@@ -1031,20 +1030,20 @@ namespace TShockAPI
 				try
 				{
 					TShock.Users.AddUser(user);
-					args.Player.SendSuccessMessage("Account " + user.Name + " has been added to group " + user.Group + "!");
-					TShock.Log.ConsoleInfo(args.Player.Name + " added Account " + user.Name + " to group " + user.Group);
+					args.Player.SendSuccessMessage("添加账户 " + user.Name + " 至组 " + user.Group + " 完毕!");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 添加了账户 " + user.Name + " 至组 " + user.Group);
 				}
 				catch (GroupNotExistsException)
 				{
-					args.Player.SendErrorMessage("Group " + user.Group + " does not exist!");
+					args.Player.SendErrorMessage("组 " + user.Group + " 不存在!");
 				}
 				catch (UserExistsException)
 				{
-					args.Player.SendErrorMessage("User " + user.Name + " already exists!");
+					args.Player.SendErrorMessage("账户 " + user.Name + " 已存在!");
 				}
 				catch (UserManagerException e)
 				{
-					args.Player.SendErrorMessage("User " + user.Name + " could not be added, check console for details.");
+					args.Player.SendErrorMessage("用户 " + user.Name + " 添加失败. 详细信息在控制台窗口.");
 					TShock.Log.ConsoleError(e.ToString());
 				}
 			}
@@ -1057,12 +1056,12 @@ namespace TShockAPI
 				try
 				{
 					TShock.Users.RemoveUser(user);
-					args.Player.SendSuccessMessage("Account removed successfully.");
-					TShock.Log.ConsoleInfo(args.Player.Name + " successfully deleted account: " + args.Parameters[1] + ".");
+					args.Player.SendSuccessMessage("成功移除账户.");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 删除了账户: " + args.Parameters[1] + ".");
 				}
 				catch (UserNotExistException)
 				{
-					args.Player.SendErrorMessage("The user " + user.Name + " does not exist! Deleted nobody!");
+					args.Player.SendErrorMessage("账户 " + user.Name + " 不存在!");
 				}
 				catch (UserManagerException ex)
 				{
@@ -1080,21 +1079,21 @@ namespace TShockAPI
 				try
 				{
 					TShock.Users.SetUserPassword(user, args.Parameters[2]);
-					TShock.Log.ConsoleInfo(args.Player.Name + " changed the password of account " + user.Name);
-					args.Player.SendSuccessMessage("Password change succeeded for " + user.Name + ".");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 更改了账户 " + user.Name + "的密码");
+					args.Player.SendSuccessMessage("成功更改账户 " + user.Name + " 的密码.");
 				}
 				catch (UserNotExistException)
 				{
-					args.Player.SendErrorMessage("User " + user.Name + " does not exist!");
+					args.Player.SendErrorMessage("账户 " + user.Name + " 不存在!");
 				}
 				catch (UserManagerException e)
 				{
-					args.Player.SendErrorMessage("Password change for " + user.Name + " failed! Check console!");
+					args.Player.SendErrorMessage("账户 " + user.Name + " 更改密码失败! 请检查控制台异常消息.");
 					TShock.Log.ConsoleError(e.ToString());
 				}
 				catch (ArgumentOutOfRangeException)
 				{
-					args.Player.SendErrorMessage("Password must be greater than or equal to " + TShock.Config.MinimumPasswordLength + " characters.");
+					args.Player.SendErrorMessage("密码位数不能少于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 				}
 			}
 			// Group changing requires a username or IP address, and a new group to set
@@ -1106,34 +1105,34 @@ namespace TShockAPI
 				try
 				{
 					TShock.Users.SetUserGroup(user, args.Parameters[2]);
-					TShock.Log.ConsoleInfo(args.Player.Name + " changed account " + user.Name + " to group " + args.Parameters[2] + ".");
-					args.Player.SendSuccessMessage("Account " + user.Name + " has been changed to group " + args.Parameters[2] + "!");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 更改了用户 " + user.Name + " 的用户组至 " + args.Parameters[2] + ".");
+					args.Player.SendSuccessMessage("用户 " + user.Name + " 的用户组被调整至 " + args.Parameters[2] + "!");
 				}
 				catch (GroupNotExistsException)
 				{
-					args.Player.SendErrorMessage("That group does not exist!");
+					args.Player.SendErrorMessage("不存在该用户组!");
 				}
 				catch (UserNotExistException)
 				{
-					args.Player.SendErrorMessage("User " + user.Name + " does not exist!");
+					args.Player.SendErrorMessage("用户 " + user.Name + " 不存在!");
 				}
 				catch (UserManagerException e)
 				{
-					args.Player.SendErrorMessage("User " + user.Name + " could not be added. Check console for details.");
+					args.Player.SendErrorMessage("用户 " + user.Name + " 无法被修改. 请检查控制台的异常消息!");
 					TShock.Log.ConsoleError(e.ToString());
 				}
 			}
 			else if (subcmd == "help")
 			{
-				args.Player.SendInfoMessage("Use command help:");
-				args.Player.SendInfoMessage("{0}user add username password group   -- Adds a specified user", Specifier);
-				args.Player.SendInfoMessage("{0}user del username                  -- Removes a specified user", Specifier);
-				args.Player.SendInfoMessage("{0}user password username newpassword -- Changes a user's password", Specifier);
-				args.Player.SendInfoMessage("{0}user group username newgroup       -- Changes a user's group", Specifier);
+				args.Player.SendInfoMessage("用户管理子指令帮助:");
+				args.Player.SendInfoMessage("{0}user add <账户名> <密码> <组> -- 添加账户", Specifier);
+				args.Player.SendInfoMessage("{0}user del <账户名> -- 删除指定账户", Specifier);
+				args.Player.SendInfoMessage("{0}user password <帐户名> <新密码> -- 更改特定账户的密码", Specifier);
+				args.Player.SendInfoMessage("{0}user group <账户名> <组> -- 改变某账户的用户组", Specifier);
 			}
 			else
 			{
-				args.Player.SendErrorMessage("Invalid user syntax. Try {0}user help.", Specifier);
+				args.Player.SendErrorMessage("语法无效! 使用 {0}user help 以获取使用方法.", Specifier);
 			}
 		}
 
@@ -1143,19 +1142,19 @@ namespace TShockAPI
 
 		private static void ServerInfo(CommandArgs args)
 		{
-			args.Player.SendInfoMessage("Memory usage: " + Process.GetCurrentProcess().WorkingSet64);
-			args.Player.SendInfoMessage("Allocated memory: " + Process.GetCurrentProcess().VirtualMemorySize64);
-			args.Player.SendInfoMessage("Total processor time: " + Process.GetCurrentProcess().TotalProcessorTime);
-			args.Player.SendInfoMessage("WinVer: " + Environment.OSVersion);
-			args.Player.SendInfoMessage("Proc count: " + Environment.ProcessorCount);
-			args.Player.SendInfoMessage("Machine name: " + Environment.MachineName);
+			args.Player.SendInfoMessage("内存占用: " + Process.GetCurrentProcess().WorkingSet64);
+			args.Player.SendInfoMessage("虚拟内存占用: " + Process.GetCurrentProcess().VirtualMemorySize64);
+			args.Player.SendInfoMessage("处理器时间: " + Process.GetCurrentProcess().TotalProcessorTime);
+			args.Player.SendInfoMessage("系统版本: " + Environment.OSVersion);
+			args.Player.SendInfoMessage("处理器数目: " + Environment.ProcessorCount);
+			args.Player.SendInfoMessage("主机名: " + Environment.MachineName);
 		}
 
 		private static void WorldInfo(CommandArgs args)
 		{
-			args.Player.SendInfoMessage("World name: " + (TShock.Config.UseServerName ? TShock.Config.ServerName : Main.worldName));
-			args.Player.SendInfoMessage("World size: {0}x{1}", Main.maxTilesX, Main.maxTilesY);
-			args.Player.SendInfoMessage("World ID: " + Main.worldID);
+			args.Player.SendInfoMessage("世界名: " + (TShock.Config.UseServerName ? TShock.Config.ServerName : Main.worldName));
+			args.Player.SendInfoMessage("大小: {0}x{1}", Main.maxTilesX, Main.maxTilesY);
+			args.Player.SendInfoMessage("世界ID: " + Main.worldID);
 		}
 
 		#endregion
@@ -1166,21 +1165,21 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}userinfo <player>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}userinfo <玩家名>", Specifier);
 				return;
 			}
 
 			var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (players.Count < 1)
-				args.Player.SendErrorMessage("Invalid player.");
+				args.Player.SendErrorMessage("未找到玩家.");
 			else if (players.Count > 1)
 				TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
 			else
 			{
 				var message = new StringBuilder();
-				message.Append("IP Address: ").Append(players[0].IP);
+				message.Append("IP地址: ").Append(players[0].IP);
 				if (players[0].User != null && players[0].IsLoggedIn)
-					message.Append(" | Logged in as: ").Append(players[0].User.Name).Append(" | Group: ").Append(players[0].Group.Name);
+					message.Append(" | 用户名: ").Append(players[0].User.Name).Append(" | 用户组: ").Append(players[0].Group.Name);
 				args.Player.SendSuccessMessage(message.ToString());
 			}
 		}
@@ -1189,12 +1188,12 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}kick <player> [reason]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}kick <玩家名> [原因]", Specifier);
 				return;
 			}
 			if (args.Parameters[0].Length == 0)
 			{
-				args.Player.SendErrorMessage("Missing player name.");
+				args.Player.SendErrorMessage("缺少玩家名.");
 				return;
 			}
 
@@ -1202,7 +1201,7 @@ namespace TShockAPI
 			var players = TShock.Utils.FindPlayer(plStr);
 			if (players.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			}
 			else if (players.Count > 1)
 			{
@@ -1212,10 +1211,10 @@ namespace TShockAPI
 			{
 				string reason = args.Parameters.Count > 1
 									? String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1))
-									: "Misbehaviour.";
+									: "不当行为";
 				if (!TShock.Utils.Kick(players[0], reason, !args.Player.RealPlayer, false, args.Player.Name))
 				{
-					args.Player.SendErrorMessage("You can't kick another admin!");
+					args.Player.SendErrorMessage("你无法驱逐其他管理!");
 				}
 			}
 		}
@@ -1230,12 +1229,12 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}ban add <player> [reason]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban add <玩家名> [原因]", Specifier);
 							return;
 						}
 
 						List<TSPlayer> players = TShock.Utils.FindPlayer(args.Parameters[1]);
-						string reason = args.Parameters.Count > 2 ? String.Join(" ", args.Parameters.Skip(2)) : "Misbehavior.";
+						string reason = args.Parameters.Count > 2 ? String.Join(" ", args.Parameters.Skip(2)) : "不当行为.";
 						if (players.Count == 0)
 						{
 							var user = TShock.Users.GetUserByName(args.Parameters[1]);
@@ -1245,17 +1244,17 @@ namespace TShockAPI
 
 								if (user.Name == args.Player.Name && !force)
 								{
-									args.Player.SendErrorMessage("You can't ban yourself!");
+									args.Player.SendErrorMessage("你无法封禁你自己!");
 									return;
 								}
 
 								if (TShock.Groups.GetGroupByName(user.Group).HasPermission(Permissions.immunetoban) && !force)
-									args.Player.SendErrorMessage("You can't ban {0}!", user.Name);
+									args.Player.SendErrorMessage("你无法封禁玩家 {0}!", user.Name);
 								else
 								{
 									if (user.KnownIps == null)
 									{
-										args.Player.SendErrorMessage("Cannot ban {0} because they have no IPs to ban.", user.Name);
+										args.Player.SendErrorMessage("无法封禁玩家 {0} 因为缺少历史IP信息.", user.Name);
 										return;
 									}
 									var knownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps);
@@ -1264,35 +1263,35 @@ namespace TShockAPI
 									{
 										if (args.Silent)
 										{
-											args.Player.SendInfoMessage("{0} was {1}banned for '{2}'.", user.Name, force ? "Force " : "", reason);
+											args.Player.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制" : "", reason);
 										}
 										else
 										{
-											TSPlayer.All.SendInfoMessage("{0} was {1}banned for '{2}'.", user.Name, force ? "Force " : "", reason);
-										}
+											TSPlayer.All.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制" : "", reason);
+                                        }
 									}
 									else
 									{
 										if (args.Silent)
 										{
-											args.Player.SendInfoMessage("{0}banned {1} for '{2}'.", force ? "Force " : "", user.Name, reason);
-										}
+											args.Player.SendInfoMessage("{1} 被{0}封禁了, 原因: {2}.",force ? "强制" : "", user.Name, reason);
+                                        }
 										else
 										{
-											TSPlayer.All.SendInfoMessage("{0} {1}banned {2} for '{3}'.", args.Player.Name, force ? "Force " : "", user.Name, reason);
-										}
+											TSPlayer.All.SendInfoMessage("{0} {1}封禁了 {2}. 原因: {3}.", args.Player.Name, force ? "强制" : "",user.Name,reason);
+                                        }
 									}
 								}
 							}
 							else
-								args.Player.SendErrorMessage("Invalid player or account!");
+								args.Player.SendErrorMessage("无效玩家/玩家账户!");
 						}
 						else if (players.Count > 1)
 							TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
 						else
 						{
 							if (!TShock.Utils.Ban(players[0], reason, !args.Player.RealPlayer, args.Player.User.Name))
-								args.Player.SendErrorMessage("You can't ban {0}!", players[0].Name);
+								args.Player.SendErrorMessage("你无法封禁玩家 {0}!", players[0].Name);
 						}
 					}
 					#endregion
@@ -1302,16 +1301,16 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}ban addip <ip> [reason]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban addip <ip> [原因]", Specifier);
 							return;
 						}
 
 						string ip = args.Parameters[1];
 						string reason = args.Parameters.Count > 2
 											? String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 2))
-											: "Manually added IP address ban.";
+											: "手动添加IP地址封禁.";
 						TShock.Bans.AddBan(ip, "", "", reason, false, args.Player.User.Name);
-						args.Player.SendSuccessMessage("Banned IP {0}.", ip);
+						args.Player.SendSuccessMessage("成功封禁 IP {0}.", ip);
 					}
 					#endregion
 					return;
@@ -1320,21 +1319,21 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}ban addtemp <player> <time> [reason]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban addtemp <玩家名> <时间> [原因]", Specifier);
 							return;
 						}
 
 						int time;
 						if (!TShock.Utils.TryParseTime(args.Parameters[2], out time))
 						{
-							args.Player.SendErrorMessage("Invalid time string! Proper format: _d_h_m_s, with at least one time specifier.");
-							args.Player.SendErrorMessage("For example, 1d and 10h-30m+2m are both valid time strings, but 2 is not.");
+							args.Player.SendErrorMessage("时间格式无效! 正确格式: _d_h_m_s(至少一个, 如5d).");
+							args.Player.SendErrorMessage("有效的格式: 1d \\ 10h-30m+2m, 无效: 2 \\ 5.");
 							return;
 						}
 
 						string reason = args.Parameters.Count > 3
 											? String.Join(" ", args.Parameters.Skip(3))
-											: "Misbehavior.";
+											: "不当行为.";
 
 						List<TSPlayer> players = TShock.Utils.FindPlayer(args.Parameters[1]);
 						if (players.Count == 0)
@@ -1344,7 +1343,7 @@ namespace TShockAPI
 							{
 								bool force = !args.Player.RealPlayer;
 								if (TShock.Groups.GetGroupByName(user.Group).HasPermission(Permissions.immunetoban) && !force)
-									args.Player.SendErrorMessage("You can't ban {0}!", user.Name);
+									args.Player.SendErrorMessage("你无法封禁玩家 {0}!", user.Name);
 								else
 								{
 									var knownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps);
@@ -1353,29 +1352,30 @@ namespace TShockAPI
 									{
 										if (args.Silent)
 										{
-											args.Player.SendInfoMessage("{0} was {1}banned for '{2}'.", user.Name, force ? "force " : "", reason);
-										}
+                                            args.Player.SendSuccessMessage("{0} 被{1}封禁. 原因: {2}.",user.Name,force ? "强制" : "",reason);
+                                        }
 										else
 										{
-											TSPlayer.All.SendInfoMessage("{0} was {1}banned for '{2}'.", user.Name, force ? "force " : "", reason);
+											TSPlayer.All.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制 " : "", reason);
 										}
 									}
 									else
 									{
-										if (args.Silent)
-										{
-											args.Player.SendInfoMessage("{0} was {1}banned for '{2}'.", user.Name, force ? "force " : "", reason);
-										}
-										else
-										{
-											TSPlayer.All.SendInfoMessage("{0} {1}banned {2} for '{3}'.", args.Player.Name, force ? "force " : "", user.Name, reason);
-										}
+									    if (args.Silent) 
+                                        {
+                                            args.Player.SendSuccessMessage("{0} 被{1}封禁. 原因: {2}.", players[0].Name,force ? "强制" : "", reason);
+									    }
+									    else 
+                                        {
+									        TSPlayer.All.SendSuccessMessage("{0} {1}封禁了 {2}. 原因: {3}.", args.Player.Name,force ? "强制" : "", players[0].Name,
+									            reason);
+									    }
 									}
 								}
 							}
 							else
 							{
-								args.Player.SendErrorMessage("Invalid player or account!");
+								args.Player.SendErrorMessage("无效玩家/玩家账户!");
 							}
 						}
 						else if (players.Count > 1)
@@ -1384,38 +1384,38 @@ namespace TShockAPI
 						{
 							if (args.Player.RealPlayer && players[0].HasPermission(Permissions.immunetoban))
 							{
-								args.Player.SendErrorMessage("You can't ban {0}!", players[0].Name);
+								args.Player.SendErrorMessage("你无法封禁玩家 {0}!", players[0].Name);
 								return;
 							}
 
 							if (TShock.Bans.AddBan(players[0].IP, players[0].Name, players[0].UUID, reason,
 								false, args.Player.Name, DateTime.UtcNow.AddSeconds(time).ToString("s")))
 							{
-								players[0].Disconnect(String.Format("Banned: {0}", reason));
-								string verb = args.Player.RealPlayer ? "Force " : "";
+								players[0].Disconnect(String.Format("你被封禁: {0}", reason));
+								string verb = args.Player.RealPlayer ? "强制" : "";
 								if (args.Player.RealPlayer)
 									if (args.Silent)
 									{
-										args.Player.SendSuccessMessage("{0}banned {1} for '{2}'", verb, players[0].Name, reason);
+										args.Player.SendSuccessMessage("{0}封禁 {1} 完毕. 原因: {2}", verb, players[0].Name, reason);
 									}
 									else
 									{
-										TSPlayer.All.SendSuccessMessage("{0} {1}banned {2} for '{3}'", args.Player.Name, verb, players[0].Name, reason);
+										TSPlayer.All.SendSuccessMessage("{0} {1}封禁了 {2}. 原因: {3}", args.Player.Name, verb, players[0].Name, reason);
 									}
 								else
 								{
 									if (args.Silent) 
 									{
-										args.Player.SendSuccessMessage("{0}banned {1} for '{2}'", verb, players[0].Name, reason);
+										args.Player.SendSuccessMessage("{0}封禁 {1} 完毕. 原因: {2}", verb, players[0].Name, reason);
 									}
 									else
 									{
-										TSPlayer.All.SendSuccessMessage("{0} was {1}banned for '{2}'", players[0].Name, verb, reason);
+										TSPlayer.All.SendSuccessMessage("{0} 被{1}封禁. 原因: {2}.", players[0].Name, verb, reason);
 									}
 								}
 							}
 							else
-								args.Player.SendErrorMessage("Failed to ban {0}, check logs.", players[0].Name);
+								args.Player.SendErrorMessage("封禁玩家 {0} 失败, 请检查日志.", players[0].Name);
 						}
 					}
 					#endregion
@@ -1425,7 +1425,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}ban del <player>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban del <玩家名>", Specifier);
 							return;
 						}
 
@@ -1434,12 +1434,12 @@ namespace TShockAPI
 						if (ban != null)
 						{
 							if (TShock.Bans.RemoveBan(ban.Name, true))
-								args.Player.SendSuccessMessage("Unbanned {0} ({1}).", ban.Name, ban.IP);
+								args.Player.SendSuccessMessage("成功解禁 {0} ({1}).", ban.Name, ban.IP);
 							else
-								args.Player.SendErrorMessage("Failed to unban {0} ({1}), check logs.", ban.Name, ban.IP);
+								args.Player.SendErrorMessage("无法解禁 {0} ({1}), 请检查日志.", ban.Name, ban.IP);
 						}
 						else
-							args.Player.SendErrorMessage("No bans for {0} exist.", plStr);
+							args.Player.SendErrorMessage("玩家 {0} 未被封禁.", plStr);
 					}
 					#endregion
 					return;
@@ -1448,7 +1448,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}ban delip <ip>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban delip <ip>", Specifier);
 							return;
 						}
 
@@ -1457,12 +1457,12 @@ namespace TShockAPI
 						if (ban != null)
 						{
 							if (TShock.Bans.RemoveBan(ban.IP, false))
-								args.Player.SendSuccessMessage("Unbanned IP {0} ({1}).", ban.IP, ban.Name);
+								args.Player.SendSuccessMessage("成功解禁 IP {0} ({1}).", ban.IP, ban.Name);
 							else
-								args.Player.SendErrorMessage("Failed to unban IP {0} ({1}), check logs.", ban.IP, ban.Name);
+								args.Player.SendErrorMessage("解禁IP {0} ({1}) 失败, 请检查日志.", ban.IP, ban.Name);
 						}
 						else
-							args.Player.SendErrorMessage("IP {0} is not banned.", ip);
+							args.Player.SendErrorMessage("IP {0} 没有被禁止.", ip);
 					}
 					#endregion
 					return;
@@ -1475,20 +1475,20 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"add <player> [reason] - Bans a player or user account if the player is not online.",
-							"addip <ip> [reason] - Bans an IP.",
-							"addtemp <player> <time> [reason] - Temporarily bans a player.",
-							"del <player> - Unbans a player.",
-							"delip <ip> - Unbans an IP.",
-							"list [page] - Lists all player bans.",
-							"listip [page] - Lists all IP bans."
+							"add <玩家名> [原因] - 封禁在线用户或离线账户.",
+							"addip <ip> [原因] - 封禁指定IP.",
+							"addtemp <玩家名> <时间> [原因] - 临时封禁某玩家.",
+							"del <玩家名> - 解除对玩家的封禁.",
+							"delip <ip> - 解除对特定IP的封禁.",
+							"list [页码] - 显示所有被封禁的玩家.",
+							"listip [页码] - 显示所有被封禁的IP."
                         };
 						
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Ban Sub-Commands ({0}/{1}):",
-								FooterFormat = "Type {0}ban help {{0}} for more sub-commands.".SFormat(Specifier)
+								HeaderFormat = "封禁管理子指令 ({0}/{1}):",
+								FooterFormat = "键入 {0}ban help {{0}} 以获取更多子指令.".SFormat(Specifier)
 							}
 						);
 					}
@@ -1512,9 +1512,9 @@ namespace TShockAPI
 						PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(nameBans),
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Bans ({0}/{1}):",
-								FooterFormat = "Type {0}ban list {{0}} for more.".SFormat(Specifier),
-								NothingToDisplayString = "There are currently no bans."
+								HeaderFormat = "玩家封禁列表 ({0}/{1}):",
+								FooterFormat = "键入 {0}ban list {{0}} 以获取下一页列表.".SFormat(Specifier),
+								NothingToDisplayString = "当前没有被封禁的玩家."
 							});
 					}
 					#endregion
@@ -1537,15 +1537,15 @@ namespace TShockAPI
 						PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(ipBans),
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "IP Bans ({0}/{1}):",
-								FooterFormat = "Type {0}ban listip {{0}} for more.".SFormat(Specifier),
-								NothingToDisplayString = "There are currently no IP bans."
-							});
+								HeaderFormat = "封禁IP列表 ({0}/{1}):",
+								FooterFormat = "键入 {0}ban listip {{0}} 以获取下一页列表.".SFormat(Specifier),
+								NothingToDisplayString = "当前没有被封禁的IP."
+                            });
 					}
 					#endregion
 					return;
 				default:
-					args.Player.SendErrorMessage("Invalid subcommand! Type {0}ban help for more information.", Specifier);
+					args.Player.SendErrorMessage("子指令无效! 键入 {0}ban help 以获取更多用法/子指令.", Specifier);
 					return;
 			}
 		}
@@ -1558,21 +1558,21 @@ namespace TShockAPI
 				{
 					tw.WriteLine(args.Parameters[0]);
 				}
-				args.Player.SendSuccessMessage("Added " + args.Parameters[0] + " to the whitelist.");
+				args.Player.SendSuccessMessage("添加了 " + args.Parameters[0] + " 至白名单.");
 			}
 		}
 
 		private static void DisplayLogs(CommandArgs args)
 		{
 			args.Player.DisplayLogs = (!args.Player.DisplayLogs);
-			args.Player.SendSuccessMessage("You will " + (args.Player.DisplayLogs ? "now" : "no longer") + " receive logs.");
+			args.Player.SendSuccessMessage("你将会 " + (args.Player.DisplayLogs ? "开始" : "停止") + " 接收日志显示.");
 		}
 
 		private static void SaveSSC(CommandArgs args)
 		{
 			if (Main.ServerSideCharacter)
 			{
-				args.Player.SendSuccessMessage("SSC has been saved.");
+				args.Player.SendSuccessMessage("云存档保存完毕.");
 				foreach (TSPlayer player in TShock.Players)
 				{
 					if (player != null && player.IsLoggedIn && !player.IgnoreActionsForClearingTrashCan)
@@ -1587,12 +1587,12 @@ namespace TShockAPI
 		{
 			if (!Main.ServerSideCharacter)
 			{
-				args.Player.SendErrorMessage("Server Side Characters is disabled.");
+				args.Player.SendErrorMessage("当前非云存档模式.");
 				return;
 			}
 			if( args.Parameters.Count < 1 )
 			{
-				args.Player.SendErrorMessage("Correct usage: {0}overridessc|{0}ossc <player name>", Specifier);
+				args.Player.SendErrorMessage("正确用法: {0}overridessc|{0}ossc <玩家名>", Specifier);
 				return;
 			}
 
@@ -1600,7 +1600,7 @@ namespace TShockAPI
 			var matchedPlayers = TShock.Utils.FindPlayer(playerNameToMatch);
 			if( matchedPlayers.Count < 1 )
 			{
-				args.Player.SendErrorMessage("No players matched \"{0}\".", playerNameToMatch);
+				args.Player.SendErrorMessage("未找到玩家 {0}.", playerNameToMatch);
 				return;
 			}
 			else if( matchedPlayers.Count > 1 )
@@ -1612,22 +1612,22 @@ namespace TShockAPI
 			TSPlayer matchedPlayer = matchedPlayers[0];
 			if (matchedPlayer.IsLoggedIn)
 			{
-				args.Player.SendErrorMessage("Player \"{0}\" is already logged in.", matchedPlayer.Name);
+				args.Player.SendErrorMessage("玩家 {0} 已登录.", matchedPlayer.Name);
 				return;
 			}
 			if (!matchedPlayer.LoginFailsBySsi)
 			{
-				args.Player.SendErrorMessage("Player \"{0}\" has to perform a /login attempt first.", matchedPlayer.Name);
+				args.Player.SendErrorMessage("玩家 {0} 需要先执行一次 /login 尝试.", matchedPlayer.Name);
 				return;
 			}
 			if (matchedPlayer.IgnoreActionsForClearingTrashCan)
 			{
-				args.Player.SendErrorMessage("Player \"{0}\" has to reconnect first.", matchedPlayer.Name);
+				args.Player.SendErrorMessage("玩家 {0} 首先需要重新连接服务器.", matchedPlayer.Name);
 				return;
 			}
 
 			TShock.CharacterDB.InsertPlayerData(matchedPlayer);
-			args.Player.SendSuccessMessage("SSC of player \"{0}\" has been overriden.", matchedPlayer.Name);
+			args.Player.SendSuccessMessage("玩家 {0} 的云存档已被覆盖保存.", matchedPlayer.Name);
 		}
 
 		private static void ForceHalloween(CommandArgs args)
@@ -1635,9 +1635,9 @@ namespace TShockAPI
 			TShock.Config.ForceHalloween = !TShock.Config.ForceHalloween;
 			Main.checkHalloween();
 			if (args.Silent) 
-				args.Player.SendInfoMessage("{0}abled halloween mode!", (TShock.Config.ForceHalloween ? "en" : "dis"));
+				args.Player.SendInfoMessage("{0}了圣诞模式!", (TShock.Config.ForceHalloween ? "开启" : "关闭"));
 			else
-				TSPlayer.All.SendInfoMessage("{0} {1}abled halloween mode!", args.Player.Name, (TShock.Config.ForceHalloween ? "en" : "dis"));
+				TSPlayer.All.SendInfoMessage("{0} {1}了圣诞模式!", args.Player.Name, (TShock.Config.ForceHalloween ? "开启" : "关闭"));
 		}
 
 		private static void ForceXmas(CommandArgs args)
@@ -1645,24 +1645,24 @@ namespace TShockAPI
 			TShock.Config.ForceXmas = !TShock.Config.ForceXmas;
 			Main.CheckXMas();
 			if (args.Silent)
-				args.Player.SendInfoMessage("{0}abled Christmas mode!", (TShock.Config.ForceXmas ? "en" : "dis"));
+				args.Player.SendInfoMessage("{0}了圣诞模式!", (TShock.Config.ForceXmas ? "开启" : "关闭"));
 			else
-				TSPlayer.All.SendInfoMessage("{0} {1}abled Christmas mode!", args.Player.Name, (TShock.Config.ForceXmas ? "en" : "dis"));
+				TSPlayer.All.SendInfoMessage("{0} {1}了圣诞模式!", args.Player.Name, (TShock.Config.ForceXmas ? "开启" : "关闭"));
 		}
 
 		private static void TempGroup(CommandArgs args)
 		{
 			if (args.Parameters.Count < 2)
 			{
-				args.Player.SendInfoMessage("Invalid usage");
-				args.Player.SendInfoMessage("Usage: {0}tempgroup <username> <new group> [time]", Specifier);
+				args.Player.SendInfoMessage("用法无效!");
+				args.Player.SendInfoMessage("用法: {0}tempgroup <用户名> <新用户组> [时间]", Specifier);
 				return;
 			}
 
 			List<TSPlayer> ply = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (ply.Count < 1)
 			{
-				args.Player.SendErrorMessage("Could not find player {0}.", args.Parameters[0]);
+				args.Player.SendErrorMessage("无法找到玩家 {0}.", args.Parameters[0]);
 				return;
 			}
 
@@ -1673,7 +1673,7 @@ namespace TShockAPI
 
 			if (!TShock.Groups.GroupExists(args.Parameters[1]))
 			{
-				args.Player.SendErrorMessage("Could not find group {0}", args.Parameters[1]);
+				args.Player.SendErrorMessage("无法找到组 {0}.", args.Parameters[1]);
 				return;
 			}
 
@@ -1682,9 +1682,9 @@ namespace TShockAPI
 				int time;
 				if (!TShock.Utils.TryParseTime(args.Parameters[2], out time))
 				{
-					args.Player.SendErrorMessage("Invalid time string! Proper format: _d_h_m_s, with at least one time specifier.");
-					args.Player.SendErrorMessage("For example, 1d and 10h-30m+2m are both valid time strings, but 2 is not.");
-					return;
+                    args.Player.SendErrorMessage("时间格式无效! 正确格式: _d_h_m_s(至少一个, 如5d).");
+                    args.Player.SendErrorMessage("有效的格式: 1d \\ 10h-30m+2m, 无效: 2 \\ 5.");
+                    return;
 				}
 
 				ply[0].tempGroupTimer = new System.Timers.Timer(time * 1000);
@@ -1698,15 +1698,15 @@ namespace TShockAPI
 
 			if (args.Parameters.Count < 3)
 			{
-				args.Player.SendSuccessMessage(String.Format("You have changed {0}'s group to {1}", ply[0].Name, g.Name));
-				ply[0].SendSuccessMessage(String.Format("Your group has temporarily been changed to {0}", g.Name));
+				args.Player.SendSuccessMessage("成功更改玩家 {0} 的用户组至 {1}", ply[0].Name, g.Name);
+				ply[0].SendSuccessMessage("你的用户组被临时更改至 {0}", g.Name);
 			}
 			else
 			{
-				args.Player.SendSuccessMessage(String.Format("You have changed {0}'s group to {1} for {2}",
-					ply[0].Name, g.Name, args.Parameters[2]));
-				ply[0].SendSuccessMessage(String.Format("Your group has been changed to {0} for {1}",
-					g.Name, args.Parameters[2]));
+				args.Player.SendSuccessMessage("成功更改玩家 {0} 的用户组至 {1}. 原因: {2}",
+					ply[0].Name, g.Name, args.Parameters[2]);
+				ply[0].SendSuccessMessage("你的用户组被临时更改至 {0}. 原因: {1}",
+					g.Name, args.Parameters[2]);
 			}
 		}
 
@@ -1719,7 +1719,7 @@ namespace TShockAPI
 			string message = string.Join(" ", args.Parameters);
 
 			TShock.Utils.Broadcast(
-				"(Server Broadcast) " + message, 
+				"(服务器通知) " + message, 
 				Convert.ToByte(TShock.Config.BroadcastRGB[0]), Convert.ToByte(TShock.Config.BroadcastRGB[1]), 
 				Convert.ToByte(TShock.Config.BroadcastRGB[2]));
 		}
@@ -1738,7 +1738,7 @@ namespace TShockAPI
 				}
 			}
 
-			string reason = ((args.Parameters.Count > 0) ? "Server shutting down: " + String.Join(" ", args.Parameters) : "Server shutting down!");
+			string reason = ((args.Parameters.Count > 0) ? "关服: " + String.Join(" ", args.Parameters) : "服务器已关闭!");
 			TShock.Utils.StopServer(true, reason);
 		}
 		
@@ -1746,30 +1746,30 @@ namespace TShockAPI
 		{
 			if (TShock.NoRestart)
 			{
-				args.Player.SendErrorMessage("This command has been disabled.");
+				args.Player.SendErrorMessage("该指令被禁用.");
 				return;
 			}
 
 			if (ServerApi.RunningMono)
 			{
-				TShock.Log.ConsoleInfo("Sorry, this command has not yet been implemented in Mono.");
+				TShock.Log.ConsoleInfo("该指令无法在Mono环境下使用.");
 			}
 			else
 			{
-				string reason = ((args.Parameters.Count > 0) ? "Server shutting down: " + String.Join(" ", args.Parameters) : "Server shutting down!");
+				string reason = ((args.Parameters.Count > 0) ? "关服: " + String.Join(" ", args.Parameters) : "服务器已关闭!");
 				TShock.Utils.RestartServer(true, reason);
 			}
 		}
 
 		private static void OffNoSave(CommandArgs args)
 		{
-			string reason = ((args.Parameters.Count > 0) ? "Server shutting down: " + String.Join(" ", args.Parameters) : "Server shutting down!");
+			string reason = ((args.Parameters.Count > 0) ? "关服: " + String.Join(" ", args.Parameters) : "服务器已关闭!");
 			TShock.Utils.StopServer(false, reason);
 		}
 
 		private static void CheckUpdates(CommandArgs args)
 		{
-			args.Player.SendInfoMessage("An update check has been queued.");
+			args.Player.SendInfoMessage("尝试检查更新...");
 			try
 			{
 				TShock.UpdateManager.UpdateCheck(null);
@@ -1805,13 +1805,13 @@ namespace TShockAPI
 					}
 
 					List<string> restUsers = new List<string>(
-						restUsersTokens.Select(ut => string.Format("{0} ({1} tokens)", ut.Key, ut.Value)));
+						restUsersTokens.Select(ut => string.Format("{0} ({1} 密钥)", ut.Key, ut.Value)));
 
 					PaginationTools.SendPage(
 						args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(restUsers), new PaginationTools.Settings {
-							NothingToDisplayString = "There are currently no active REST users.",
-							HeaderFormat = "Active REST Users ({0}/{1}):",
-							FooterFormat = "Type {0}rest listusers {{0}} for more.".SFormat(Specifier)
+							NothingToDisplayString = "当前没有活动的REST用户.",
+							HeaderFormat = "活动的REST接口用户 ({0}/{1}):",
+							FooterFormat = "键入 {0}rest listusers {{0}} 以获取更多信息.".SFormat(Specifier)
 						}
 					);
 
@@ -1820,14 +1820,14 @@ namespace TShockAPI
 				case "destroytokens":
 				{
 					TShock.RestApi.Tokens.Clear();
-					args.Player.SendSuccessMessage("All REST tokens have been destroyed.");
+					args.Player.SendSuccessMessage("清空所有的REST密钥完毕.");
 					break;
 				}
 				default:
 				{
-					args.Player.SendInfoMessage("Available REST Sub-Commands:");
-					args.Player.SendMessage("listusers - Lists all REST users and their current active tokens.", Color.White);
-					args.Player.SendMessage("destroytokens - Destroys all current REST tokens.", Color.White);
+					args.Player.SendInfoMessage("可用的REST管理子指令:");
+					args.Player.SendMessage("listusers - 查看所有REST用户及密钥.", Color.White);
+					args.Player.SendMessage("destroytokens - 清空当前所有REST密钥.", Color.White);
 					break;
 				}
 			}
@@ -1843,11 +1843,11 @@ namespace TShockAPI
 			WorldGen.dropMeteor();
 			if (args.Silent)
 			{
-				args.Player.SendInfoMessage("A meteor has been triggered.");
+				args.Player.SendInfoMessage("召唤陨石落下.");
 			}
 			else
 			{
-				TSPlayer.All.SendInfoMessage("{0} triggered a meteor.", args.Player.Name);
+				TSPlayer.All.SendInfoMessage("{0} 召唤了一颗陨石.", args.Player.Name);
 			}
 		}
 
@@ -1856,11 +1856,11 @@ namespace TShockAPI
 			TSPlayer.Server.SetFullMoon();
 			if (args.Silent)
 			{
-				args.Player.SendInfoMessage("Started a full moon.");
+				args.Player.SendInfoMessage("开启满月进程.");
 			}
 			else
 			{
-				TSPlayer.All.SendInfoMessage("{0} started a full moon.", args.Player.Name);
+				TSPlayer.All.SendInfoMessage("{0} 开启了满月事件.", args.Player.Name);
 			}
 		}
 
@@ -1869,11 +1869,11 @@ namespace TShockAPI
 			TSPlayer.Server.SetBloodMoon(!Main.bloodMoon);
 			if (args.Silent)
 			{
-				args.Player.SendInfoMessage("{0}ed a blood moon.", Main.bloodMoon ? "start" : "stopp");
+				args.Player.SendInfoMessage("成功{0}血月事件.", Main.bloodMoon ? "开始" : "停止");
 			}
 			else
 			{
-				TSPlayer.All.SendInfoMessage("{0} {1}ed a blood moon.", args.Player.Name, Main.bloodMoon ? "start" : "stopp");
+				TSPlayer.All.SendInfoMessage("{0} {1}了血月事件.", args.Player.Name, Main.bloodMoon ? "开始" : "停止");
 			}
 		}
 
@@ -1882,11 +1882,11 @@ namespace TShockAPI
 			TSPlayer.Server.SetEclipse(!Main.eclipse);
 			if (args.Silent)
 			{
-				args.Player.SendInfoMessage("{0}ed an eclipse.", Main.eclipse ? "start" : "stopp");
+				args.Player.SendInfoMessage("成功{0}日蚀事件.", Main.eclipse ? "开始" : "停止");
 			}
 			else
 			{
-				TSPlayer.All.SendInfoMessage("{0} {1}ed an eclipse.", args.Player.Name, Main.eclipse ? "start" : "stopp");
+				TSPlayer.All.SendInfoMessage("{0} 了{1}日蚀事件.", args.Player.Name, Main.eclipse ? "开始" : "停止");
 			}
 		}
 
@@ -1896,7 +1896,7 @@ namespace TShockAPI
 			{
 				if (args.Parameters.Count < 1)
 				{
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}invade <invasion type> [wave]", Specifier);
+					args.Player.SendErrorMessage("语法无效! 正确语法: {0}invade <入侵种类> [波]", Specifier);
 					return;
 				}
 
@@ -1905,19 +1905,19 @@ namespace TShockAPI
 				{
 					case "goblin":
 					case "goblins":
-						TSPlayer.All.SendInfoMessage("{0} has started a goblin army invasion.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 开始了哥布林入侵.", args.Player.Name);
 						TShock.StartInvasion(1);
 						break;
 
 					case "snowman":
 					case "snowmen":
-						TSPlayer.All.SendInfoMessage("{0} has started a snow legion invasion.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 开始了雪人军团入侵.", args.Player.Name);
 						TShock.StartInvasion(2);
 						break;
 
 					case "pirate":
 					case "pirates":
-						TSPlayer.All.SendInfoMessage("{0} has started a pirate invasion.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 开始了海盗入侵.", args.Player.Name);
 						TShock.StartInvasion(3);
 						break;
 
@@ -1927,7 +1927,7 @@ namespace TShockAPI
 						{
 							if (!int.TryParse(args.Parameters[1], out wave) || wave <= 0)
 							{
-								args.Player.SendErrorMessage("Invalid wave!");
+								args.Player.SendErrorMessage("入侵进度无效!");
 								break;
 							}
 						}
@@ -1936,7 +1936,7 @@ namespace TShockAPI
 						Main.bloodMoon = false;
 						NPC.waveKills = 0f;
 						NPC.waveCount = wave;
-						TSPlayer.All.SendInfoMessage("{0} started the pumpkin moon at wave {1}!", args.Player.Name, wave);
+						TSPlayer.All.SendInfoMessage("{0} 开始了南瓜狂欢夜. 当前回合: {1}!", args.Player.Name, wave);
 						break;
 
 					case "frost":
@@ -1945,7 +1945,7 @@ namespace TShockAPI
 						{
 							if (!int.TryParse(args.Parameters[1], out wave) || wave <= 0)
 							{
-								args.Player.SendErrorMessage("Invalid wave!");
+								args.Player.SendErrorMessage("入侵进度无效!");
 								return;
 							}
 						}
@@ -1954,19 +1954,19 @@ namespace TShockAPI
 						Main.bloodMoon = false;
 						NPC.waveKills = 0f;
 						NPC.waveCount = wave;
-						TSPlayer.All.SendInfoMessage("{0} started the frost moon at wave {1}!", args.Player.Name, wave);
+						TSPlayer.All.SendInfoMessage("{0} 开始了冰霜之月. 当前回合: {1}!", args.Player.Name, wave);
 						break;
 
 					case "martian":
 					case "martians":
-						TSPlayer.All.SendInfoMessage("{0} has started a martian invasion.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 开始了火星入侵.", args.Player.Name);
 						TShock.StartInvasion(4);
 						break;
 				}
 			}
 			else
 			{
-				TSPlayer.All.SendInfoMessage("{0} has ended the invasion.", args.Player.Name);
+				TSPlayer.All.SendInfoMessage("{0} 停止了入侵事件.", args.Player.Name);
 				Main.invasionSize = 0;
 			}
 		}
@@ -1978,7 +1978,7 @@ namespace TShockAPI
 				var result = Main.anglerWhoFinishedToday.RemoveAll(s => s.ToLower().Equals(args.Parameters[0].ToLower()));
 				if (result > 0)
 				{
-					args.Player.SendSuccessMessage("Removed {0} players from the angler quest completion list for today.", result);
+					args.Player.SendSuccessMessage("移去了 {0} 名玩家的今日渔夫任务完成情况.", result);
 					foreach (TSPlayer ply in TShock.Players.Where(p => p!= null && p.Active && p.TPlayer.name.ToLower().Equals(args.Parameters[0].ToLower())))
 					{
 						//this will always tell the client that they have not done the quest today.
@@ -1986,14 +1986,14 @@ namespace TShockAPI
 					}
 				}
 				else
-					args.Player.SendErrorMessage("Failed to find any users by that name on the list.");
+					args.Player.SendErrorMessage("在完成钓鱼任务列表找不到玩家.");
 
 			}
 			else
 			{
 				Main.anglerWhoFinishedToday.Clear();
 				NetMessage.SendAnglerQuest();
-				args.Player.SendSuccessMessage("Cleared all users from the angler quest completion list for today.");
+				args.Player.SendSuccessMessage("清空了所有玩家今日渔夫任务完成情况.");
 			}
 		}
 
@@ -2001,7 +2001,7 @@ namespace TShockAPI
 		{
 			Main.expertMode = !Main.expertMode;
 			TSPlayer.All.SendData(PacketTypes.WorldInfo);
-			args.Player.SendSuccessMessage("Expert mode is now {0}.", Main.expertMode ? "on" : "off");
+			args.Player.SendSuccessMessage("专家模式被{0}.", Main.expertMode ? "开启" : "关闭");
 		}
 
 		private static void Hardmode(CommandArgs args)
@@ -2010,16 +2010,16 @@ namespace TShockAPI
 			{
 				Main.hardMode = false;
 				TSPlayer.All.SendData(PacketTypes.WorldInfo);
-				args.Player.SendSuccessMessage("Hardmode is now off.");
+				args.Player.SendSuccessMessage("肉后模式关闭.");
 			}
 			else if (!TShock.Config.DisableHardmode)
 			{
 				WorldGen.StartHardmode();
-				args.Player.SendSuccessMessage("Hardmode is now on.");
+				args.Player.SendSuccessMessage("肉后模式开启.");
 			}
 			else
 			{
-				args.Player.SendErrorMessage("Hardmode is disabled via config.");
+				args.Player.SendErrorMessage("配置中禁用了肉山后模式.");
 			}
 		}
 
@@ -2027,14 +2027,14 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1 || args.Parameters.Count > 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}spawnboss <boss type> [amount]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}spawnboss <boss种类> [数量]", Specifier);
 				return;
 			}
 
 			int amount = 1;
 			if (args.Parameters.Count == 2 && (!int.TryParse(args.Parameters[1], out amount) || amount <= 0))
 			{
-				args.Player.SendErrorMessage("Invalid boss amount!");
+				args.Player.SendErrorMessage("数量无效!");
 				return;
 			}
 
@@ -2050,74 +2050,74 @@ namespace TShockAPI
 						npc.SetDefaults(i);
 						TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
 					}
-					TSPlayer.All.SendSuccessMessage("{0} has spawned all bosses {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 次全部BOSS.", args.Player.Name, amount);
 					return;
 				case "brain":
 				case "brain of cthulhu":
 					npc.SetDefaults(266);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned the Brain of Cthulhu {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 克苏鲁之脑.", args.Player.Name, amount);
 					return;
 				case "destroyer":
 					npc.SetDefaults(134);
 					TSPlayer.Server.SetTime(false, 0.0);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned the Destroyer {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 机械破坏者.", args.Player.Name, amount);
 					return;
 				case "duke":
 				case "duke fishron":
 				case "fishron":
 					npc.SetDefaults(370);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned Duke Fishron {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 猪鲨公爵.", args.Player.Name, amount);
 					return;
 				case "eater":
 				case "eater of worlds":
 					npc.SetDefaults(13);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned the Eater of Worlds {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 世界吞噬者.", args.Player.Name, amount);
 					return;
 				case "eye":
 				case "eye of cthulhu":
 					npc.SetDefaults(4);
 					TSPlayer.Server.SetTime(false, 0.0);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned the Eye of Cthulhu {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 克苏鲁之眼.", args.Player.Name, amount);
 					return;
 				case "golem":
 					npc.SetDefaults(245);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned Golem {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 石巨人.", args.Player.Name, amount);
 					return;
 				case "king":
 				case "king slime":
 					npc.SetDefaults(50);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned King Slime {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 史莱姆王.", args.Player.Name, amount);
 					return;
 				case "plantera":
 					npc.SetDefaults(262);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned Plantera {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 世纪之花.", args.Player.Name, amount);
 					return;
 				case "prime":
 				case "skeletron prime":
 					npc.SetDefaults(127);
 					TSPlayer.Server.SetTime(false, 0.0);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned Skeletron Prime {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 机械骷髅王.", args.Player.Name, amount);
 					return;
 				case "queen":
 				case "queen bee":
 					npc.SetDefaults(222);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned Queen Bee {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 蜂后.", args.Player.Name, amount);
 					return;
 				case "skeletron":
 					npc.SetDefaults(35);
 					TSPlayer.Server.SetTime(false, 0.0);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned Skeletron {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 骷髅王.", args.Player.Name, amount);
 					return;
 				case "twins":
 					TSPlayer.Server.SetTime(false, 0.0);
@@ -2125,31 +2125,31 @@ namespace TShockAPI
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
 					npc.SetDefaults(126);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned the Twins {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 双子眼球.", args.Player.Name, amount);
 					return;
 				case "wof":
 				case "wall of flesh":
 					if (Main.wof >= 0)
 					{
-						args.Player.SendErrorMessage("There is already a Wall of Flesh!");
+						args.Player.SendErrorMessage("已经存在肉山!");
 						return;
 					}
 					if (args.Player.Y / 16f < Main.maxTilesY - 205)
 					{
-						args.Player.SendErrorMessage("You must spawn the Wall of Flesh in hell!");
+						args.Player.SendErrorMessage("你必须在地狱内生成肉山!");
 						return;
 					}
 					NPC.SpawnWOF(new Vector2(args.Player.X, args.Player.Y));
-					TSPlayer.All.SendSuccessMessage("{0} has spawned the Wall of Flesh.", args.Player.Name);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 肉山.", args.Player.Name);
 					return;
 				case "moon":
 				case "moon lord":
 					npc.SetDefaults(398);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} has spawned the Moon Lord {1} time(s).", args.Player.Name, amount);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 月主.", args.Player.Name, amount);
 					return;
 				default:
-					args.Player.SendErrorMessage("Invalid boss type!");
+					args.Player.SendErrorMessage("BOSS种类无效!");
 					return;
 			}
 		}
@@ -2158,19 +2158,19 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1 || args.Parameters.Count > 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}spawnmob <mob type> [amount]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}spawnmob <怪物种类> [数量]", Specifier);
 				return;
 			}
 			if (args.Parameters[0].Length == 0)
 			{
-				args.Player.SendErrorMessage("Invalid mob type!");
+				args.Player.SendErrorMessage("怪物种类无效!!");
 				return;
 			}
 
 			int amount = 1;
 			if (args.Parameters.Count == 2 && !int.TryParse(args.Parameters[1], out amount))
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}spawnmob <mob type> [amount]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}spawnmob <怪物种类> [数量]", Specifier);
 				return;
 			}
 
@@ -2179,7 +2179,7 @@ namespace TShockAPI
 			var npcs = TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
 			if (npcs.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid mob type!");
+				args.Player.SendErrorMessage("怪物种类无效!!");
 			}
 			else if (npcs.Count > 1)
 			{
@@ -2193,33 +2193,33 @@ namespace TShockAPI
 					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY, 50, 20);
 					if (args.Silent)
 					{
-						args.Player.SendSuccessMessage("Spawned {0} {1} time(s).", npc.name, amount);
+						args.Player.SendSuccessMessage("成功生成 {1} 只 {0}.", npc.name, amount);
 					}
 					else
 					{
-						TSPlayer.All.SendSuccessMessage("{0} has spawned {1} {2} time(s).", args.Player.Name, npc.name, amount);
+						TSPlayer.All.SendSuccessMessage("{0} 生成了 {2} 只 {1}.", args.Player.Name, npc.name, amount);
 					}
 				}
 				else if (npc.type == 113)
 				{
 					if (Main.wof >= 0 || (args.Player.Y / 16f < (Main.maxTilesY - 205)))
 					{
-						args.Player.SendErrorMessage("Can't spawn Wall of Flesh!");
+						args.Player.SendErrorMessage("无法召唤肉山!");
 						return;
 					}
 					NPC.SpawnWOF(new Vector2(args.Player.X, args.Player.Y));
 					if (args.Silent)
 					{
-						args.Player.SendSuccessMessage("Spawned Wall of Flesh!");
+						args.Player.SendSuccessMessage("成功召唤肉山!");
 					}
 					else
 					{
-						TSPlayer.All.SendSuccessMessage("{0} has spawned a Wall of Flesh!", args.Player.Name);
+						TSPlayer.All.SendSuccessMessage("{0} 召唤了肉山!", args.Player.Name);
 					}
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Invalid mob type!");
+					args.Player.SendErrorMessage("怪物种类无效!!");
 				}
 			}
 		}
@@ -2231,13 +2231,13 @@ namespace TShockAPI
 		private static void Home(CommandArgs args)
 		{
 			args.Player.Spawn();
-			args.Player.SendSuccessMessage("Teleported to your spawnpoint.");
+			args.Player.SendSuccessMessage("传送至你的出生点.");
 		}
 
 		private static void Spawn(CommandArgs args)
 		{
 			if (args.Player.Teleport(Main.spawnTileX*16, (Main.spawnTileY*16) -48))
-				args.Player.SendSuccessMessage("Teleported to the map's spawnpoint.");
+				args.Player.SendSuccessMessage("传送至地图的出生点.");
 		}
 
 		private static void TP(CommandArgs args)
@@ -2245,9 +2245,9 @@ namespace TShockAPI
 			if (args.Parameters.Count != 1 && args.Parameters.Count != 2)
 			{
 				if (args.Player.HasPermission(Permissions.tpothers))
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tp <player> [player 2]", Specifier);
+					args.Player.SendErrorMessage("语法无效! 正确语法: {0}tp <玩家名> [玩家2]", Specifier);
 				else
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tp <player>", Specifier);
+					args.Player.SendErrorMessage("语法无效! 正确语法: {0}tp <玩家名>", Specifier);
 				return;
 			}
 
@@ -2255,7 +2255,7 @@ namespace TShockAPI
 			{
 				var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 				if (players.Count == 0)
-					args.Player.SendErrorMessage("Invalid player!");
+					args.Player.SendErrorMessage("指定玩家无效!");
 				else if (players.Count > 1)
 					TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
 				else
@@ -2263,14 +2263,14 @@ namespace TShockAPI
 					var target = players[0];
 					if (!target.TPAllow && !args.Player.HasPermission(Permissions.tpoverride))
 					{
-						args.Player.SendErrorMessage("{0} has disabled players from teleporting.", target.Name);
+						args.Player.SendErrorMessage("{0} 已经禁止别人传送至其位置.", target.Name);
 						return;
 					}
 					if (args.Player.Teleport(target.TPlayer.position.X, target.TPlayer.position.Y))
 					{
-						args.Player.SendSuccessMessage("Teleported to {0}.", target.Name);
+						args.Player.SendSuccessMessage("传送至 {0}.", target.Name);
 						if (!args.Player.HasPermission(Permissions.tpsilent))
-							target.SendInfoMessage("{0} teleported to you.", args.Player.Name);
+							target.SendInfoMessage("{0} 传送至你所在的位置.", args.Player.Name);
 					}
 				}
 			}
@@ -2278,7 +2278,7 @@ namespace TShockAPI
 			{
 				if (!args.Player.HasPermission(Permissions.tpothers))
 				{
-					args.Player.SendErrorMessage("You do not have access to this command.");
+					args.Player.SendErrorMessage("缺少执行该指令的权限.");
 					return;
 				}
 
@@ -2286,7 +2286,7 @@ namespace TShockAPI
 				var players2 = TShock.Utils.FindPlayer(args.Parameters[1]);
 
 				if (players2.Count == 0)
-					args.Player.SendErrorMessage("Invalid player!");
+					args.Player.SendErrorMessage("指定玩家无效!");
 				else if (players2.Count > 1)
 					TShock.Utils.SendMultipleMatchError(args.Player, players2.Select(p => p.Name));
 				else if (players1.Count == 0)
@@ -2295,7 +2295,7 @@ namespace TShockAPI
 					{
 						if (!args.Player.HasPermission(Permissions.tpallothers))
 						{
-							args.Player.SendErrorMessage("You do not have access to this command.");
+							args.Player.SendErrorMessage("缺少执行该指令的权限.");
 							return;
 						}
 
@@ -2309,23 +2309,23 @@ namespace TShockAPI
 								if (args.Player != source)
 								{
 									if (args.Player.HasPermission(Permissions.tpsilent))
-										source.SendSuccessMessage("You were teleported to {0}.", target.Name);
+										source.SendSuccessMessage("你被传送至 {0}.", target.Name);
 									else
-										source.SendSuccessMessage("{0} teleported you to {1}.", args.Player.Name, target.Name);
+										source.SendSuccessMessage("{0} 传送你到 {1} 的位置.", args.Player.Name, target.Name);
 								}
 								if (args.Player != target)
 								{
 									if (args.Player.HasPermission(Permissions.tpsilent))
-										target.SendInfoMessage("{0} was teleported to you.", source.Name);
+										target.SendInfoMessage("{0} 被传送到你的位置.", source.Name);
 									if (!args.Player.HasPermission(Permissions.tpsilent))
-										target.SendInfoMessage("{0} teleported {1} to you.", args.Player.Name, source.Name);
+										target.SendInfoMessage("{0} 传送了 {1} 至你所在地.", args.Player.Name, source.Name);
 								}
 							}
 						}
-						args.Player.SendSuccessMessage("Teleported everyone to {0}.", target.Name);
+						args.Player.SendSuccessMessage("传送所有玩家至 {0}.", target.Name);
 					}
 					else
-						args.Player.SendErrorMessage("Invalid player!");
+						args.Player.SendErrorMessage("指定玩家无效!");
 				}
 				else if (players1.Count > 1)
 					TShock.Utils.SendMultipleMatchError(args.Player, players1.Select(p => p.Name));
@@ -2334,31 +2334,31 @@ namespace TShockAPI
 					var source = players1[0];
 					if (!source.TPAllow && !args.Player.HasPermission(Permissions.tpoverride))
 					{
-						args.Player.SendErrorMessage("{0} has disabled players from teleporting.", source.Name);
+						args.Player.SendErrorMessage("{0} 禁止了玩家传送到其所在位置.", source.Name);
 						return;
 					}
 					var target = players2[0];
 					if (!target.TPAllow && !args.Player.HasPermission(Permissions.tpoverride))
 					{
-						args.Player.SendErrorMessage("{0} has disabled players from teleporting.", target.Name);
+						args.Player.SendErrorMessage("{0} 禁止了玩家传送到其所在位置.", target.Name);
 						return;
 					}
-					args.Player.SendSuccessMessage("Teleported {0} to {1}.", source.Name, target.Name);
+					args.Player.SendSuccessMessage("传送了玩家 {0} 至 {1} 的位置.", source.Name, target.Name);
 					if (source.Teleport(target.TPlayer.position.X, target.TPlayer.position.Y))
 					{
 						if (args.Player != source)
 						{
 							if (args.Player.HasPermission(Permissions.tpsilent))
-								source.SendSuccessMessage("You were teleported to {0}.", target.Name);
+								source.SendSuccessMessage("你被传送至 {0} 所在位置.", target.Name);
 							else
-								source.SendSuccessMessage("{0} teleported you to {1}.", args.Player.Name, target.Name);
+								source.SendSuccessMessage("{0} 传送你至 {1} 所在的位置.", args.Player.Name, target.Name);
 						}
 						if (args.Player != target)
 						{
 							if (args.Player.HasPermission(Permissions.tpsilent))
-								target.SendInfoMessage("{0} was teleported to you.", source.Name);
+								target.SendInfoMessage("{0} 被传送到你所在的位置.", source.Name);
 							if (!args.Player.HasPermission(Permissions.tpsilent))
-								target.SendInfoMessage("{0} teleported {1} to you.", args.Player.Name, source.Name);
+								target.SendInfoMessage("{0} 传送了 {1} 至你所在的位置.", args.Player.Name, source.Name);
 						}
 					}
 				}
@@ -2370,9 +2370,9 @@ namespace TShockAPI
 			if (args.Parameters.Count < 1)
 			{
 				if (args.Player.HasPermission(Permissions.tpallothers))
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tphere <player|*>", Specifier);
+					args.Player.SendErrorMessage("语法无效! 正确语法: {0}tphere <player|*>", Specifier);
 				else
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tphere <player>", Specifier);
+					args.Player.SendErrorMessage("语法无效! 正确语法: {0}tphere <玩家名>", Specifier);
 				return;
 			}
 
@@ -2384,7 +2384,7 @@ namespace TShockAPI
 				{
 					if (!args.Player.HasPermission(Permissions.tpallothers))
 					{
-						args.Player.SendErrorMessage("You do not have permission to use this command.");
+						args.Player.SendErrorMessage("缺少权限.");
 						return;
 					}
 					for (int i = 0; i < Main.maxPlayers; i++)
@@ -2392,13 +2392,13 @@ namespace TShockAPI
 						if (Main.player[i].active && (Main.player[i] != args.TPlayer))
 						{
 							if (TShock.Players[i].Teleport(args.TPlayer.position.X, args.TPlayer.position.Y))
-								TShock.Players[i].SendSuccessMessage(String.Format("You were teleported to {0}.", args.Player.Name));
+								TShock.Players[i].SendSuccessMessage("你被传送至 {0}.", args.Player.Name);
 						}
 					}
-					args.Player.SendSuccessMessage("Teleported everyone to yourself.");
+					args.Player.SendSuccessMessage("传送所有人至你所在地.");
 				}
 				else
-					args.Player.SendErrorMessage("Invalid player!");
+					args.Player.SendErrorMessage("指定玩家无效!");
 			}
 			else if (players.Count > 1)
 				TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
@@ -2407,8 +2407,8 @@ namespace TShockAPI
 				var plr = players[0];
 				if (plr.Teleport(args.TPlayer.position.X, args.TPlayer.position.Y))
 				{
-					plr.SendInfoMessage("You were teleported to {0}.", args.Player.Name);
-					args.Player.SendSuccessMessage("Teleported {0} to yourself.", plr.Name);
+					plr.SendInfoMessage("你被传送至 {0}.", args.Player.Name);
+					args.Player.SendSuccessMessage("传送了 {0} 至你所在位置.", plr.Name);
 				}
 			}
 		}
@@ -2417,7 +2417,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tpnpc <NPC>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}tpnpc <NPC>", Specifier);
 				return;
 			}
 
@@ -2441,13 +2441,13 @@ namespace TShockAPI
 			}
 			if (matches.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid NPC!");
+				args.Player.SendErrorMessage("NPC无效!");
 				return;
 			}
 
 			var target = matches[0];
 			args.Player.Teleport(target.position.X, target.position.Y);
-			args.Player.SendSuccessMessage("Teleported to the '{0}'.", target.name);
+			args.Player.SendSuccessMessage("传送至NPC {0} 的位置.", target.name);
 		}
 
 		private static void GetPos(CommandArgs args)
@@ -2461,7 +2461,7 @@ namespace TShockAPI
 			var players = TShock.Utils.FindPlayer(player);
 			if (players.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			}
 			else if (players.Count > 1)
 			{
@@ -2469,7 +2469,7 @@ namespace TShockAPI
 			}
 			else
 			{
-				args.Player.SendSuccessMessage("Location of {0} is ({1}, {2}).", players[0].Name, players[0].TileX, players[0].TileY);
+				args.Player.SendSuccessMessage("玩家 {0} 的坐标为 ({1}, {2}).", players[0].Name, players[0].TileX, players[0].TileY);
 			}
 		}
 
@@ -2477,14 +2477,14 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tppos <tile x> <tile y>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}tppos <物块坐标x> <物块坐标y>", Specifier);
 				return;
 			}
 
 			int x, y;
 			if (!int.TryParse(args.Parameters[0], out x) || !int.TryParse(args.Parameters[1], out y))
 			{
-				args.Player.SendErrorMessage("Invalid tile positions!");
+				args.Player.SendErrorMessage("坐标无效!");
 				return;
 			}
 			x = Math.Max(0, x);
@@ -2493,15 +2493,15 @@ namespace TShockAPI
 			y = Math.Min(y, Main.maxTilesY - 1);
 
 			args.Player.Teleport(16 * x, 16 * y);
-			args.Player.SendSuccessMessage("Teleported to {0}, {1}!", x, y);
+			args.Player.SendSuccessMessage("传送至 {0}, {1}!", x, y);
 		}
 
 		private static void TPAllow(CommandArgs args)
 		{
 			if (!args.Player.TPAllow)
-				args.Player.SendSuccessMessage("You have removed your teleportation protection.");
+				args.Player.SendSuccessMessage("关闭传送保护.");
 			if (args.Player.TPAllow)
-                args.Player.SendSuccessMessage("You have enabled teleportation protection.");
+                args.Player.SendSuccessMessage("开启传送保护.");
 			args.Player.TPAllow = !args.Player.TPAllow;
 		}
 
@@ -2512,16 +2512,16 @@ namespace TShockAPI
             {
                 if (hasManageWarpPermission)
                 {
-                    args.Player.SendInfoMessage("Invalid syntax! Proper syntax: {0}warp [command] [arguments]", Specifier);
-                    args.Player.SendInfoMessage("Commands: add, del, hide, list, send, [warpname]");
-                    args.Player.SendInfoMessage("Arguments: add [warp name], del [warp name], list [page]");
-                    args.Player.SendInfoMessage("Arguments: send [player] [warp name], hide [warp name] [Enable(true/false)]");
-                    args.Player.SendInfoMessage("Examples: {0}warp add foobar, {0}warp hide foobar true, {0}warp foobar", Specifier);
+                    args.Player.SendInfoMessage("语法无效! 正确语法: {0}warp [子指令] [参数]", Specifier);
+                    args.Player.SendInfoMessage("子指令列表: add, del, hide, list, send, [跳跃点名]");
+                    args.Player.SendInfoMessage("子指令用法: add [跳跃点名], del [跳跃点名], list [页码]");
+                    args.Player.SendInfoMessage("         : send [玩家名] [跳跃点名], hide [跳跃点名] [true/false]");
+                    args.Player.SendInfoMessage("子指令示范: {0}warp add foobar, {0}warp hide foobar true, {0}warp foobar", Specifier);
                     return;
                 }
                 else
                 {
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}warp [name] or {0}warp list <page>", Specifier);
+                    args.Player.SendErrorMessage("语法无效! 正确语法: {0}warp [跳跃点名] 或 {0}warp list [页码]", Specifier);
                     return;
                 }
             }
@@ -2538,9 +2538,9 @@ namespace TShockAPI
 				PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(warpNames),
 					new PaginationTools.Settings
 					{
-						HeaderFormat = "Warps ({0}/{1}):",
-						FooterFormat = "Type {0}warp list {{0}} for more.".SFormat(Specifier),
-						NothingToDisplayString = "There are currently no warps defined."
+						HeaderFormat = "跳跃点 ({0}/{1}):",
+						FooterFormat = "键入 {0}warp list {{0}} 以获取下一页跳跃点.".SFormat(Specifier),
+						NothingToDisplayString = "当前没有可用跳跃点."
 					});
                 #endregion
             }
@@ -2552,19 +2552,19 @@ namespace TShockAPI
                     string warpName = args.Parameters[1];
                     if (warpName == "list" || warpName == "hide" || warpName == "del" || warpName == "add")
                     {
-                        args.Player.SendErrorMessage("Name reserved, use a different name.");
+                        args.Player.SendErrorMessage("不可以使用该特殊名称定义.");
                     }
                     else if (TShock.Warps.Add(args.Player.TileX, args.Player.TileY, warpName))
                     {
-                        args.Player.SendSuccessMessage("Warp added: " + warpName);
+                        args.Player.SendSuccessMessage("跳跃点已添加: " + warpName);
                     }
                     else
                     {
-                        args.Player.SendErrorMessage("Warp " + warpName + " already exists.");
+                        args.Player.SendErrorMessage("跳跃点 " + warpName + " 已经存在.");
                     }
                 }
                 else
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}warp add [name]", Specifier);
+                    args.Player.SendErrorMessage("语法无效! 正确语法: {0}warp add [跳跃点]", Specifier);
                 #endregion
             }
             else if (args.Parameters[0].ToLower() == "del" && hasManageWarpPermission)
@@ -2575,13 +2575,13 @@ namespace TShockAPI
                     string warpName = args.Parameters[1];
 					if (TShock.Warps.Remove(warpName))
 					{
-						args.Player.SendSuccessMessage("Warp deleted: " + warpName);
+						args.Player.SendSuccessMessage("删除跳跃点: " + warpName);
 					}
 					else
-						args.Player.SendErrorMessage("Could not find the specified warp.");
+						args.Player.SendErrorMessage("未能找到指定的跳跃点.");
                 }
                 else
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}warp del [name]", Specifier);
+                    args.Player.SendErrorMessage("语法无效! 正确语法: {0}warp del [跳跃点]", Specifier);
                 #endregion
             }
             else if (args.Parameters[0].ToLower() == "hide" && hasManageWarpPermission)
@@ -2596,18 +2596,18 @@ namespace TShockAPI
                         if (TShock.Warps.Hide(args.Parameters[1], state))
                         {
                             if (state)
-                                args.Player.SendSuccessMessage("Warp " + warpName + " is now private.");
+                                args.Player.SendSuccessMessage("开始隐藏跳跃点 " + warpName);
                             else
-                                args.Player.SendSuccessMessage("Warp " + warpName + " is now public.");
+                                args.Player.SendSuccessMessage("停止隐藏跳跃点 " + warpName);
                         }
                         else
-                            args.Player.SendErrorMessage("Could not find specified warp.");
+                            args.Player.SendErrorMessage("未能找到指定的跳跃点.");
                     }
                     else
-                        args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}warp hide [name] <true/false>", Specifier);
+                        args.Player.SendErrorMessage("语法无效! 正确语法: {0}warp hide [跳跃点] <true/false>", Specifier);
                 }
                 else
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}warp hide [name] <true/false>", Specifier);
+                    args.Player.SendErrorMessage("语法无效! 正确语法: {0}warp hide [跳跃点] <true/false>", Specifier);
                 #endregion
             }
             else if (args.Parameters[0].ToLower() == "send" && args.Player.HasPermission(Permissions.tpothers))
@@ -2615,14 +2615,14 @@ namespace TShockAPI
                 #region Warp send
                 if (args.Parameters.Count < 3)
                 {
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}warp send [player] [warpname]", Specifier);
+                    args.Player.SendErrorMessage("语法无效! 正确语法: {0}warp send [玩家名] [传送点]", Specifier);
                     return;
                 }
 
                 var foundplr = TShock.Utils.FindPlayer(args.Parameters[1]);
                 if (foundplr.Count == 0)
                 {
-                    args.Player.SendErrorMessage("Invalid player!");
+                    args.Player.SendErrorMessage("指定玩家无效!");
                     return;
                 }
                 else if (foundplr.Count > 1)
@@ -2638,13 +2638,13 @@ namespace TShockAPI
 				{
 					if (plr.Teleport(warp.Position.X * 16, warp.Position.Y * 16))
 					{
-						plr.SendSuccessMessage(String.Format("{0} warped you to {1}.", args.Player.Name, warpName));
-						args.Player.SendSuccessMessage(String.Format("You warped {0} to {1}.", plr.Name, warpName));
+						plr.SendSuccessMessage("{0} 传送你至跳跃点 {1}.", args.Player.Name, warpName);
+						args.Player.SendSuccessMessage("成功将玩家 {0} 传送至 {1}.", plr.Name, warpName);
 					}
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Specified warp not found.");
+					args.Player.SendErrorMessage("未能找到指定的跳跃点.");
 				}
                 #endregion
             }
@@ -2655,11 +2655,11 @@ namespace TShockAPI
                 if (warp != null)
                 {
 					if (args.Player.Teleport(warp.Position.X * 16, warp.Position.Y * 16))
-                        args.Player.SendSuccessMessage("Warped to " + warpName + ".");
+                        args.Player.SendSuccessMessage("到达跳跃点 " + warpName + ".");
                 }
                 else
                 {
-                    args.Player.SendErrorMessage("The specified warp was not found.");
+                    args.Player.SendErrorMessage("指定跳跃点未找到.");
                 }
             }
 		}
@@ -2679,7 +2679,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group add <group name> [permissions]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group add <组名> [权限]", Specifier);
 							return;
 						}
 
@@ -2690,11 +2690,11 @@ namespace TShockAPI
 						try
 						{
 							TShock.Groups.AddGroup(groupName, null, permissions, TShockAPI.Group.defaultChatColor);
-							args.Player.SendSuccessMessage("The group was added successfully!");
+							args.Player.SendSuccessMessage("分组添加成功!");
 						}
 						catch (GroupExistsException)
 						{
-							args.Player.SendErrorMessage("That group already exists!");
+							args.Player.SendErrorMessage("该分组已存在!");
 						}
 						catch (GroupManagerException ex)
 						{
@@ -2708,7 +2708,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group addperm <group name> <permissions...>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group addperm <组名> <权限...>", Specifier);
 							return;
 						}
 
@@ -2720,7 +2720,7 @@ namespace TShockAPI
 							{
 								TShock.Groups.AddPermissions(g.Name, args.Parameters);
 							}
-							args.Player.SendSuccessMessage("Modified all groups.");
+							args.Player.SendSuccessMessage("修改全部组权限完毕.");
 							return;
 						}
 						try
@@ -2748,23 +2748,23 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"add <name> <permissions...> - Adds a new group.",
-							"addperm <group> <permissions...> - Adds permissions to a group.",
-							"color <group> <rrr,ggg,bbb> - Changes a group's chat color.",
-							"del <group> - Deletes a group.",
-							"delperm <group> <permissions...> - Removes permissions from a group.",
-							"list [page] - Lists groups.",
-							"listperm <group> [page] - Lists a group's permissions.",
-							"parent <group> <parent group> - Changes a group's parent group.",
-							"prefix <group> <prefix> - Changes a group's prefix.",
-							"suffix <group> <suffix> - Changes a group's suffix."
+							"add <名称> <权限...> - 添加新用户组.",
+							"addperm <组名> <权限...> - 给指定组添加权限.",
+							"color <组名> <rrr,ggg,bbb> - 改变分组的对话颜色.",
+							"del <组名> - 删除分组.",
+							"delperm <组名> <权限...> - 移除指定组的权限.",
+							"list [页码] - 显示当前组列表.",
+							"listperm <组名> [页码] - 显示指定组的所有权限.",
+							"parent <组名> <父组> - 改变指定组的父组.",
+							"prefix <组名> <前缀> - 改变指定组的前缀.",
+                            "suffix <组名> <后缀> - 改变指定组的后缀."
                         };
 
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Group Sub-Commands ({0}/{1}):",
-								FooterFormat = "Type {0}group help {{0}} for more sub-commands.".SFormat(Specifier)
+								HeaderFormat = "分组管理子指令 ({0}/{1}):",
+								FooterFormat = "键入 {0}group help {{0}} 以获取下一页指令.".SFormat(Specifier)
 							}
 						);
 					}
@@ -2775,7 +2775,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group parent <group name> [new parent group name]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group parent <组名> [新父组名]", Specifier);
 							return;
 						}
 
@@ -2783,7 +2783,7 @@ namespace TShockAPI
 						Group group = TShock.Groups.GetGroupByName(groupName);
 						if (group == null)
 						{
-							args.Player.SendErrorMessage("No such group \"{0}\".", groupName);
+							args.Player.SendErrorMessage("组 {0} 不存在.", groupName);
 							return;
 						}
 
@@ -2792,7 +2792,7 @@ namespace TShockAPI
 							string newParentGroupName = string.Join(" ", args.Parameters.Skip(2));
 							if (!string.IsNullOrWhiteSpace(newParentGroupName) && !TShock.Groups.GroupExists(newParentGroupName))
 							{
-								args.Player.SendErrorMessage("No such group \"{0}\".", newParentGroupName);
+								args.Player.SendErrorMessage("组 {0} 不存在.", newParentGroupName);
 								return;
 							}
 
@@ -2801,9 +2801,9 @@ namespace TShockAPI
 								TShock.Groups.UpdateGroup(groupName, newParentGroupName, group.Permissions, group.ChatColor, group.Suffix, group.Prefix);
 
 								if (!string.IsNullOrWhiteSpace(newParentGroupName))
-									args.Player.SendSuccessMessage("Parent of group \"{0}\" set to \"{1}\".", groupName, newParentGroupName);
+									args.Player.SendSuccessMessage("设定组 {0} 的父组为组 {1} .", groupName, newParentGroupName);
 								else
-									args.Player.SendSuccessMessage("Removed parent of group \"{0}\".", groupName);
+									args.Player.SendSuccessMessage("去除组 {0} 的父组.", groupName);
 							}
 							catch (GroupManagerException ex)
 							{
@@ -2813,9 +2813,9 @@ namespace TShockAPI
 						else
 						{
 							if (group.Parent != null)
-								args.Player.SendSuccessMessage("Parent of \"{0}\" is \"{1}\".", group.Name, group.Parent.Name);
+								args.Player.SendSuccessMessage("组 {0} 的父组是组 {1} .", group.Name, group.Parent.Name);
 							else
-								args.Player.SendSuccessMessage("Group \"{0}\" has no parent.", group.Name);
+								args.Player.SendSuccessMessage("组 {0} 无父组.", group.Name);
 						}
 					}
 					#endregion
@@ -2825,7 +2825,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group suffix <group name> [new suffix]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group suffix <组名> [new suffix]", Specifier);
 							return;
 						}
 
@@ -2833,7 +2833,7 @@ namespace TShockAPI
 						Group group = TShock.Groups.GetGroupByName(groupName);
 						if (group == null)
 						{
-							args.Player.SendErrorMessage("No such group \"{0}\".", groupName);
+							args.Player.SendErrorMessage("组 {0} 不存在.", groupName);
 							return;
 						}
 
@@ -2846,9 +2846,9 @@ namespace TShockAPI
 								TShock.Groups.UpdateGroup(groupName, group.ParentName, group.Permissions, group.ChatColor, newSuffix, group.Prefix);
 
 								if (!string.IsNullOrWhiteSpace(newSuffix))
-									args.Player.SendSuccessMessage("Suffix of group \"{0}\" set to \"{1}\".", groupName, newSuffix);
+									args.Player.SendSuccessMessage("设定组 {0} 的后缀为 {1} .", groupName, newSuffix);
 								else
-									args.Player.SendSuccessMessage("Removed suffix of group \"{0}\".", groupName);
+									args.Player.SendSuccessMessage("移除组 {0} 的后缀.", groupName);
 							}
 							catch (GroupManagerException ex)
 							{
@@ -2858,9 +2858,9 @@ namespace TShockAPI
 						else
 						{
 							if (!string.IsNullOrWhiteSpace(group.Suffix))
-								args.Player.SendSuccessMessage("Suffix of \"{0}\" is \"{1}\".", group.Name, group.Suffix);
+								args.Player.SendSuccessMessage("组 {0} 的后缀是 {1} .", group.Name, group.Suffix);
 							else
-								args.Player.SendSuccessMessage("Group \"{0}\" has no suffix.", group.Name);
+								args.Player.SendSuccessMessage("组 {0} 无后缀.", group.Name);
 						}
 					}
 					#endregion
@@ -2870,7 +2870,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group prefix <group name> [new prefix]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group prefix <组名> [新前缀]", Specifier);
 							return;
 						}
 
@@ -2878,7 +2878,7 @@ namespace TShockAPI
 						Group group = TShock.Groups.GetGroupByName(groupName);
 						if (group == null)
 						{
-							args.Player.SendErrorMessage("No such group \"{0}\".", groupName);
+							args.Player.SendErrorMessage("组 {0} 不存在.", groupName);
 							return;
 						}
 
@@ -2891,9 +2891,9 @@ namespace TShockAPI
 								TShock.Groups.UpdateGroup(groupName, group.ParentName, group.Permissions, group.ChatColor, group.Suffix, newPrefix);
 
 								if (!string.IsNullOrWhiteSpace(newPrefix))
-									args.Player.SendSuccessMessage("Prefix of group \"{0}\" set to \"{1}\".", groupName, newPrefix);
+									args.Player.SendSuccessMessage("设定组 {0} 的前缀为 {1} .", groupName, newPrefix);
 								else
-									args.Player.SendSuccessMessage("Removed prefix of group \"{0}\".", groupName);
+									args.Player.SendSuccessMessage("去除组 {0} 的前缀.", groupName);
 							}
 							catch (GroupManagerException ex)
 							{
@@ -2903,9 +2903,9 @@ namespace TShockAPI
 						else
 						{
 							if (!string.IsNullOrWhiteSpace(group.Prefix))
-								args.Player.SendSuccessMessage("Prefix of \"{0}\" is \"{1}\".", group.Name, group.Prefix);
+								args.Player.SendSuccessMessage("组 {0} 的前缀是 {1} .", group.Name, group.Prefix);
 							else
-								args.Player.SendSuccessMessage("Group \"{0}\" has no prefix.", group.Name);
+								args.Player.SendSuccessMessage("组 {0} 无前缀.", group.Name);
 						}
 					}
 					#endregion
@@ -2915,7 +2915,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 2 || args.Parameters.Count > 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group color <group name> [new color(000,000,000)]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group color <组名> [新颜色(000,000,000)]", Specifier);
 							return;
 						}
 
@@ -2923,7 +2923,7 @@ namespace TShockAPI
 						Group group = TShock.Groups.GetGroupByName(groupName);
 						if (group == null)
 						{
-							args.Player.SendErrorMessage("No such group \"{0}\".", groupName);
+							args.Player.SendErrorMessage("组 {0} 不存在.", groupName);
 							return;
 						}
 
@@ -2941,7 +2941,7 @@ namespace TShockAPI
 								{
 									TShock.Groups.UpdateGroup(groupName, group.ParentName, group.Permissions, newColor, group.Suffix, group.Prefix);
 
-									args.Player.SendSuccessMessage("Color of group \"{0}\" set to \"{1}\".", groupName, newColor);
+									args.Player.SendSuccessMessage("设定组 {0} 的对话颜色为 {1} .", groupName, newColor);
 								}
 								catch (GroupManagerException ex)
 								{
@@ -2950,12 +2950,12 @@ namespace TShockAPI
 							}
 							else
 							{
-								args.Player.SendErrorMessage("Invalid syntax for color, expected \"rrr,ggg,bbb\"");
+								args.Player.SendErrorMessage("颜色格式无效. 正确格式: \"rrr,ggg,bbb\"");
 							}
 						}
 						else
 						{
-							args.Player.SendSuccessMessage("Color of \"{0}\" is \"{1}\".", group.Name, group.ChatColor);
+							args.Player.SendSuccessMessage("组 {0} 的对话颜色为 {1} .", group.Name, group.ChatColor);
 						}
 					}
 					#endregion
@@ -2965,7 +2965,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group del <group name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group del <组名>", Specifier);
 							return;
 						}
 
@@ -2989,7 +2989,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count < 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group delperm <group name> <permissions...>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group delperm <组名> <权限...>", Specifier);
 							return;
 						}
 
@@ -3001,7 +3001,7 @@ namespace TShockAPI
 							{
 								TShock.Groups.DeletePermissions(g.Name, args.Parameters);
 							}
-							args.Player.SendSuccessMessage("Modified all groups.");
+							args.Player.SendSuccessMessage("修改全部组完毕.");
 							return;
 						}
 						try
@@ -3031,8 +3031,8 @@ namespace TShockAPI
 						PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(groupNames),
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Groups ({0}/{1}):",
-								FooterFormat = "Type {0}group list {{0}} for more.".SFormat(Specifier)
+								HeaderFormat = "分组列表 ({0}/{1}):",
+								FooterFormat = "键入 {0}group list {{0}} 以获取下一页信息.".SFormat(Specifier)
 							});
 					}
 					#endregion
@@ -3042,7 +3042,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count == 1)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group listperm <group name> [page]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}group listperm <组名> [页码]", Specifier);
 							return;
 						}
 						int pageNumber;
@@ -3051,7 +3051,7 @@ namespace TShockAPI
 
 						if (!TShock.Groups.GroupExists(args.Parameters[1]))
 						{
-							args.Player.SendErrorMessage("Invalid group.");
+							args.Player.SendErrorMessage("组名无效!");
 							return;
 						}
 						Group grp = TShock.Utils.GetGroup(args.Parameters[1]);
@@ -3060,9 +3060,9 @@ namespace TShockAPI
 						PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(permissions),
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Permissions for " + grp.Name + " ({0}/{1}):",
-								FooterFormat = "Type {0}group listperm {1} {{0}} for more.".SFormat(Specifier, grp.Name),
-								NothingToDisplayString = "There are currently no permissions for " + grp.Name + "."
+								HeaderFormat = "组 " + grp.Name + " 的所有权限 ({0}/{1}):",
+								FooterFormat = "键入 {0}group listperm {1} {{0}} 以获取更多信息.".SFormat(Specifier, grp.Name),
+								NothingToDisplayString = "组 " + grp.Name + " 当前没有权限."
 							});
 					}
 					#endregion
@@ -3083,14 +3083,14 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}itemban add <item name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}itemban add <物品>", Specifier);
 							return;
 						}
 
 						List<Item> items = TShock.Utils.GetItemByIdOrName(args.Parameters[1]);
 						if (items.Count == 0)
 						{
-							args.Player.SendErrorMessage("Invalid item.");
+							args.Player.SendErrorMessage("物品无效!");
 						}
 						else if (items.Count > 1)
 						{
@@ -3099,7 +3099,7 @@ namespace TShockAPI
 						else
 						{
 							TShock.Itembans.AddNewBan(items[0].name);
-							args.Player.SendSuccessMessage("Banned " + items[0].name + ".");
+							args.Player.SendSuccessMessage("成功禁止物品 " + items[0].name + " 的使用.");
 						}
 					}
 					#endregion
@@ -3109,14 +3109,14 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}itemban allow <item name> <group name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}itemban allow <物品> <组名>", Specifier);
 							return;
 						}
 
 						List<Item> items = TShock.Utils.GetItemByIdOrName(args.Parameters[1]);
 						if (items.Count == 0)
 						{
-							args.Player.SendErrorMessage("Invalid item.");
+							args.Player.SendErrorMessage("物品无效!");
 						}
 						else if (items.Count > 1)
 						{
@@ -3126,24 +3126,24 @@ namespace TShockAPI
 						{
 							if (!TShock.Groups.GroupExists(args.Parameters[2]))
 							{
-								args.Player.SendErrorMessage("Invalid group.");
+								args.Player.SendErrorMessage("组名无效!");
 								return;
 							}
 
 							ItemBan ban = TShock.Itembans.GetItemBanByName(items[0].name);
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("{0} is not banned.", items[0].name);
+								args.Player.SendErrorMessage("{0} 没有被禁止.", items[0].name);
 								return;
 							}
 							if (!ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
 								TShock.Itembans.AllowGroup(items[0].name, args.Parameters[2]);
-								args.Player.SendSuccessMessage("{0} has been allowed to use {1}.", args.Parameters[2], items[0].name);
+								args.Player.SendSuccessMessage("禁止 {0} 使用物品 {1} 完毕.", args.Parameters[2], items[0].name);
 							}
 							else
 							{
-								args.Player.SendWarningMessage("{0} is already allowed to use {1}.", args.Parameters[2], items[0].name);
+								args.Player.SendWarningMessage("{0} 已经拥有使用物品 {1} 的权限.", args.Parameters[2], items[0].name);
 							}
 						}
 					}
@@ -3154,14 +3154,14 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}itemban del <item name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}itemban del <物品>", Specifier);
 							return;
 						}
 
 						List<Item> items = TShock.Utils.GetItemByIdOrName(args.Parameters[1]);
 						if (items.Count == 0)
 						{
-							args.Player.SendErrorMessage("Invalid item.");
+							args.Player.SendErrorMessage("物品无效!");
 						}
 						else if (items.Count > 1)
 						{
@@ -3170,7 +3170,7 @@ namespace TShockAPI
 						else
 						{
 							TShock.Itembans.RemoveBan(items[0].name);
-							args.Player.SendSuccessMessage("Unbanned " + items[0].name + ".");
+							args.Player.SendSuccessMessage("解除禁用物品 " + items[0].name + " 完毕.");
 						}
 					}
 					#endregion
@@ -3180,14 +3180,14 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}itemban disallow <item name> <group name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}itemban disallow <物品> <组名>", Specifier);
 							return;
 						}
 
 						List<Item> items = TShock.Utils.GetItemByIdOrName(args.Parameters[1]);
 						if (items.Count == 0)
 						{
-							args.Player.SendErrorMessage("Invalid item.");
+							args.Player.SendErrorMessage("物品无效!");
 						}
 						else if (items.Count > 1)
 						{
@@ -3197,24 +3197,24 @@ namespace TShockAPI
 						{
 							if (!TShock.Groups.GroupExists(args.Parameters[2]))
 							{
-								args.Player.SendErrorMessage("Invalid group.");
+								args.Player.SendErrorMessage("组名无效!");
 								return;
 							}
 
 							ItemBan ban = TShock.Itembans.GetItemBanByName(items[0].name);
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("{0} is not banned.", items[0].name);
+								args.Player.SendErrorMessage("{0} 没有被禁止.", items[0].name);
 								return;
 							}
 							if (ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
 								TShock.Itembans.RemoveGroup(items[0].name, args.Parameters[2]);
-								args.Player.SendSuccessMessage("{0} has been disallowed to use {1}.", args.Parameters[2], items[0].name);
+								args.Player.SendSuccessMessage("禁止组 {0} 使用物品 {1} 完毕.", args.Parameters[2], items[0].name);
 							}
 							else
 							{
-								args.Player.SendWarningMessage("{0} is already disallowed to use {1}.", args.Parameters[2], items[0].name);
+								args.Player.SendWarningMessage("{0} 没有使用物品 {1} 的权限.", args.Parameters[2], items[0].name);
 							}
 						}
 					}
@@ -3229,18 +3229,18 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"add <item> - Adds an item ban.",
-							"allow <item> <group> - Allows a group to use an item.",
-							"del <item> - Deletes an item ban.",
-							"disallow <item> <group> - Disallows a group from using an item.",
-							"list [page] - Lists all item bans."
+							"add <物品名称/ID> - 禁止玩家使用特定物品",
+                            "allow <物品名称/ID> <组名> - 允许特定组使用禁用物品.",
+                            "del <物品名称/ID> - 删除禁用物品设定.",
+                            "disallow <物品名称/ID> <组名> - 禁止特定组使用禁用物品",
+							"list [页码] - 显示所有禁用物设定."
                         };
 
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Item Ban Sub-Commands ({0}/{1}):",
-								FooterFormat = "Type {0}itemban help {{0}} for more sub-commands.".SFormat(Specifier)
+								HeaderFormat = "禁用物管理子指令 ({0}/{1}):",
+								FooterFormat = "键入 {0}itemban help {{0}} 以获取下一页帮助.".SFormat(Specifier)
 							}
 						);
 					}
@@ -3257,9 +3257,9 @@ namespace TShockAPI
 						PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(itemNames),
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Item bans ({0}/{1}):",
-								FooterFormat = "Type {0}itemban list {{0}} for more.".SFormat(Specifier),
-								NothingToDisplayString = "There are currently no banned items."
+								HeaderFormat = "禁用物品列表 ({0}/{1}):",
+								FooterFormat = "键入 {0}itemban list {{0}} 以查看下一页.".SFormat(Specifier),
+								NothingToDisplayString = "当前没有被禁用的物品."
 							});
 					}
 					#endregion
@@ -3280,17 +3280,17 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}projban add <proj id>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}projban add <proj id>", Specifier);
 							return;
 						}
 						short id;
 						if (Int16.TryParse(args.Parameters[1], out id) && id > 0 && id < Main.maxProjectileTypes)
 						{
 							TShock.ProjectileBans.AddNewBan(id);
-							args.Player.SendSuccessMessage("Banned projectile {0}.", id);
+							args.Player.SendSuccessMessage("成功封禁抛射体 {0}.", id);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid projectile ID!");
+							args.Player.SendErrorMessage("抛射体ID无效!");
 					}
 					#endregion
 					return;
@@ -3299,7 +3299,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}projban allow <id> <group>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}projban allow <id> <组名>", Specifier);
 							return;
 						}
 
@@ -3308,26 +3308,26 @@ namespace TShockAPI
 						{
 							if (!TShock.Groups.GroupExists(args.Parameters[2]))
 							{
-								args.Player.SendErrorMessage("Invalid group.");
+								args.Player.SendErrorMessage("组名无效!");
 								return;
 							}
 
 							ProjectileBan ban = TShock.ProjectileBans.GetBanById(id);
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("Projectile {0} is not banned.", id);
+								args.Player.SendErrorMessage("抛射体 {0} 没有被禁止.", id);
 								return;
 							}
 							if (!ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
 								TShock.ProjectileBans.AllowGroup(id, args.Parameters[2]);
-								args.Player.SendSuccessMessage("{0} has been allowed to use projectile {1}.", args.Parameters[2], id);
+								args.Player.SendSuccessMessage("组 {0} 可以使用抛射体 {1} 了.", args.Parameters[2], id);
 							}
 							else
-								args.Player.SendWarningMessage("{0} is already allowed to use projectile {1}.", args.Parameters[2], id);
+								args.Player.SendWarningMessage("组 {0} 之前就可以使用抛射体 {1}.", args.Parameters[2], id);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid projectile ID!");
+							args.Player.SendErrorMessage("抛射体ID无效!");
 					}
 					#endregion
 					return;
@@ -3336,7 +3336,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}projban del <id>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}projban del <id>", Specifier);
 							return;
 						}
 
@@ -3344,11 +3344,11 @@ namespace TShockAPI
 						if (Int16.TryParse(args.Parameters[1], out id) && id > 0 && id < Main.maxProjectileTypes)
 						{
 							TShock.ProjectileBans.RemoveBan(id);
-							args.Player.SendSuccessMessage("Unbanned projectile {0}.", id);
+							args.Player.SendSuccessMessage("解除封禁抛射体 {0}.", id);
 							return;
 						}
 						else
-							args.Player.SendErrorMessage("Invalid projectile ID!");
+							args.Player.SendErrorMessage("抛射体ID无效!");
 					}
 					#endregion
 					return;
@@ -3357,7 +3357,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}projban disallow <id> <group name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}projban disallow <id> <组名>", Specifier);
 							return;
 						}
 
@@ -3366,27 +3366,27 @@ namespace TShockAPI
 						{
 							if (!TShock.Groups.GroupExists(args.Parameters[2]))
 							{
-								args.Player.SendErrorMessage("Invalid group.");
+								args.Player.SendErrorMessage("组名无效!");
 								return;
 							}
 
 							ProjectileBan ban = TShock.ProjectileBans.GetBanById(id);
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("Projectile {0} is not banned.", id);
+								args.Player.SendErrorMessage("抛射体 {0} 没有被禁止.", id);
 								return;
 							}
 							if (ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
 								TShock.ProjectileBans.RemoveGroup(id, args.Parameters[2]);
-								args.Player.SendSuccessMessage("{0} has been disallowed from using projectile {1}.", args.Parameters[2], id);
+								args.Player.SendSuccessMessage("组 {0} 不能使用抛射体 {1} 了.", args.Parameters[2], id);
 								return;
 							}
 							else
-								args.Player.SendWarningMessage("{0} is already prevented from using projectile {1}.", args.Parameters[2], id);
+								args.Player.SendWarningMessage("组 {0} 之前就不能使用抛射体 {1}.", args.Parameters[2], id);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid projectile ID!");
+							args.Player.SendErrorMessage("抛射体ID无效!");
 					}
 					#endregion
 					return;
@@ -3399,18 +3399,18 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"add <projectile ID> - Adds a projectile ban.",
-							"allow <projectile ID> <group> - Allows a group to use a projectile.",
-							"del <projectile ID> - Deletes an projectile ban.",
-							"disallow <projectile ID> <group> - Disallows a group from using a projectile.",
-							"list [page] - Lists all projectile bans."
+							"add <抛射体ID> - 封禁ID.",
+                            "allow <抛射体ID> <组名> - 允许某组使用特定的抛射体.",
+                            "del <抛射体ID> - 解除对特定抛射体的禁止.",
+                            "disallow <抛射体ID> <组名> - 停止允许某组使用特定抛射体.",
+							"list [页码] - 列出所有被封禁的抛射体."
                         };
 
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Projectile Ban Sub-Commands ({0}/{1}):",
-								FooterFormat = "Type {0}projban help {{0}} for more sub-commands.".SFormat(Specifier)
+								HeaderFormat = "抛射体管理子指令 ({0}/{1}):",
+								FooterFormat = "键入 {0}projban help {{0}} 以查看更多信息.".SFormat(Specifier)
 							}
 						);
 					}
@@ -3427,9 +3427,9 @@ namespace TShockAPI
 						PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(projectileIds),
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Projectile bans ({0}/{1}):",
-								FooterFormat = "Type {0}projban list {{0}} for more.".SFormat(Specifier),
-								NothingToDisplayString = "There are currently no banned projectiles."
+								HeaderFormat = "被禁止的抛射体 ({0}/{1}):",
+								FooterFormat = "键入 {0}projban list {{0}} 以获取更多信息.".SFormat(Specifier),
+								NothingToDisplayString = "当前没有被封禁的抛射体."
 							});
 					}
 					#endregion
@@ -3449,17 +3449,17 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tileban add <tile id>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}tileban add <物块ID>", Specifier);
 							return;
 						}
 						short id;
 						if (Int16.TryParse(args.Parameters[1], out id) && id >= 0 && id < Main.maxTileSets)
 						{
 							TShock.TileBans.AddNewBan(id);
-							args.Player.SendSuccessMessage("Banned tile {0}.", id);
+							args.Player.SendSuccessMessage("禁止了物块 {0}.", id);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid tile ID!");
+							args.Player.SendErrorMessage("物块ID无效!");
 					}
 					#endregion
 					return;
@@ -3468,7 +3468,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tileban allow <id> <group>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}tileban allow <物块ID> <组>", Specifier);
 							return;
 						}
 
@@ -3477,26 +3477,26 @@ namespace TShockAPI
 						{
 							if (!TShock.Groups.GroupExists(args.Parameters[2]))
 							{
-								args.Player.SendErrorMessage("Invalid group.");
+								args.Player.SendErrorMessage("组名无效!");
 								return;
 							}
 
 							TileBan ban = TShock.TileBans.GetBanById(id);
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("Tile {0} is not banned.", id);
+								args.Player.SendErrorMessage("物块 {0} 未被禁用.", id);
 								return;
 							}
 							if (!ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
 								TShock.TileBans.AllowGroup(id, args.Parameters[2]);
-								args.Player.SendSuccessMessage("{0} has been allowed to place tile {1}.", args.Parameters[2], id);
+								args.Player.SendSuccessMessage("允许 {0} 组放置物块 {1}.", args.Parameters[2], id);
 							}
 							else
-								args.Player.SendWarningMessage("{0} is already allowed to place tile {1}.", args.Parameters[2], id);
+								args.Player.SendWarningMessage("{0} 已有放置物块 {1} 的权限.", args.Parameters[2], id);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid tile ID!");
+							args.Player.SendErrorMessage("物块ID无效!");
 					}
 					#endregion
 					return;
@@ -3505,7 +3505,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 2)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tileban del <id>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}tileban del <id>", Specifier);
 							return;
 						}
 
@@ -3513,11 +3513,11 @@ namespace TShockAPI
 						if (Int16.TryParse(args.Parameters[1], out id) && id >= 0 && id < Main.maxTileSets)
 						{
 							TShock.TileBans.RemoveBan(id);
-							args.Player.SendSuccessMessage("Unbanned tile {0}.", id);
+							args.Player.SendSuccessMessage("解除禁用物块 {0}.", id);
 							return;
 						}
 						else
-							args.Player.SendErrorMessage("Invalid tile ID!");
+							args.Player.SendErrorMessage("物块ID无效!");
 					}
 					#endregion
 					return;
@@ -3526,7 +3526,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count != 3)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}tileban disallow <id> <group name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}tileban disallow <id> <组名>", Specifier);
 							return;
 						}
 
@@ -3535,27 +3535,27 @@ namespace TShockAPI
 						{
 							if (!TShock.Groups.GroupExists(args.Parameters[2]))
 							{
-								args.Player.SendErrorMessage("Invalid group.");
+								args.Player.SendErrorMessage("组名无效!");
 								return;
 							}
 
 							TileBan ban = TShock.TileBans.GetBanById(id);
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("Tile {0} is not banned.", id);
+								args.Player.SendErrorMessage("物块 {0} 未被禁用..", id);
 								return;
 							}
 							if (ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
 								TShock.TileBans.RemoveGroup(id, args.Parameters[2]);
-								args.Player.SendSuccessMessage("{0} has been disallowed from placing tile {1}.", args.Parameters[2], id);
+								args.Player.SendSuccessMessage("禁止 {0} 组放置物块 {1}.", args.Parameters[2], id);
 								return;
 							}
 							else
-								args.Player.SendWarningMessage("{0} is already prevented from placing tile {1}.", args.Parameters[2], id);
+								args.Player.SendWarningMessage("{0} 组没有放置物块 {1} 的权限.", args.Parameters[2], id);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid tile ID!");
+							args.Player.SendErrorMessage("物块ID无效!");
 					}
 					#endregion
 					return;
@@ -3568,18 +3568,18 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"add <tile ID> - Adds a tile ban.",
-							"allow <tile ID> <group> - Allows a group to place a tile.",
-							"del <tile ID> - Deletes a tile ban.",
-							"disallow <tile ID> <group> - Disallows a group from place a tile.",
-							"list [page] - Lists all tile bans."
+                            "add <物块ID> - 禁止放置某物块.",
+							"allow <物块ID> <组> - 允许特定分组放置特定物块.",
+							"del <物块ID> - 停止禁用某物块.",
+							"disallow <物块ID> <组> - 不再允许某分组使用特定物块.",
+							"list [页] - 显示被禁用的物块."
                         };
 
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Tile Ban Sub-Commands ({0}/{1}):",
-								FooterFormat = "Type {0}tileban help {{0}} for more sub-commands.".SFormat(Specifier)
+								HeaderFormat = "管理禁用物块子指令 ({0}/{1}):",
+								FooterFormat = "键入 {0}tileban help {{0}} 以获取下一页子指令.".SFormat(Specifier)
 							}
 						);
 					}
@@ -3597,7 +3597,7 @@ namespace TShockAPI
 							new PaginationTools.Settings
 							{
 								HeaderFormat = "Tile bans ({0}/{1}):",
-								FooterFormat = "Type {0}tileban list {{0}} for more.".SFormat(Specifier),
+								FooterFormat = "键入 {0}tileban list {{0}} 以获取更多信息.".SFormat(Specifier),
 								NothingToDisplayString = "There are currently no banned tiles."
 							});
 					}
@@ -3614,7 +3614,7 @@ namespace TShockAPI
 			Main.spawnTileX = args.Player.TileX + 1;
 			Main.spawnTileY = args.Player.TileY + 3;
 			SaveManager.Instance.SaveWorld(false);
-			args.Player.SendSuccessMessage("Spawn has now been set at your location.");
+			args.Player.SendSuccessMessage("出生点已被设置到你当前的位置.");
 		}
 
 		private static void SetDungeon(CommandArgs args)
@@ -3622,7 +3622,7 @@ namespace TShockAPI
 			Main.dungeonX = args.Player.TileX + 1;
 			Main.dungeonY = args.Player.TileY + 3;
 			SaveManager.Instance.SaveWorld(false);
-			args.Player.SendSuccessMessage("The dungeon's position has now been set at your location.");
+			args.Player.SendSuccessMessage("地牢所在地已被设置到你当前的位置.");
 		}
 
 		private static void Reload(CommandArgs args)
@@ -3630,19 +3630,19 @@ namespace TShockAPI
 			TShock.Utils.Reload(args.Player);
 
 			args.Player.SendSuccessMessage(
-				"Configuration, permissions, and regions reload complete. Some changes may require a server restart.");
+				"配置, 权限, 区域设定加载完毕. 有些变化可能需要重启服务器.");
 		}
 
 		private static void ServerPassword(CommandArgs args)
 		{
 			if (args.Parameters.Count != 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}serverpassword \"<new password>\"", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}serverpassword \"<新密码>\"", Specifier);
 				return;
 			}
 			string passwd = args.Parameters[0];
 			TShock.Config.ServerPassword = passwd;
-			args.Player.SendSuccessMessage(string.Format("Server password has been changed to: {0}.", passwd));
+			args.Player.SendSuccessMessage(string.Format("服务器密码被设定为: {0}.", passwd));
 		}
 
 		private static void Save(CommandArgs args)
@@ -3652,25 +3652,25 @@ namespace TShockAPI
 			{
 				tsply.SaveServerCharacter();
 			}
-			args.Player.SendSuccessMessage("Save succeeded.");
+			args.Player.SendSuccessMessage("地图, 云存档保存完毕.");
 		}
 
 		private static void Settle(CommandArgs args)
 		{
 			if (Liquid.panicMode)
 			{
-				args.Player.SendWarningMessage("Liquids are already settling!");
+				args.Player.SendWarningMessage("液体已经平衡完毕!");
 				return;
 			}
 			Liquid.StartPanic();
-			args.Player.SendInfoMessage("Settling liquids.");
+			args.Player.SendInfoMessage("正在平衡液体.");
 		}
 
 		private static void MaxSpawns(CommandArgs args)
 		{
 			if (args.Parameters.Count == 0)
 			{
-				args.Player.SendInfoMessage("Current maximum spawns: {0}", TShock.Config.DefaultMaximumSpawns);
+				args.Player.SendInfoMessage("当前最大刷怪量: {0}", TShock.Config.DefaultMaximumSpawns);
 				return;
 			}
 
@@ -3679,10 +3679,10 @@ namespace TShockAPI
 				TShock.Config.DefaultMaximumSpawns = NPC.defaultMaxSpawns = 5;
 				if (args.Silent) 
 				{
-					args.Player.SendInfoMessage("Changed the maximum spawns to 5.");
+					args.Player.SendInfoMessage("调整最大生成怪物数值至 5.");
 				}
 				else {
-					TSPlayer.All.SendInfoMessage("{0} changed the maximum spawns to 5.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} 调整最大生成怪物数值至 5.", args.Player.Name);
 				}
 				return;
 			}
@@ -3690,17 +3690,17 @@ namespace TShockAPI
 			int maxSpawns = -1;
 			if (!int.TryParse(args.Parameters[0], out maxSpawns) || maxSpawns < 0 || maxSpawns > Main.maxNPCs)
 			{
-				args.Player.SendWarningMessage("Invalid maximum spawns!  Acceptable range is {0} to {1}", 0, Main.maxNPCs);
+				args.Player.SendWarningMessage("最大刷怪量数值无效! 正确范围: {0} 至 {1}", 0, Main.maxNPCs);
 				return;
 			}
 
 			TShock.Config.DefaultMaximumSpawns = NPC.defaultMaxSpawns = maxSpawns;
 			if (args.Silent)
 			{
-				args.Player.SendInfoMessage("Changed the maximum spawns to {0}.", maxSpawns);
+				args.Player.SendInfoMessage("调整最大生成怪物数值至 {0}.", maxSpawns);
 			}
 			else {
-				TSPlayer.All.SendInfoMessage("{0} changed the maximum spawns to {1}.", args.Player.Name, maxSpawns);
+				TSPlayer.All.SendInfoMessage("{0} 调整最大生成怪物数值至 {1}.", args.Player.Name, maxSpawns);
 			}
 		}
 
@@ -3708,7 +3708,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count == 0)
 			{
-				args.Player.SendInfoMessage("Current spawn rate: {0}", TShock.Config.DefaultSpawnRate);
+				args.Player.SendInfoMessage("当前刷怪率: {0}", TShock.Config.DefaultSpawnRate);
 				return;
 			}
 
@@ -3717,10 +3717,10 @@ namespace TShockAPI
 				TShock.Config.DefaultSpawnRate = NPC.defaultSpawnRate = 600;
 				if (args.Silent) 
 				{
-					args.Player.SendInfoMessage("Changed the spawn rate to 600.");
+					args.Player.SendInfoMessage("调整刷怪率至 600.");
 				}
 				else {
-					TSPlayer.All.SendInfoMessage("{0} changed the spawn rate to 600.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} 调整刷怪率至 600.", args.Player.Name);
 				}
 				return;
 			}
@@ -3728,16 +3728,16 @@ namespace TShockAPI
 			int spawnRate = -1;
 			if (!int.TryParse(args.Parameters[0], out spawnRate) || spawnRate < 0)
 			{
-				args.Player.SendWarningMessage("Invalid spawn rate!");
+				args.Player.SendWarningMessage("刷怪率无效!");
 				return;
 			}
 			TShock.Config.DefaultSpawnRate = NPC.defaultSpawnRate = spawnRate;
 			if (args.Silent) 
 			{
-				args.Player.SendInfoMessage("Changed the spawn rate to {0}.", spawnRate);
+				args.Player.SendInfoMessage("调整刷怪率至 {0}.", spawnRate);
 			}
 			else {
-				TSPlayer.All.SendInfoMessage("{0} changed the spawn rate to {1}.", args.Player.Name, spawnRate);
+				TSPlayer.All.SendInfoMessage("{0} 调整刷怪率至 {1}.", args.Player.Name, spawnRate);
 			}
 		}
 
@@ -3754,7 +3754,7 @@ namespace TShockAPI
 				if (!Main.dayTime)
 					time += 15.0;
 				time = time % 24.0;
-				args.Player.SendInfoMessage("The current time is {0}:{1:D2}.", (int)Math.Floor(time), (int)Math.Round((time % 1.0) * 60.0));
+				args.Player.SendInfoMessage("当前时间 {0}:{1:D2}.", (int)Math.Floor(time), (int)Math.Round((time % 1.0) * 60.0));
 				return;
 			}
 			
@@ -3762,25 +3762,25 @@ namespace TShockAPI
 			{
 				case "day":
 					TSPlayer.Server.SetTime(true, 0.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to 4:30.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} 更改时间至 4:30.", args.Player.Name);
 					break;
 				case "night":
 					TSPlayer.Server.SetTime(false, 0.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to 19:30.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} 更改时间至 19:30.", args.Player.Name);
 					break;
 				case "noon":
 					TSPlayer.Server.SetTime(true, 27000.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to 12:00.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} 更改时间至 12:00.", args.Player.Name);
 					break;
 				case "midnight":
 					TSPlayer.Server.SetTime(false, 16200.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to 0:00.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} 更改时间至 0:00.", args.Player.Name);
 					break;
 				default:
 					string[] array = args.Parameters[0].Split(':');
 					if (array.Length != 2)
 					{
-						args.Player.SendErrorMessage("Invalid time string! Proper format: hh:mm, in 24-hour time.");
+						args.Player.SendErrorMessage("时间值无效! 正确格式: hh:mm, 24小时制.");
 						return;
 					}
 
@@ -3789,7 +3789,7 @@ namespace TShockAPI
 					if (!int.TryParse(array[0], out hours) || hours < 0 || hours > 23
 						|| !int.TryParse(array[1], out minutes) || minutes < 0 || minutes > 59)
 					{
-						args.Player.SendErrorMessage("Invalid time string! Proper format: hh:mm, in 24-hour time.");
+						args.Player.SendErrorMessage("时间值无效! 正确格式: hh:mm, 24小时制.");
 						return;
 					}
 
@@ -3806,7 +3806,7 @@ namespace TShockAPI
 					{
 						TSPlayer.Server.SetTime(true, (double)(time * 3600.0m));
 					}
-					TSPlayer.All.SendInfoMessage("{0} set the time to {1}:{2:D2}.", args.Player.Name, hours, minutes);
+					TSPlayer.All.SendInfoMessage("{0} 更改时间至 {1}:{2:D2}.", args.Player.Name, hours, minutes);
 					break;
 			}
 		}
@@ -3815,7 +3815,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1 || args.Parameters.Count > 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}rain [slime] <stop/start>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}rain [slime] <stop/start>", Specifier);
 				return;
 			}
 
@@ -3832,13 +3832,13 @@ namespace TShockAPI
 					{
 						Main.StartSlimeRain(false);
 						TSPlayer.All.SendData(PacketTypes.WorldInfo);
-						TSPlayer.All.SendInfoMessage("{0} caused it to rain slime.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 开启了史莱姆雨.", args.Player.Name);
 					}
 					else
 					{
 						Main.StartRain();
 						TSPlayer.All.SendData(PacketTypes.WorldInfo);
-						TSPlayer.All.SendInfoMessage("{0} caused it to rain.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 开始了降雨.", args.Player.Name);
 					}
 					break;
 				case "stop":
@@ -3846,17 +3846,17 @@ namespace TShockAPI
 					{
 						Main.StopSlimeRain(false);
 						TSPlayer.All.SendData(PacketTypes.WorldInfo);
-						TSPlayer.All.SendInfoMessage("{0} ended the slimey downpour.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 结束了史莱姆雨.", args.Player.Name);
 					}
 					else
 					{
 						Main.StopRain();
 						TSPlayer.All.SendData(PacketTypes.WorldInfo);
-						TSPlayer.All.SendInfoMessage("{0} ended the downpour.", args.Player.Name);
+						TSPlayer.All.SendInfoMessage("{0} 停止了降雨.", args.Player.Name);
 					}
 					break;
 				default:
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}rain [slime] <stop/start>", Specifier);
+					args.Player.SendErrorMessage("语法无效! 正确语法: {0}rain [slime] <stop/start>", Specifier);
 					break;
 
 			}
@@ -3866,12 +3866,12 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1 || args.Parameters.Count > 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}slap <player> [damage]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}slap <玩家名> [伤害]", Specifier);
 				return;
 			}
 			if (args.Parameters[0].Length == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 				return;
 			}
 
@@ -3879,7 +3879,7 @@ namespace TShockAPI
 			var players = TShock.Utils.FindPlayer(plStr);
 			if (players.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			}
 			else if (players.Count > 1)
 			{
@@ -3898,8 +3898,8 @@ namespace TShockAPI
 					damage = TShock.Utils.Clamp(damage, 15, 0);
 				}
 				plr.DamagePlayer(damage);
-				TSPlayer.All.SendInfoMessage("{0} slapped {1} for {2} damage.", args.Player.Name, plr.Name, damage);
-				TShock.Log.Info("{0} slapped {1} for {2} damage.", args.Player.Name, plr.Name, damage);
+				TSPlayer.All.SendInfoMessage("{0} 抽打了 {1} {2} 点伤害.", args.Player.Name, plr.Name, damage);
+				TShock.Log.Info("{0} 抽打了 {1} {2} 点伤害.", args.Player.Name, plr.Name, damage);
 			}
 		}
 
@@ -3907,14 +3907,14 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}wind <speed>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}wind <风速>", Specifier);
 				return;
 			}
 
 			float speed;
 			if (!float.TryParse(args.Parameters[0], out speed))
 			{
-				args.Player.SendErrorMessage("Invalid wind speed!");
+				args.Player.SendErrorMessage("风速无效!");
 				return;
 			}
 
@@ -3922,7 +3922,7 @@ namespace TShockAPI
 			Main.windSpeedSet = speed;
 			Main.windSpeedSpeed = 0f;
 			TSPlayer.All.SendData(PacketTypes.WorldInfo);
-			TSPlayer.All.SendInfoMessage("{0} changed the wind speed to {1}.", args.Player.Name, speed);
+			TSPlayer.All.SendInfoMessage("{0} 改变风速至 {1}.", args.Player.Name, speed);
 		}
 
 		#endregion Time/PvpFun Commands
@@ -3941,7 +3941,7 @@ namespace TShockAPI
 				case "name":
 					{
 						{
-							args.Player.SendInfoMessage("Hit a block to get the name of the region");
+							args.Player.SendInfoMessage("敲击特定物块来获取所属的区域.");
 							args.Player.AwaitingName = true;
 							args.Player.AwaitingNameParameters = args.Parameters.Skip(1).ToArray();
 						}
@@ -3954,12 +3954,12 @@ namespace TShockAPI
 							int.TryParse(args.Parameters[1], out choice) &&
 							choice >= 1 && choice <= 2)
 						{
-							args.Player.SendInfoMessage("Hit a block to Set Point " + choice);
+							args.Player.SendInfoMessage("敲击物块以设置点 " + choice);
 							args.Player.AwaitingTempPoint = choice;
 						}
 						else
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /region set <1/2>");
+							args.Player.SendErrorMessage("语法无效! 正确语法: /region set <1/2>");
 						}
 						break;
 					}
@@ -3980,20 +3980,20 @@ namespace TShockAPI
 								{
 									args.Player.TempPoints[0] = Point.Zero;
 									args.Player.TempPoints[1] = Point.Zero;
-									args.Player.SendInfoMessage("Set region " + regionName);
+									args.Player.SendInfoMessage("设置区域 " + regionName + " 成功.");
 								}
 								else
 								{
-									args.Player.SendErrorMessage("Region " + regionName + " already exists");
+									args.Player.SendErrorMessage("区域 " + regionName + " 已经存在.");
 								}
 							}
 							else
 							{
-								args.Player.SendErrorMessage("Points not set up yet");
+								args.Player.SendErrorMessage("坐标还未设定完毕.");
 							}
 						}
 						else
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region define <name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region define <区域名>", Specifier);
 						break;
 					}
 				case "protect":
@@ -4004,22 +4004,22 @@ namespace TShockAPI
 							if (args.Parameters[2].ToLower() == "true")
 							{
 								if (TShock.Regions.SetRegionState(regionName, true))
-									args.Player.SendInfoMessage("Protected region " + regionName);
+									args.Player.SendInfoMessage("区域 " + regionName + " 现在开始被保护.");
 								else
-									args.Player.SendErrorMessage("Could not find specified region");
+									args.Player.SendErrorMessage("无法找到给定区域.");
 							}
 							else if (args.Parameters[2].ToLower() == "false")
 							{
 								if (TShock.Regions.SetRegionState(regionName, false))
-									args.Player.SendInfoMessage("Unprotected region " + regionName);
+									args.Player.SendInfoMessage("取消保护区域 " + regionName + " 完毕.");
 								else
-									args.Player.SendErrorMessage("Could not find specified region");
+									args.Player.SendErrorMessage("无法找到给定区域.");
 							}
 							else
-								args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region protect <name> <true/false>", Specifier);
+								args.Player.SendErrorMessage("语法无效! 正确语法: {0}region protect <区域名> <true/false>", Specifier);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /region protect <name> <true/false>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: /region protect <名称> <true/false>", Specifier);
 						break;
 					}
 				case "delete":
@@ -4029,20 +4029,20 @@ namespace TShockAPI
 							string regionName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
 							if (TShock.Regions.DeleteRegion(regionName))
 							{
-								args.Player.SendInfoMessage("Deleted region \"{0}\".", regionName);
+								args.Player.SendInfoMessage("删除区域 {0} 成功.", regionName);
 							}
 							else
-								args.Player.SendErrorMessage("Could not find the specified region!");
+								args.Player.SendErrorMessage("无法找到给定区域!");
 						}
 						else
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region delete <name>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region delete <名称>", Specifier);
 						break;
 					}
 				case "clear":
 					{
 						args.Player.TempPoints[0] = Point.Zero;
 						args.Player.TempPoints[1] = Point.Zero;
-						args.Player.SendInfoMessage("Cleared temporary points.");
+						args.Player.SendInfoMessage("清空临时点坐标完毕.");
 						args.Player.AwaitingTempPoint = 0;
 						break;
 					}
@@ -4068,18 +4068,18 @@ namespace TShockAPI
 							{
 								if (TShock.Regions.AddNewUser(regionName, playerName))
 								{
-									args.Player.SendInfoMessage("Added user " + playerName + " to " + regionName);
+									args.Player.SendInfoMessage("添加用户 " + playerName + " 至区域 " + regionName);
 								}
 								else
-									args.Player.SendErrorMessage("Region " + regionName + " not found");
+									args.Player.SendErrorMessage("区域 " + regionName + " 未找到");
 							}
 							else
 							{
-								args.Player.SendErrorMessage("Player " + playerName + " not found");
+								args.Player.SendErrorMessage("玩家 " + playerName + " 未找到");
 							}
 						}
 						else
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region allow <name> <region>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region allow <玩家名> <区域>", Specifier);
 						break;
 					}
 				case "remove":
@@ -4103,18 +4103,18 @@ namespace TShockAPI
 						{
 							if (TShock.Regions.RemoveUser(regionName, playerName))
 							{
-								args.Player.SendInfoMessage("Removed user " + playerName + " from " + regionName);
+								args.Player.SendInfoMessage("移除玩家 " + playerName + " 在 " + regionName + " 的领域使用权");
 							}
 							else
-								args.Player.SendErrorMessage("Region " + regionName + " not found");
+								args.Player.SendErrorMessage("区域 " + regionName + " 未找到");
 						}
 						else
 						{
-							args.Player.SendErrorMessage("Player " + playerName + " not found");
+							args.Player.SendErrorMessage("玩家 " + playerName + " 未找到");
 						}
 					}
 					else
-						args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region remove <name> <region>", Specifier);
+						args.Player.SendErrorMessage("语法无效! 正确语法: {0}region remove <名称> <区域>", Specifier);
 					break;
 				case "allowg":
 					{
@@ -4138,18 +4138,18 @@ namespace TShockAPI
 							{
 								if (TShock.Regions.AllowGroup(regionName, group))
 								{
-									args.Player.SendInfoMessage("Added group " + group + " to " + regionName);
+									args.Player.SendInfoMessage("添加组 " + group + " 到 " + regionName);
 								}
 								else
-									args.Player.SendErrorMessage("Region " + regionName + " not found");
+									args.Player.SendErrorMessage("区域 " + regionName + " 未找到");
 							}
 							else
 							{
-								args.Player.SendErrorMessage("Group " + group + " not found");
+								args.Player.SendErrorMessage("组 " + group + " 未找到");
 							}
 						}
 						else
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region allowg <group> <region>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region allowg <组名> <区域名>", Specifier);
 						break;
 					}
 				case "removeg":
@@ -4173,18 +4173,18 @@ namespace TShockAPI
 						{
 							if (TShock.Regions.RemoveGroup(regionName, group))
 							{
-								args.Player.SendInfoMessage("Removed group " + group + " from " + regionName);
+								args.Player.SendInfoMessage("移除组 " + group + " 在 " + regionName + " 的领域使用权");
 							}
 							else
-								args.Player.SendErrorMessage("Region " + regionName + " not found");
+								args.Player.SendErrorMessage("区域 " + regionName + " 未找到");
 						}
 						else
 						{
-							args.Player.SendErrorMessage("Group " + group + " not found");
+							args.Player.SendErrorMessage("组 " + group + " 未找到");
 						}
 					}
 					else
-						args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region removeg <group> <region>", Specifier);
+						args.Player.SendErrorMessage("语法无效! 正确语法: {0}region removeg <组名> <区域名>", Specifier);
 					break;
 				case "list":
 					{
@@ -4198,9 +4198,9 @@ namespace TShockAPI
 						PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(regionNames),
 							new PaginationTools.Settings
 							{
-								HeaderFormat = "Regions ({0}/{1}):",
-								FooterFormat = "Type {0}region list {{0}} for more.".SFormat(Specifier),
-								NothingToDisplayString = "There are currently no regions defined."
+								HeaderFormat = "区域列表 ({0}/{1}):",
+								FooterFormat = "键入 {0}region list {{0}} 以获取下一页区域列表.".SFormat(Specifier),
+								NothingToDisplayString = "当前没有定义区域."
 							});
 						break;
 					}
@@ -4208,7 +4208,7 @@ namespace TShockAPI
 					{
 						if (args.Parameters.Count == 1 || args.Parameters.Count > 4)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region info <region> [-d] [page]", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region info <区域> [-d] [页面]", Specifier);
 							break;
 						}
 
@@ -4220,7 +4220,7 @@ namespace TShockAPI
 						Region region = TShock.Regions.GetRegionByName(regionName);
 						if (region == null)
 						{
-							args.Player.SendErrorMessage("Region \"{0}\" does not exist.", regionName);
+							args.Player.SendErrorMessage("区域 {0} 不存在.", regionName);
 							break;
 						}
 
@@ -4232,8 +4232,8 @@ namespace TShockAPI
 						List<string> lines = new List<string>
                         {
                             string.Format("X: {0}; Y: {1}; W: {2}; H: {3}, Z: {4}", region.Area.X, region.Area.Y, region.Area.Width, region.Area.Height, region.Z),
-                            string.Concat("Owner: ", region.Owner),
-                            string.Concat("Protected: ", region.DisableBuild.ToString()),
+                            string.Concat("所有者: ", region.Owner),
+                            string.Concat("保护状态: ", region.DisableBuild.ToString()),
                         };
 
 						if (region.AllowedIDs.Count > 0)
@@ -4247,30 +4247,30 @@ namespace TShockAPI
 								return string.Concat("{ID: ", userId, "}");
 							});
 							List<string> extraLines = PaginationTools.BuildLinesFromTerms(sharedUsersSelector.Distinct());
-							extraLines[0] = "Shared with: " + extraLines[0];
+							extraLines[0] = "玩家间分享状态: " + extraLines[0];
 							lines.AddRange(extraLines);
 						}
 						else
 						{
-							lines.Add("Region is not shared with any users.");
+							lines.Add("区域没有和其他玩家共享.");
 						}
 
 						if (region.AllowedGroups.Count > 0)
 						{
 							List<string> extraLines = PaginationTools.BuildLinesFromTerms(region.AllowedGroups.Distinct());
-							extraLines[0] = "Shared with groups: " + extraLines[0];
+							extraLines[0] = "组间分享状态: " + extraLines[0];
 							lines.AddRange(extraLines);
 						}
 						else
 						{
-							lines.Add("Region is not shared with any groups.");
+							lines.Add("区域没有和其他组共享.");
 						}
 
 						PaginationTools.SendPage(
 							args.Player, pageNumber, lines, new PaginationTools.Settings
 							{
-								HeaderFormat = string.Format("Information About Region \"{0}\" ({{0}}/{{1}}):", region.Name),
-								FooterFormat = string.Format("Type {0}region info {1} {{0}} for more information.", Specifier, regionName)
+								HeaderFormat = string.Format("区域 {0} 的信息 ({{0}}/{{1}}):", region.Name),
+								FooterFormat = string.Format("键入 {0}region info {1} {{0}} 以查看下一页信息.", Specifier, regionName)
 							}
 						);
 
@@ -4325,15 +4325,15 @@ namespace TShockAPI
 							if (int.TryParse(args.Parameters[2], out z))
 							{
 								if (TShock.Regions.SetZ(regionName, z))
-									args.Player.SendInfoMessage("Region's z is now " + z);
+									args.Player.SendInfoMessage("区域的优先值(Z组)被设定为 " + z);
 								else
-									args.Player.SendErrorMessage("Could not find specified region");
+									args.Player.SendErrorMessage("无法找到给定区域");
 							}
 							else
-								args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region z <name> <#>", Specifier);
+								args.Player.SendErrorMessage("语法无效! 正确语法: {0}region z <名称> <#>", Specifier);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region z <name> <#>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region z <名称> <#>", Specifier);
 						break;
 					}
 				case "resize":
@@ -4378,26 +4378,26 @@ namespace TShockAPI
 							int.TryParse(args.Parameters[3], out addAmount);
 							if (TShock.Regions.ResizeRegion(args.Parameters[1], addAmount, direction))
 							{
-								args.Player.SendInfoMessage("Region Resized Successfully!");
+								args.Player.SendInfoMessage("区域调整大小成功!");
 								TShock.Regions.Reload();
 							}
 							else
-								args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region resize <region> <u/d/l/r> <amount>", Specifier);
+								args.Player.SendErrorMessage("语法无效! 正确语法: {0}region resize <区域> <u/d/l/r> <量>", Specifier);
 						}
 						else
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region resize <region> <u/d/l/r> <amount>", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region resize <区域> <u/d/l/r> <量>", Specifier);
 						break;
 					}
 				case "tp":
 					{
 						if (!args.Player.HasPermission(Permissions.tp))
 						{
-							args.Player.SendErrorMessage("You don't have the necessary permission to do that.");
+							args.Player.SendErrorMessage("你没有权限执行操作.");
 							break;
 						}
 						if (args.Parameters.Count <= 1)
 						{
-							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region tp <region>.", Specifier);
+							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region tp <区域>.", Specifier);
 							break;
 						}
 
@@ -4405,7 +4405,7 @@ namespace TShockAPI
 						Region region = TShock.Regions.GetRegionByName(regionName);
 						if (region == null)
 						{
-							args.Player.SendErrorMessage("Region \"{0}\" does not exist.", regionName);
+							args.Player.SendErrorMessage("区域 {0} 不存在.", regionName);
 							break;
 						}
 
@@ -4423,30 +4423,30 @@ namespace TShockAPI
 							return;
 
 						List<string> lines = new List<string> {
-                          "set <1/2> - Sets the temporary region points.",
-                          "clear - Clears the temporary region points.",
-                          "define <name> - Defines the region with the given name.",
-                          "delete <name> - Deletes the given region.",
-                          "name [-u][-z][-p] - Shows the name of the region at the given point.",
-                          "list - Lists all regions.",
-                          "resize <region> <u/d/l/r> <amount> - Resizes a region.",
-                          "allow <user> <region> - Allows a user to a region.",
-                          "remove <user> <region> - Removes a user from a region.",
-                          "allowg <group> <region> - Allows a user group to a region.",
-                          "removeg <group> <region> - Removes a user group from a region.",
-                          "info <region> [-d] - Displays several information about the given region.",
-                          "protect <name> <true/false> - Sets whether the tiles inside the region are protected or not.",
-                          "z <name> <#> - Sets the z-order of the region.",
+                          "set <1/2> - 设置区域临时坐标点.",
+                          "clear - 清空设置过的临时坐标点.",
+                          "define <名称> - 使用指定的名称来定义新区域.",
+                          "delete <名称> - 删除给定的区域.",
+                          "name [-u][-z][-p] - 显示给定坐标点所在的区域.",
+                          "list - 显示所有区域.",
+                          "resize <区域> <u/d/l/r> <改变值> - 重新调整区域的大小.",
+                          "allow <user> <区域> - 允许玩家使用某区域.",
+                          "remove <user> <区域> - 移除某区域内有权限的玩家.",
+                          "allowg <组名> <区域> - 允许玩家使用某区域.",
+                          "removeg <组名> <区域> - 移除某区域内有权限的用户组.",
+                          "info <区域> [-d] - 显示给定区域的详细信息.",
+                          "protect <名称> <true/false> - 设定区域的物块保护状态.",
+                          "z <名称> <#> - 设置区域的优先值(Z值).",
                         };
 						if (args.Player.HasPermission(Permissions.tp))
-							lines.Add("tp <region> - Teleports you to the given region's center.");
+							lines.Add("tp <区域> - Teleports you to the given region's center.");
 
 						PaginationTools.SendPage(
 						  args.Player, pageNumber, lines,
 						  new PaginationTools.Settings
 						  {
-							  HeaderFormat = "Available Region Sub-Commands ({0}/{1}):",
-							  FooterFormat = "Type {0}region {{0}} for more sub-commands.".SFormat(Specifier)
+							  HeaderFormat = "区域管理指令列表 ({0}/{1}):",
+							  FooterFormat = "输入 {0}region {{0}} 以获取下一页子指令.".SFormat(Specifier)
 						  }
 						);
 						break;
@@ -4461,13 +4461,13 @@ namespace TShockAPI
 		private static void ToggleAntiBuild(CommandArgs args)
 		{
 			TShock.Config.DisableBuild = !TShock.Config.DisableBuild;
-			TSPlayer.All.SendSuccessMessage(string.Format("Anti-build is now {0}.", (TShock.Config.DisableBuild ? "on" : "off")));
+			TSPlayer.All.SendSuccessMessage(string.Format("禁止建筑模式已经被{0}.", (TShock.Config.DisableBuild ? "开始" : "关闭")));
 		}
 
 		private static void ProtectSpawn(CommandArgs args)
 		{
 			TShock.Config.SpawnProtection = !TShock.Config.SpawnProtection;
-			TSPlayer.All.SendSuccessMessage(string.Format("Spawn is now {0}.", (TShock.Config.SpawnProtection ? "protected" : "open")));
+			TSPlayer.All.SendSuccessMessage(string.Format("出生点现在{0}保护.", (TShock.Config.SpawnProtection ? "被" : "停止被")));
 		}
 
 		#endregion World Protection Commands
@@ -4478,7 +4478,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count > 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}help <command/page>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}help <command/page>", Specifier);
 				return;
 			}
 
@@ -4497,8 +4497,8 @@ namespace TShockAPI
 				PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(cmdNames),
 					new PaginationTools.Settings
 					{
-						HeaderFormat = "Commands ({0}/{1}):",
-						FooterFormat = "Type {0}help {{0}} for more.".SFormat(Specifier)
+						HeaderFormat = "指令列表 ({0}/{1}):",
+						FooterFormat = "键入 {0}help {{0}} 获取下一页指令.".SFormat(Specifier)
 					});
 			}
 			else
@@ -4512,16 +4512,16 @@ namespace TShockAPI
 				Command command = ChatCommands.Find(c => c.Names.Contains(commandName));
 				if (command == null)
 				{
-					args.Player.SendErrorMessage("Invalid command.");
+					args.Player.SendErrorMessage("指令无效.");
 					return;
 				}
 				if (!command.CanRun(args.Player))
 				{
-					args.Player.SendErrorMessage("You do not have access to this command.");
+					args.Player.SendErrorMessage("缺少执行该指令的权限.");
 					return;
 				}
 
-				args.Player.SendSuccessMessage("{0}{1} help: ", Specifier, command.Name);
+				args.Player.SendSuccessMessage("指令 {0}{1} 说明信息: ", Specifier, command.Name);
                 if (command.HelpDesc == null)
                 {
                     args.Player.SendInfoMessage(command.HelpText);
@@ -4536,8 +4536,9 @@ namespace TShockAPI
 
 		private static void GetVersion(CommandArgs args)
 		{
-			args.Player.SendInfoMessage("TShock: {0} ({1}).", TShock.VersionNum, TShock.VersionCodename);
-		}
+			args.Player.SendInfoMessage("TShock运行版本: {0} ({1}).", TShock.VersionNum, TShock.VersionCodename);
+            args.Player.SendInfoMessage("TShock汉化版本: {0} ({1}).", TShock.CNVersion, TShock.CNMode);
+        }
 
 		private static void ListConnectedPlayers(CommandArgs args)
 		{
@@ -4564,22 +4565,22 @@ namespace TShockAPI
 			}
 			if (invalidUsage)
 			{
-				args.Player.SendErrorMessage("Invalid usage, proper usage: {0}who [-i] [pagenumber]", Specifier);
+				args.Player.SendErrorMessage("用法无效! 正确用法: {0}who [-i] [pagenumber]", Specifier);
 				return;
 			}
 			if (displayIdsRequested && !args.Player.HasPermission(Permissions.seeids))
 			{
-				args.Player.SendErrorMessage("You don't have the required permission to list player ids.");
+				args.Player.SendErrorMessage("缺少显示玩家ID的权限.");
 				return;
 			}
 
-			args.Player.SendSuccessMessage("Online Players ({0}/{1})", TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots);
+			args.Player.SendSuccessMessage("在线玩家 ({0}/{1})", TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots);
 			PaginationTools.SendPage(
 				args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(TShock.Utils.GetPlayers(displayIdsRequested)), 
 				new PaginationTools.Settings 
 				{
 					IncludeHeader = false,
-					FooterFormat = string.Format("Type {0}who {1}{{0}} for more.", Specifier, displayIdsRequested ? "-i " : string.Empty)
+					FooterFormat = string.Format("键入 {0}who {1}{{0}} 查看下页玩家.", Specifier, displayIdsRequested ? "-i " : string.Empty)
 				}
 			);
 		}
@@ -4588,9 +4589,9 @@ namespace TShockAPI
 		{
 			if (TShock.AuthToken == 0)
 			{
-				args.Player.SendWarningMessage("Auth is disabled. This incident has been logged.");
-				TShock.Utils.ForceKick(args.Player, "Auth system is disabled.", true, true);
-				TShock.Log.Warn("{0} attempted to use {1}auth even though it's disabled.", args.Player.IP, Specifier);
+				args.Player.SendWarningMessage("密钥获取权限已停止, 该次非法尝试讲被记录.");
+				TShock.Utils.ForceKick(args.Player, "验证系统已经停止.", true, true);
+				TShock.Log.Warn("玩家 {0} 尝试执行被禁用的 {1}auth 指令.", args.Player.IP, Specifier);
 				return;
 			}
 			int givenCode = Convert.ToInt32(args.Parameters[0]);
@@ -4599,12 +4600,12 @@ namespace TShockAPI
 				try
 				{
 					args.Player.Group = TShock.Utils.GetGroup("superadmin");
-					args.Player.SendInfoMessage("Superadmin has been temporarily given to you. It will be removed on logout.");
-					args.Player.SendInfoMessage("Please use the following to create a permanent account for you.");
-					args.Player.SendInfoMessage("{0}user add <username> <password> superadmin", Specifier);
-					args.Player.SendInfoMessage("Creates: <username> with the password <password> as part of the superadmin group.");
-					args.Player.SendInfoMessage("Please use {0}login <username> <password> after this process.", Specifier);
-					args.Player.SendInfoMessage("If you understand, please {0}login <username> <password> now, and type {0}auth-verify.", Specifier);
+					args.Player.SendInfoMessage("你现在已经拥有临时超级管理权, 退出游戏后就会被系统收回.");
+					args.Player.SendInfoMessage("若想长期使用, 请按照下面步骤创建永久超级管理账户..");
+					args.Player.SendInfoMessage("执行 -- {0}user add <用户名> <密码> superadmin", Specifier);
+					args.Player.SendInfoMessage("结果 -- <用户名>(<密码>) 会被添加到超管组.");
+					args.Player.SendInfoMessage("完成上述操作后, 执行 -- {0}login <用户名(若和玩家名一致, 可省略)> <密码> --.", Specifier);
+					args.Player.SendInfoMessage("若明白, 请按照上述说的执行, 完成后, 执行 {0}auth-verify 来关闭验证功能.", Specifier);
 				}
 				catch (UserManagerException ex)
 				{
@@ -4616,30 +4617,31 @@ namespace TShockAPI
 
 			if (args.Player.Group.Name == "superadmin")
 			{
-				args.Player.SendInfoMessage("Please disable the auth system! If you need help, consult the forums. https://tshock.co/");
-				args.Player.SendInfoMessage("This account is superadmin, please do the following to finish your install:");
-				args.Player.SendInfoMessage("Please use {0}login <username> <password> to login from now on.", Specifier);
-				args.Player.SendInfoMessage("If you understand, please {0}login <username> <password> now, and type {0}auth-verify.", Specifier);
-				return;
+				args.Player.SendInfoMessage("请禁用验证系统! 若需要帮助, 联系TShock论坛. https://tshock.co/");
+				args.Player.SendInfoMessage("该账户为超级管理, 请完成下面提示的步骤完成TShock配置:");
+				args.Player.SendInfoMessage("请使用该账户登录, 然后关闭超管验证功能.");
+                args.Player.SendInfoMessage("若明白, 请按照上述说的执行, 完成后, 执行 {0}auth-verify 来关闭验证功能.",Specifier);
+                return;
 			}
 
-			args.Player.SendErrorMessage("Incorrect auth code. This incident has been logged.");
-			TShock.Log.Warn(args.Player.IP + " attempted to use an incorrect auth code.");
+			args.Player.SendErrorMessage("无效超管验证密钥. 该非法尝试将被记录.");
+			TShock.Log.Warn(args.Player.IP + " 尝试验证超管失败.");
 		}
 
 		private static void AuthVerify(CommandArgs args)
 		{
 			if (TShock.AuthToken == 0)
 			{
-				args.Player.SendWarningMessage("It appears that you have already turned off the auth token.");
-				args.Player.SendWarningMessage("If this is a mistake, delete auth.lck.");
+				args.Player.SendWarningMessage("看上去你已经关闭密钥验证功能了.");
+				args.Player.SendWarningMessage("若是不小心执行该指令, 删除 auth.lck 文件即可恢复功能.");
 				return;
 			}
 
-			args.Player.SendSuccessMessage("Your new account has been verified, and the /auth system has been turned off.");
-			args.Player.SendSuccessMessage("You can always use the /user command to manage players. Don't just delete the auth.lck.");
-			args.Player.SendSuccessMessage("Share your server, talk with other admins, and more on our forums -- https://tshock.co/");
-			args.Player.SendSuccessMessage("Thank you for using TShock for Terraria!");
+			args.Player.SendSuccessMessage("你的新账户已经成功验证, 且密钥验证功能已经被关闭.");
+			args.Player.SendSuccessMessage("你以后可以使用 {0}user 管理用户. 记住不要删除 auth.lck 文件.", Specifier);
+			args.Player.SendSuccessMessage("你可以在官方论坛分享你的服务器, 跟其他管理交流经验等.-- https://tshock.co/");
+            args.Player.SendSuccessMessage("若需汉化方面的帮助, 请访问在Github的项目.-- https://github.com/mistzzt/TShock");
+            args.Player.SendSuccessMessage("感谢使用 TShock ! 感谢对该汉化版本的支持.");
 			FileTools.CreateFile(Path.Combine(TShock.SavePath, "auth.lck"));
 			File.Delete(Path.Combine(TShock.SavePath, "authcode.txt"));
 			TShock.AuthToken = 0;
@@ -4649,11 +4651,11 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}me <text>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}me <文本>", Specifier);
 				return;
 			}
 			if (args.Player.mute)
-				args.Player.SendErrorMessage("You are muted.");
+				args.Player.SendErrorMessage("你被禁言, 无法说话.");
 			else
 				TSPlayer.All.SendMessage(string.Format("*{0} {1}", args.Player.Name, String.Join(" ", args.Parameters)), 205, 133, 63);
 		}
@@ -4662,13 +4664,13 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}p <team chat text>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}p <队聊文本>", Specifier);
 				return;
 			}
 			int playerTeam = args.Player.Team;
 
 			if (args.Player.mute)
-				args.Player.SendErrorMessage("You are muted.");
+				args.Player.SendErrorMessage("你被禁言, 无法说话.");
 			else if (playerTeam != 0)
 			{
 				string msg = string.Format("<{0}> {1}", args.Player.Name, String.Join(" ", args.Parameters));
@@ -4679,21 +4681,21 @@ namespace TShockAPI
 				}
 			}
 			else
-				args.Player.SendErrorMessage("You are not in a party!");
+				args.Player.SendErrorMessage("你未加入特定队伍!");
 		}
 
 		private static void Mute(CommandArgs args)
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}mute <player> [reason]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}mute <玩家名> [原因]", Specifier);
 				return;
 			}
 
 			var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (players.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			}
 			else if (players.Count > 1)
 			{
@@ -4701,22 +4703,22 @@ namespace TShockAPI
 			}
 			else if (players[0].HasPermission(Permissions.mute))
 			{
-				args.Player.SendErrorMessage("You cannot mute this player.");
+				args.Player.SendErrorMessage("你无法禁言该玩家.");
 			}
 			else if (players[0].mute)
 			{
 				var plr = players[0];
 				plr.mute = false;
-				TSPlayer.All.SendInfoMessage("{0} has been unmuted by {1}.", plr.Name, args.Player.Name);
+				TSPlayer.All.SendInfoMessage("{0} 被 {1} 解除禁言.", plr.Name, args.Player.Name);
 			}
 			else
 			{
-				string reason = "No reason specified.";
+				string reason = "无指明原因.";
 				if (args.Parameters.Count > 1)
 					reason = String.Join(" ", args.Parameters.ToArray(), 1, args.Parameters.Count - 1);
 				var plr = players[0];
 				plr.mute = true;
-				TSPlayer.All.SendInfoMessage("{0} has been muted by {1} for {2}.", plr.Name, args.Player.Name, reason);
+				TSPlayer.All.SendInfoMessage("{0} 被 {1} 禁言. 原因: {2}.", plr.Name, args.Player.Name, reason);
 			}
 		}
 
@@ -4734,14 +4736,14 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}whisper <player> <text>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}whisper <玩家名> <内容>", Specifier);
 				return;
 			}
 
 			var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (players.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			}
 			else if (players.Count > 1)
 			{
@@ -4749,14 +4751,14 @@ namespace TShockAPI
 			}
 			else if (args.Player.mute)
 			{
-				args.Player.SendErrorMessage("You are muted.");
+				args.Player.SendErrorMessage("你被禁言, 无法说话.");
 			}
 			else
 			{
 				var plr = players[0];
 				var msg = string.Join(" ", args.Parameters.ToArray(), 1, args.Parameters.Count - 1);
-				plr.SendMessage(String.Format("<From {0}> {1}", args.Player.Name, msg), Color.MediumPurple);
-				args.Player.SendMessage(String.Format("<To {0}> {1}", plr.Name, msg), Color.MediumPurple);
+				plr.SendMessage(String.Format("<来自 {0}> {1}", args.Player.Name, msg), Color.MediumPurple);
+				args.Player.SendMessage(String.Format("<发至 {0}> {1}", plr.Name, msg), Color.MediumPurple);
 				plr.LastWhisper = args.Player;
 				args.Player.LastWhisper = plr;
 			}
@@ -4766,17 +4768,17 @@ namespace TShockAPI
 		{
 			if (args.Player.mute)
 			{
-				args.Player.SendErrorMessage("You are muted.");
+				args.Player.SendErrorMessage("你被禁言, 无法说话.");
 			}
 			else if (args.Player.LastWhisper != null)
 			{
 				var msg = string.Join(" ", args.Parameters);
-				args.Player.LastWhisper.SendMessage(String.Format("<From {0}> {1}", args.Player.Name, msg), Color.MediumPurple);
-				args.Player.SendMessage(String.Format("<To {0}> {1}", args.Player.LastWhisper.Name, msg), Color.MediumPurple);
+				args.Player.LastWhisper.SendMessage(String.Format("<来自 {0}> {1}", args.Player.Name, msg), Color.MediumPurple);
+				args.Player.SendMessage(String.Format("<发至 {0}> {1}", args.Player.LastWhisper.Name, msg), Color.MediumPurple);
 			}
 			else
 			{
-				args.Player.SendErrorMessage("You haven't previously received any whispers. Please use {0}whisper to whisper to other people.", Specifier);
+				args.Player.SendErrorMessage("你并没有接收到别人的私聊信息. 请使用 {0}whisper 以私聊至特定玩家.", Specifier);
 			}
 		}
 
@@ -4784,7 +4786,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}annoy <player> <seconds to annoy>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}annoy <玩家名> <持续时间>", Specifier);
 				return;
 			}
 			int annoy = 5;
@@ -4792,13 +4794,13 @@ namespace TShockAPI
 
 			var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (players.Count == 0)
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			else if (players.Count > 1)
 				TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
 			else
 			{
 				var ply = players[0];
-				args.Player.SendSuccessMessage("Annoying " + ply.Name + " for " + annoy + " seconds.");
+				args.Player.SendSuccessMessage("正在骚扰 " + ply.Name + ". 持续时间: " + annoy + "s.");
 				(new Thread(ply.Whoopie)).Start(annoy);
 			}
 		}
@@ -4807,19 +4809,19 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}confuse <player>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}confuse <玩家名>", Specifier);
 				return;
 			}
 			var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (players.Count == 0)
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			else if (players.Count > 1)
 				TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
 			else
 			{
 				var ply = players[0];
 				ply.Confused = !ply.Confused;
-				args.Player.SendSuccessMessage("{0} is {1} confused.", ply.Name, ply.Confused ? "now" : "no longer");
+				args.Player.SendSuccessMessage("{1}扰乱 {0}.", ply.Name, ply.Confused ? "开始" : "停止");
 			}
 		}
 
@@ -4827,12 +4829,12 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}rocket <player>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}rocket <玩家名>", Specifier);
 				return;
 			}
 			var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (players.Count == 0)
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			else if (players.Count > 1)
 				TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
 			else
@@ -4843,11 +4845,11 @@ namespace TShockAPI
 				{
 					ply.TPlayer.velocity.Y = -50;
 					TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", ply.Index);
-					args.Player.SendSuccessMessage("Rocketed {0}.", ply.Name);
+					args.Player.SendSuccessMessage("{0} 飞了.", ply.Name);
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Failed to rocket player: Not logged in or not SSC mode.");
+					args.Player.SendErrorMessage("无法飞天: 未加入游戏或非云存档模式.");
 				}
 			}
 		}
@@ -4856,12 +4858,12 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}firework <player> [red|green|blue|yellow]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}firework <玩家名> [red|green|blue|yellow]", Specifier);
 				return;
 			}
 			var players = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (players.Count == 0)
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			else if (players.Count > 1)
 				TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
 			else
@@ -4879,7 +4881,7 @@ namespace TShockAPI
 				var ply = players[0];
 				int p = Projectile.NewProjectile(ply.TPlayer.position.X, ply.TPlayer.position.Y - 64f, 0f, -8f, type, 0, (float)0);
 				Main.projectile[p].Kill();
-				args.Player.SendSuccessMessage("Launched Firework on {0}.", ply.Name);
+				args.Player.SendSuccessMessage("{0} 炸开了烟花.", ply.Name);
 			}
 		}
 
@@ -4887,13 +4889,13 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}aliases <command or alias>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}aliases <指令或别称>", Specifier);
 				return;
 			}
 			
 			string givenCommandName = string.Join(" ", args.Parameters);
 			if (string.IsNullOrWhiteSpace(givenCommandName)) {
-				args.Player.SendErrorMessage("Please enter a proper command name or alias.");
+				args.Player.SendErrorMessage("请输入正确的指令名或别称.");
 				return;
 			}
 
@@ -4907,15 +4909,15 @@ namespace TShockAPI
 			foreach (Command matchingCommand in ChatCommands.Where(cmd => cmd.Names.IndexOf(commandName) != -1)) {
 				if (matchingCommand.Names.Count > 1)
 					args.Player.SendInfoMessage(
-					    "Aliases of {0}{1}: {0}{2}", Specifier, matchingCommand.Name, string.Join(", {0}".SFormat(Specifier), matchingCommand.Names.Skip(1)));
+					    "{0}{1} 的别称: {0}{2}", Specifier, matchingCommand.Name, string.Join(", {0}".SFormat(Specifier), matchingCommand.Names.Skip(1)));
 				else
-					args.Player.SendInfoMessage("{0}{1} defines no aliases.", Specifier, matchingCommand.Name);
+					args.Player.SendInfoMessage("{0}{1} 无别称定义.", Specifier, matchingCommand.Name);
 
 				didMatch = true;
 			}
 
 			if (!didMatch)
-				args.Player.SendErrorMessage("No command or command alias matching \"{0}\" found.", givenCommandName);
+				args.Player.SendErrorMessage("未找到名或别称为 \"{0}\" 的指令.", givenCommandName);
 		}
 
 		#endregion General Commands
@@ -4926,7 +4928,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 1 && args.Parameters.Count != 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}clear <item/npc/projectile> [radius]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}clear <item/npc/projectile> [半径数值]", Specifier);
 				return;
 			}
 
@@ -4935,7 +4937,7 @@ namespace TShockAPI
 			{
 				if (!int.TryParse(args.Parameters[1], out radius) || radius <= 0)
 				{
-					args.Player.SendErrorMessage("Invalid radius.");
+					args.Player.SendErrorMessage("半径数值无效.");
 					return;
 				}
 			}
@@ -4958,7 +4960,7 @@ namespace TShockAPI
 								cleared++;
 							}
 						}
-						args.Player.SendSuccessMessage("Deleted {0} items within a radius of {1}.", cleared, radius);
+						args.Player.SendSuccessMessage("成功在半径 {1} 内清空 {0} 件物品.", cleared, radius);
 					}
 					break;
 				case "npc":
@@ -4978,7 +4980,7 @@ namespace TShockAPI
 								cleared++;
 							}
 						}
-						args.Player.SendSuccessMessage("Deleted {0} NPCs within a radius of {1}.", cleared, radius);
+						args.Player.SendSuccessMessage("成功在半径 {1} 内清空 {0} 只怪物.", cleared, radius);
 					}
 					break;
 				case "proj":
@@ -4999,11 +5001,11 @@ namespace TShockAPI
 								cleared++;
 							}
 						}
-						args.Player.SendSuccessMessage("Deleted {0} projectiles within a radius of {1}.", cleared, radius);
+						args.Player.SendSuccessMessage("成功在半径 {1} 内清空 {0} 个抛射体.", cleared, radius);
 					}
 					break;
 				default:
-					args.Player.SendErrorMessage("Invalid clear option!");
+					args.Player.SendErrorMessage("无效清除对象! 可用: item / npc / projectile");
 					break;
 			}
 		}
@@ -5012,7 +5014,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}kill <player>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}kill <玩家名>", Specifier);
 				return;
 			}
 
@@ -5020,7 +5022,7 @@ namespace TShockAPI
 			var players = TShock.Utils.FindPlayer(plStr);
 			if (players.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 			}
 			else if (players.Count > 1)
 			{
@@ -5030,8 +5032,8 @@ namespace TShockAPI
 			{
 				var plr = players[0];
 				plr.DamagePlayer(999999);
-				args.Player.SendSuccessMessage(string.Format("You just killed {0}!", plr.Name));
-				plr.SendErrorMessage("{0} just killed you!", args.Player.Name);
+				args.Player.SendSuccessMessage(string.Format("你杀死了 {0}!", plr.Name));
+				plr.SendErrorMessage("你已死亡, 凶手是 {0} .", args.Player.Name);
 			}
 		}
 
@@ -5039,7 +5041,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count > 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}butcher [mob type]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}butcher [怪物种类]", Specifier);
 				return;
 			}
 
@@ -5050,7 +5052,7 @@ namespace TShockAPI
 				var npcs = TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
 				if (npcs.Count == 0)
 				{
-					args.Player.SendErrorMessage("Invalid mob type!");
+					args.Player.SendErrorMessage("指定NPC无效!");
 					return;
 				}
 				else if (npcs.Count > 1)
@@ -5073,14 +5075,14 @@ namespace TShockAPI
 					kills++;
 				}
 			}
-			TSPlayer.All.SendInfoMessage("{0} butchered {1} NPCs.", args.Player.Name, kills);
+			TSPlayer.All.SendInfoMessage("{0} 清空了 {1} 个怪物单位.", args.Player.Name, kills);
 		}
 		
 		private static void Item(CommandArgs args)
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}item <item name/id> [item amount] [prefix id/name]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}item <物品名/ID> [数量] [前缀ID/名称]", Specifier);
 				return;
 			}
 
@@ -5105,7 +5107,7 @@ namespace TShockAPI
 			List<Item> matchedItems = TShock.Utils.GetItemByIdOrName(itemNameOrId);
 			if (matchedItems.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid item type!");
+				args.Player.SendErrorMessage("物品种类无效!");
 				return;
 			}
 			else if (matchedItems.Count > 1)
@@ -5119,7 +5121,7 @@ namespace TShockAPI
 			}
 			if (item.type < 1 && item.type >= Main.maxItemTypes)
 			{
-				args.Player.SendErrorMessage("The item type {0} is invalid.", itemNameOrId);
+				args.Player.SendErrorMessage("物品 {0} 无效.", itemNameOrId);
 				return;
 			}
 
@@ -5145,7 +5147,7 @@ namespace TShockAPI
 				}
 				else if (prefixIds.Count == 0) 
 				{
-					args.Player.SendErrorMessage("No prefix matched \"{0}\".", prefixidOrName);
+					args.Player.SendErrorMessage("没有符合条件 \"{0}\" 的前缀.", prefixidOrName);
 					return;
 				}
 				else
@@ -5162,16 +5164,16 @@ namespace TShockAPI
 				if (args.Player.GiveItemCheck(item.type, item.name, item.width, item.height, itemAmount, prefixId))
 				{
 					item.prefix = (byte)prefixId;
-					args.Player.SendSuccessMessage("Gave {0} {1}(s).", itemAmount, item.AffixName());
+					args.Player.SendSuccessMessage("成功生成 {0} 个 {1}.", itemAmount, item.AffixName());
 				}
 				else
 				{
-					args.Player.SendErrorMessage("You cannot spawn banned items.");
+					args.Player.SendErrorMessage("你无法生成被封禁的物品.");
 				}
 			}
 			else
 			{
-				args.Player.SendErrorMessage("Your inventory seems full.");
+				args.Player.SendErrorMessage("背包已满, 无法生成物品.");
 			}
 		}
 		
@@ -5179,7 +5181,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}renameNPC <guide, nurse, etc.> <newname>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}renameNPC <guide/nurse/...> <新名字>", Specifier);
 				return;
 			}
 			int npcId = 0;
@@ -5188,7 +5190,7 @@ namespace TShockAPI
 				List<NPC> npcs = TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
 				if (npcs.Count == 0)
 				{
-					args.Player.SendErrorMessage("Invalid mob type!");
+					args.Player.SendErrorMessage("指定NPC无效.");
 					return;
 				}
 				else if (npcs.Count > 1)
@@ -5198,7 +5200,7 @@ namespace TShockAPI
 				}
 				else if (args.Parameters[1].Length >200)
 				{
-					args.Player.SendErrorMessage("New name is too large!");
+					args.Player.SendErrorMessage("指定的名字长度超过限制!");
 					return;
 				}
 				else
@@ -5218,11 +5220,11 @@ namespace TShockAPI
 			}
 			if (done >0 )
 			{
-			TSPlayer.All.SendInfoMessage("{0} renamed the {1}.", args.Player.Name, args.Parameters[0]);
+			TSPlayer.All.SendInfoMessage("{0} 赐予了 {1} 新名字.", args.Player.Name, args.Parameters[0]);
 			}
 			else
 			{
-			args.Player.SendErrorMessage("Could not rename {0}!", args.Parameters[0]);
+			args.Player.SendErrorMessage("无法重命名 {0} !", args.Parameters[0]);
 			}
 		}
 		
@@ -5231,17 +5233,17 @@ namespace TShockAPI
 			if (args.Parameters.Count < 2)
 			{
 				args.Player.SendErrorMessage(
-					"Invalid syntax! Proper syntax: {0}give <item type/id> <player> [item amount] [prefix id/name]", Specifier);
+                    "语法无效! 正确语法: {0}give <物品名/ID> <玩家名> [数量] [前缀ID/名称]", Specifier);
 				return;
 			}
 			if (args.Parameters[0].Length == 0)
 			{
-				args.Player.SendErrorMessage("Missing item name/id.");
+				args.Player.SendErrorMessage("语法无效: 缺少物品名/ID.");
 				return;
 			}
 			if (args.Parameters[1].Length == 0)
 			{
-				args.Player.SendErrorMessage("Missing player name.");
+				args.Player.SendErrorMessage("语法无效: 缺少玩家名.");
 				return;
 			}
 			int itemAmount = 0;
@@ -5254,7 +5256,7 @@ namespace TShockAPI
 				int.TryParse(args.Parameters[0], out itemAmount);
 			if (items.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid item type!");
+				args.Player.SendErrorMessage("物品种类无效!");
 			}
 			else if (items.Count > 1)
 			{
@@ -5285,7 +5287,7 @@ namespace TShockAPI
 					var players = TShock.Utils.FindPlayer(plStr);
 					if (players.Count == 0)
 					{
-						args.Player.SendErrorMessage("Invalid player!");
+						args.Player.SendErrorMessage("指定玩家无效!");
 					}
 					else if (players.Count > 1)
 					{
@@ -5300,24 +5302,24 @@ namespace TShockAPI
 								itemAmount = item.maxStack;
 							if (plr.GiveItemCheck(item.type, item.name, item.width, item.height, itemAmount, prefix))
 							{
-								args.Player.SendSuccessMessage(string.Format("Gave {0} {1} {2}(s).", plr.Name, itemAmount, item.name));
-								plr.SendSuccessMessage(string.Format("{0} gave you {1} {2}(s).", args.Player.Name, itemAmount, item.name));
+								args.Player.SendSuccessMessage(string.Format("成功给 {0} 生成了 {1} 个 {2}.", plr.Name, itemAmount, item.name));
+								plr.SendSuccessMessage(string.Format("{0} 给你了 {1} 个 {2}.", args.Player.Name, itemAmount, item.name));
 							}
 							else
 							{
-								args.Player.SendErrorMessage("You cannot spawn banned items.");
+								args.Player.SendErrorMessage("无法生成被禁用的物品.");
 							}
 							
 						}
 						else
 						{
-							args.Player.SendErrorMessage("Player does not have free slots!");
+							args.Player.SendErrorMessage("目标玩家背包已满!");
 						}
 					}
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Invalid item type!");
+					args.Player.SendErrorMessage("物品种类无效!");
 				}
 			}
 		}
@@ -5331,7 +5333,7 @@ namespace TShockAPI
 				var players = TShock.Utils.FindPlayer(plStr);
 				if (players.Count == 0)
 				{
-					args.Player.SendErrorMessage("Invalid player!");
+					args.Player.SendErrorMessage("指定玩家无效!");
 					return;
 				}
 				else if (players.Count > 1)
@@ -5346,7 +5348,7 @@ namespace TShockAPI
 			}
 			else if (!args.Player.RealPlayer)
 			{
-				args.Player.SendErrorMessage("You can't heal yourself!");
+				args.Player.SendErrorMessage("你无法恢复自己的生命值!");
 				return;
 			}
 			else
@@ -5357,12 +5359,12 @@ namespace TShockAPI
 			playerToHeal.Heal();
 			if (playerToHeal == args.Player)
 			{
-				args.Player.SendSuccessMessage("You just got healed!");
+				args.Player.SendSuccessMessage("你的生命值已被恢复!");
 			}
 			else
 			{
-				args.Player.SendSuccessMessage(string.Format("You just healed {0}", playerToHeal.Name));
-				playerToHeal.SendSuccessMessage(string.Format("{0} just healed you!", args.Player.Name));
+				args.Player.SendSuccessMessage(string.Format("你恢复了 {0} 的生命值!", playerToHeal.Name));
+				playerToHeal.SendSuccessMessage(string.Format("{0} 恢复了你的生命值!", args.Player.Name));
 			}
 		}
 
@@ -5370,7 +5372,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count < 1 || args.Parameters.Count > 2)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}buff <buff id/name> [time(seconds)]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}buff <buff id/名称> [持续时间(秒)]", Specifier);
 				return;
 			}
 			int id = 0;
@@ -5380,7 +5382,7 @@ namespace TShockAPI
 				var found = TShock.Utils.GetBuffByName(args.Parameters[0]);
 				if (found.Count == 0)
 				{
-					args.Player.SendErrorMessage("Invalid buff name!");
+					args.Player.SendErrorMessage("Buff名称无效!");
 					return;
 				}
 				else if (found.Count > 1)
@@ -5397,18 +5399,18 @@ namespace TShockAPI
 				if (time < 0 || time > short.MaxValue)
 					time = 60;
 				args.Player.SetBuff(id, time*60);
-				args.Player.SendSuccessMessage(string.Format("You have buffed yourself with {0}({1}) for {2} seconds!",
+				args.Player.SendSuccessMessage(string.Format("你给自己加上了buff {0}({1}), 持续时间: {2}s!",
 													  TShock.Utils.GetBuffName(id), TShock.Utils.GetBuffDescription(id), (time)));
 			}
 			else
-				args.Player.SendErrorMessage("Invalid buff ID!");
+				args.Player.SendErrorMessage("Buff编号无效!");
 		}
 
 		private static void GBuff(CommandArgs args)
 		{
 			if (args.Parameters.Count < 2 || args.Parameters.Count > 3)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}gbuff <player> <buff id/name> [time(seconds)]", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}gbuff <玩家名> <buff id/名称> [持续时间(秒)]", Specifier);
 				return;
 			}
 			int id = 0;
@@ -5416,7 +5418,7 @@ namespace TShockAPI
 			var foundplr = TShock.Utils.FindPlayer(args.Parameters[0]);
 			if (foundplr.Count == 0)
 			{
-				args.Player.SendErrorMessage("Invalid player!");
+				args.Player.SendErrorMessage("指定玩家无效!");
 				return;
 			}
 			else if (foundplr.Count > 1)
@@ -5431,7 +5433,7 @@ namespace TShockAPI
 					var found = TShock.Utils.GetBuffByName(args.Parameters[1]);
 					if (found.Count == 0)
 					{
-						args.Player.SendErrorMessage("Invalid buff name!");
+						args.Player.SendErrorMessage("Buff名称无效!");
 						return;
 					}
 					else if (found.Count > 1)
@@ -5448,15 +5450,15 @@ namespace TShockAPI
 					if (time < 0 || time > short.MaxValue)
 						time = 60;
 					foundplr[0].SetBuff(id, time*60);
-					args.Player.SendSuccessMessage(string.Format("You have buffed {0} with {1}({2}) for {3} seconds!",
+					args.Player.SendSuccessMessage(string.Format("{0} 被附加了 {3} 秒的buff {1}({2})!",
 														  foundplr[0].Name, TShock.Utils.GetBuffName(id),
 														  TShock.Utils.GetBuffDescription(id), (time)));
-					foundplr[0].SendSuccessMessage(string.Format("{0} has buffed you with {1}({2}) for {3} seconds!",
+					foundplr[0].SendSuccessMessage(string.Format("{0} 给你附加了持续时间为 {3} 秒的buff {1}({2})!",
 														  args.Player.Name, TShock.Utils.GetBuffName(id),
 														  TShock.Utils.GetBuffDescription(id), (time)));
 				}
 				else
-					args.Player.SendErrorMessage("Invalid buff ID!");
+					args.Player.SendErrorMessage("Buff编号无效!");
 			}
 		}
 
@@ -5464,7 +5466,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count != 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}grow <tree/epictree/mushroom/cactus/herb>", Specifier);
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}grow <tree/epictree/mushroom/cactus/herb>", Specifier);
 				return;
 			}
 			var name = "Fail";
@@ -5473,7 +5475,7 @@ namespace TShockAPI
 
 			if (!TShock.Regions.CanBuild(x, y, args.Player))
 			{
-				args.Player.SendErrorMessage("You're not allowed to change tiles here!");
+				args.Player.SendErrorMessage("你无法改动这里的物块!");
 				return;
 			}
 
@@ -5488,7 +5490,7 @@ namespace TShockAPI
 					}
 					Main.tile[x, y - 1].wall = 0;
 					WorldGen.GrowTree(x, y);
-					name = "Tree";
+					name = "树";
 					break;
 				case "epictree":
 					for (int i = x - 1; i < x + 2; i++)
@@ -5501,7 +5503,7 @@ namespace TShockAPI
 					Main.tile[x, y - 1].liquid = 0;
 					Main.tile[x, y - 1].active(true);
 					WorldGen.GrowEpicTree(x, y);
-					name = "Epic Tree";
+					name = "巨树";
 					break;
 				case "mushroom":
 					for (int i = x - 1; i < x + 2; i++)
@@ -5512,26 +5514,26 @@ namespace TShockAPI
 					}
 					Main.tile[x, y - 1].wall = 0;
 					WorldGen.GrowShroom(x, y);
-					name = "Mushroom";
+					name = "蘑菇";
 					break;
 				case "cactus":
 					Main.tile[x, y].type = 53;
 					WorldGen.GrowCactus(x, y);
-					name = "Cactus";
+					name = "仙人掌";
 					break;
 				case "herb":
 					Main.tile[x, y].active(true);
 					Main.tile[x, y].frameX = 36;
 					Main.tile[x, y].type = 83;
 					WorldGen.GrowAlch(x, y);
-					name = "Herb";
+					name = "草药";
 					break;
 				default:
-					args.Player.SendErrorMessage("Unknown plant!");
+					args.Player.SendErrorMessage("指定的植物名无效!");
 					return;
 			}
 			args.Player.SendTileSquare(x, y);
-			args.Player.SendSuccessMessage("Tried to grow a " + name + ".");
+			args.Player.SendSuccessMessage("尝试生成" + name + "...");
 		}
 
 		private static void ToggleGodMode(CommandArgs args)
@@ -5541,14 +5543,14 @@ namespace TShockAPI
 			{
 				if (!args.Player.HasPermission(Permissions.godmodeother))
 				{
-					args.Player.SendErrorMessage("You do not have permission to god mode another player!");
+					args.Player.SendErrorMessage("你没有权限设置其他玩家无敌!");
 					return;
 				}
 				string plStr = String.Join(" ", args.Parameters);
 				var players = TShock.Utils.FindPlayer(plStr);
 				if (players.Count == 0)
 				{
-					args.Player.SendErrorMessage("Invalid player!");
+					args.Player.SendErrorMessage("指定玩家无效!");
 					return;
 				}
 				else if (players.Count > 1)
@@ -5563,7 +5565,7 @@ namespace TShockAPI
 			}
 			else if (!args.Player.RealPlayer)
 			{
-				args.Player.SendErrorMessage("You can't god mode a non player!");
+				args.Player.SendErrorMessage("你无法打开非真实玩家的无敌模式!");
 				return;
 			}
 			else
@@ -5575,12 +5577,12 @@ namespace TShockAPI
 
 			if (playerToGod == args.Player)
 			{
-				args.Player.SendSuccessMessage(string.Format("You are {0} in god mode.", args.Player.GodMode ? "now" : "no longer"));
+				args.Player.SendSuccessMessage(string.Format("你现在{0}无敌模式.", args.Player.GodMode ? "处于" : "已经停止"));
 			}
 			else
 			{
-				args.Player.SendSuccessMessage(string.Format("{0} is {1} in god mode.", playerToGod.Name, playerToGod.GodMode ? "now" : "no longer"));
-				playerToGod.SendSuccessMessage(string.Format("You are {0} in god mode.", playerToGod.GodMode ? "now" : "no longer"));
+				args.Player.SendSuccessMessage(string.Format("{0} 现在{1}无敌模式.", playerToGod.Name, playerToGod.GodMode ? "处于" : "已经停止"));
+				playerToGod.SendSuccessMessage(string.Format("你现在{0}无敌模式.", playerToGod.GodMode ? "处于" : "已经停止"));
 			}
 		}
 

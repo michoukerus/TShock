@@ -1333,7 +1333,7 @@ namespace TShockAPI
 
 			if (max > TShock.Config.MaxHP && !args.Player.HasPermission(Permissions.ignorehp))
 			{
-				args.Player.Disable("Maximum HP beyond limit", DisableFlags.WriteToLogAndConsole);
+				args.Player.Disable("血量超上限.", DisableFlags.WriteToLogAndConsole);
 				return true;
 			}
 
@@ -1362,7 +1362,7 @@ namespace TShockAPI
 
 			if (max > TShock.Config.MaxMP && !args.Player.HasPermission(Permissions.ignoremp))
 			{
-				args.Player.Disable("Maximum MP beyond limit", DisableFlags.WriteToLogAndConsole);
+				args.Player.Disable("魔量超上限.", DisableFlags.WriteToLogAndConsole);
 				return true;
 			}
 
@@ -1411,13 +1411,13 @@ namespace TShockAPI
 
 			if (OnPlayerInfo(playerid, hair, skinVariant, difficulty, name))
 			{
-				TShock.Utils.ForceKick(args.Player, "A plugin cancelled the event.", true);
+				TShock.Utils.ForceKick(args.Player, "某插件停止了加入事件..", true);
 				return true;
 			}
 
 			if (name.Trim().Length == 0)
 			{
-				TShock.Utils.ForceKick(args.Player, "Empty Name.", true);
+				TShock.Utils.ForceKick(args.Player, "空白人物名.", true);
 				return true;
 			}
 			if (args.Player.ReceivedInfo)
@@ -1445,12 +1445,12 @@ namespace TShockAPI
 			}
 			if (TShock.Config.MediumcoreOnly && difficulty < 1)
 			{
-				TShock.Utils.ForceKick(args.Player, "Server is set to mediumcore and above characters only!", true);
+				TShock.Utils.ForceKick(args.Player, "服务器要求使用中等或高等难度人物存档进入!", true);
 				return true;
 			}
 			if (TShock.Config.HardcoreOnly && difficulty < 2)
 			{
-				TShock.Utils.ForceKick(args.Player, "Server is set to hardcore characters only!", true);
+				TShock.Utils.ForceKick(args.Player, "服务器要求使用高等难度人物存档进入!", true);
 				return true;
 			}
 			args.Player.Difficulty = difficulty;
@@ -1499,8 +1499,8 @@ namespace TShockAPI
 					if (args.Player.HasPermission(Permissions.usebanneditem))
 						args.Player.IgnoreActionsForDisabledArmor = "none";
 
-					args.Player.SendSuccessMessage("Authenticated as " + user.Name + " successfully.");
-					TShock.Log.ConsoleInfo(args.Player.Name + " authenticated successfully as user " + args.Player.Name + ".");
+					args.Player.SendSuccessMessage($"已经验证 {user.Name} 登录完毕.");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 成功验证登录.");
 					Hooks.PlayerHooks.OnPlayerPostLogin(args.Player);
 					return true;
 				}
@@ -1572,13 +1572,13 @@ namespace TShockAPI
 						args.Player.IgnoreActionsForDisabledArmor = "none";
 
 
-					args.Player.SendMessage("Authenticated as " + args.Player.Name + " successfully.", Color.LimeGreen);
-					TShock.Log.ConsoleInfo(args.Player.Name + " authenticated successfully as user " + args.Player.Name + ".");
+					args.Player.SendSuccessMessage($"已经验证 {user.Name} 登录完毕.");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 成功验证登录.");
 					TShock.Users.SetUserUUID(user, args.Player.UUID);
 					Hooks.PlayerHooks.OnPlayerPostLogin(args.Player);
 					return true;
 				}
-				TShock.Utils.ForceKick(args.Player, "Invalid user account password.", true);
+				TShock.Utils.ForceKick(args.Player, "玩家密码错误.", true);
 				return true;
 			}
 			if (!string.IsNullOrEmpty(TShock.Config.ServerPassword))
@@ -1591,11 +1591,11 @@ namespace TShockAPI
 					NetMessage.SendData((int)PacketTypes.WorldInfo, args.Player.Index);
 					return true;
 				}
-				TShock.Utils.ForceKick(args.Player, "Incorrect server password", true);
+				TShock.Utils.ForceKick(args.Player, "服务器密码无效.", true);
 				return true;
 			}
 
-			TShock.Utils.ForceKick(args.Player, "Bad password attempt", true);
+			TShock.Utils.ForceKick(args.Player, "数次错误密码尝试.", true);
 			return true;
 		}
 
@@ -1606,7 +1606,7 @@ namespace TShockAPI
 			args.Player.RequestedSection = true;
 			if (String.IsNullOrEmpty(args.Player.Name))
 			{
-				TShock.Utils.ForceKick(args.Player, "Blank name.", true);
+				TShock.Utils.ForceKick(args.Player, "空人物名.", true);
 				return true;
 			}
 
@@ -1938,16 +1938,16 @@ namespace TShockAPI
 					if (outputRegions.Count == 0)
 					{
 						if (includeUnprotected)
-							args.Player.SendInfoMessage("There are no regions at this point.");
+							args.Player.SendInfoMessage("选定点处不存在区域.");
 						else
-							args.Player.SendInfoMessage("There are no regions at this point or they are not protected.");
+							args.Player.SendInfoMessage("选定点处不存在区域/区域未被保护.");
 					}
 					else
 					{
 						if (includeUnprotected)
-							args.Player.SendSuccessMessage("Regions at this point:");
+							args.Player.SendSuccessMessage("选定点处区域列表:");
 						else
-							args.Player.SendSuccessMessage("Protected regions at this point:");
+							args.Player.SendSuccessMessage("选定点处被保护的区域列表:");
 
 						foreach (string line in PaginationTools.BuildLinesFromTerms(outputRegions))
 							args.Player.SendMessage(line, Color.White);
@@ -1967,7 +1967,7 @@ namespace TShockAPI
 				{
 					args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = tileX;
 					args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = tileY;
-					args.Player.SendInfoMessage("Set temp point {0}.", args.Player.AwaitingTempPoint);
+					args.Player.SendInfoMessage("记录临时点 {0} 完成.", args.Player.AwaitingTempPoint);
 					args.Player.SendTileSquare(tileX, tileY, 4);
 					args.Player.AwaitingTempPoint = 0;
 					return true;
@@ -1982,7 +1982,7 @@ namespace TShockAPI
 					if (TShock.TileBans.TileIsBanned(editData, args.Player))
 					{
 						args.Player.SendTileSquare(tileX, tileY, 1);
-						args.Player.SendErrorMessage("You do not have permission to place this tile.");
+						args.Player.SendErrorMessage("该物块被禁止, 无法放置.");
 						return true;
 					}
 				}
@@ -2052,7 +2052,7 @@ namespace TShockAPI
 					}
 					if (action == EditAction.PlaceTile && (editData == 29 || editData == 97) && Main.ServerSideCharacter)
 					{
-						args.Player.SendErrorMessage("You cannot place this tile because server side characters are enabled.");
+						args.Player.SendErrorMessage("云存档模式运行中, 你不能放置储蓄罐/保险箱.");
 						args.Player.SendTileSquare(tileX, tileY, 3);
 						return true;
 					}
@@ -2060,7 +2060,7 @@ namespace TShockAPI
 					{
 						if (TShock.Utils.MaxChests())
 						{
-							args.Player.SendErrorMessage("The world's chest limit has been reached - unable to place more.");
+							args.Player.SendErrorMessage("该地图箱子数目达到最大值, 无法继续放置.");
 							args.Player.SendTileSquare(tileX, tileY, 3);
 							return true;
 						}
@@ -2139,14 +2139,14 @@ namespace TShockAPI
 
 				if (args.Player.TileKillThreshold >= TShock.Config.TileKillThreshold)
 				{
-					args.Player.Disable("Reached TileKill threshold.", DisableFlags.WriteToLogAndConsole);
+					args.Player.Disable("达到破坏物块速率上限.", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 4);
 					return true;
 				}
 
 				if (args.Player.TilePlaceThreshold >= TShock.Config.TilePlaceThreshold)
 				{
-					args.Player.Disable("Reached TilePlace threshold.", DisableFlags.WriteToLogAndConsole);
+					args.Player.Disable("达到放置物块速率上限.", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 4);
 					return true;
 				}
@@ -2217,7 +2217,7 @@ namespace TShockAPI
 			if (TShock.TileBans.TileIsBanned(type, args.Player))
 			{
 				args.Player.SendTileSquare(x, y, 1);
-				args.Player.SendErrorMessage("You do not have permission to place this tile.");
+				args.Player.SendErrorMessage("该物块被禁止, 你不能放置.");
 				return true;
 			}
 
@@ -2264,7 +2264,7 @@ namespace TShockAPI
 
 			if (args.Player.TilePlaceThreshold >= TShock.Config.TilePlaceThreshold)
 			{
-				args.Player.Disable("Reached TilePlace threshold.", DisableFlags.WriteToLogAndConsole);
+				args.Player.Disable("达到放置物块速率上限.", DisableFlags.WriteToLogAndConsole);
 				args.Player.SendTileSquare(x, y, 4);
 				return true;
 			}
@@ -2438,23 +2438,23 @@ namespace TShockAPI
 					{
 						if (args.Player.IgnoreActionsForCheating != "none")
 						{
-							args.Player.SendErrorMessage("Disabled for cheating: " + args.Player.IgnoreActionsForCheating);
+							args.Player.SendErrorMessage("检测到作弊: " + args.Player.IgnoreActionsForCheating);
 						}
 						else if (args.Player.IgnoreActionsForDisabledArmor != "none")
 						{
-							args.Player.SendErrorMessage("Disabled for banned armor: " + args.Player.IgnoreActionsForDisabledArmor);
+							args.Player.SendErrorMessage("你不能使用被禁止的装备: " + args.Player.IgnoreActionsForDisabledArmor);
 						}
 						else if (args.Player.IgnoreActionsForInventory != "none")
 						{
-							args.Player.SendErrorMessage("Disabled for Server Side Inventory: " + args.Player.IgnoreActionsForInventory);
+							args.Player.SendErrorMessage("因云存档问题被禁止: " + args.Player.IgnoreActionsForInventory);
 						}
 						else if (TShock.Config.RequireLogin && !args.Player.IsLoggedIn)
 						{
-							args.Player.SendErrorMessage("Please /register or /login to play!");
+							args.Player.SendErrorMessage("请使用 /register \\ /login 加入游戏!");
 						}
 						else if (args.Player.IgnoreActionsForClearingTrashCan)
 						{
-							args.Player.SendErrorMessage("You need to rejoin to ensure your trash can is cleared!");
+							args.Player.SendErrorMessage("为确保你的垃圾箱已被清空, 你需要重新进入游戏!");
 						}
 						var lastTileX = args.Player.LastNetPosition.X;
 						var lastTileY = args.Player.LastNetPosition.Y - 48;
@@ -2480,7 +2480,7 @@ namespace TShockAPI
 					var lastTileY = args.Player.LastNetPosition.Y;
 					if (!args.Player.Teleport(lastTileX, lastTileY))
 					{
-						args.Player.SendErrorMessage("You got stuck in a solid object, Sent to spawn point.");
+						args.Player.SendErrorMessage("你被卡入物块中, 即将传送到出生点.");
 						args.Player.Spawn();
 					}
 					return true;
@@ -2494,8 +2494,8 @@ namespace TShockAPI
 				if (TShock.Itembans.ItemIsBanned(itemName, args.Player))
 				{
 					control[5] = false;
-					args.Player.Disable("using a banned item ({0})".SFormat(itemName), DisableFlags.WriteToLogAndConsole);
-					args.Player.SendErrorMessage("You cannot use {0} on this server. Your actions are being ignored.", itemName);
+					args.Player.Disable("使用被封禁的物品 ({0})".SFormat(itemName), DisableFlags.WriteToLogAndConsole);
+					args.Player.SendErrorMessage("使用被封禁物品 {0} 无效.", itemName);
 				}
 
 				if (args.TPlayer.inventory[item].name == "Mana Crystal" && args.Player.TPlayer.statManaMax <= 180)
@@ -2646,15 +2646,15 @@ namespace TShockAPI
 
 			if (TShock.ProjectileBans.ProjectileIsBanned(type, args.Player))
 			{
-				args.Player.Disable("Player does not have permission to create that projectile.", DisableFlags.WriteToLogAndConsole);
-				args.Player.SendErrorMessage("You do not have permission to create that projectile.");
+				args.Player.Disable("生成了被禁止的抛射体.", DisableFlags.WriteToLogAndConsole);
+				args.Player.SendErrorMessage("你无法生成禁用的抛射体.");
 				args.Player.RemoveProjectile(ident, owner);
 				return true;
 			}
 
 			if (dmg > TShock.Config.MaxProjDamage && !args.Player.HasPermission(Permissions.ignoredamagecap))
 			{
-				args.Player.Disable(String.Format("Projectile damage is higher than {0}.", TShock.Config.MaxProjDamage), DisableFlags.WriteToLogAndConsole);
+				args.Player.Disable($"监测到比抛射体最大伤害 {TShock.Config.MaxProjDamage} 高的攻击.", DisableFlags.WriteToLogAndConsole);
 				args.Player.RemoveProjectile(ident, owner);
 				return true;
 			}
@@ -2679,12 +2679,12 @@ namespace TShockAPI
 					|| (type >= ProjectileID.PineNeedleHostile && type <= ProjectileID.Spike)
 					|| (type >= ProjectileID.MartianTurretBolt && type <= ProjectileID.RayGunnerLaser)
 					|| type == ProjectileID.CultistBossLightningOrb)
-				{
-					TShock.Log.Debug("Certain projectiles have been ignored for cheat detection.");
+				{	
+					TShock.Log.Debug("当前抛射体不被作弊检测应用.");
 				}
 				else
 				{
-					args.Player.Disable(String.Format("Does not have projectile permission to update projectile. ({0})", type), DisableFlags.WriteToLogAndConsole);
+					args.Player.Disable($"该抛射体({type})被禁止, 无法生成.", DisableFlags.WriteToLogAndConsole);
 					args.Player.RemoveProjectile(ident, owner);
 				}
 				return true;
@@ -2692,7 +2692,7 @@ namespace TShockAPI
 
 			if (args.Player.ProjectileThreshold >= TShock.Config.ProjectileThreshold)
 			{
-				args.Player.Disable("Reached projectile update threshold.", DisableFlags.WriteToLogAndConsole);
+				args.Player.Disable("达到更新抛射体速率上限.", DisableFlags.WriteToLogAndConsole);
 				args.Player.RemoveProjectile(ident, owner);
 				return true;
 			}
@@ -2707,7 +2707,7 @@ namespace TShockAPI
 			{
 				if (type == ProjectileID.CrystalShard && TShock.Config.ProjIgnoreShrapnel) // Ignore crystal shards
 				{
-					TShock.Log.Debug("Ignoring shrapnel per config..");
+					TShock.Log.Debug("根据配置文件, 忽略弹片(Shrapnel).");
 				}
 				else if (!Main.projectile[index].active)
 				{
@@ -2759,7 +2759,7 @@ namespace TShockAPI
 
 			if (TShock.CheckProjectilePermission(args.Player, index, type) && type != 102 && type != 100 && !TShock.Config.IgnoreProjKill)
 			{
-				args.Player.Disable("Does not have projectile permission to kill projectile.", DisableFlags.WriteToLogAndConsole);
+				args.Player.Disable("没有权限终止抛射体.", DisableFlags.WriteToLogAndConsole);
 				args.Player.RemoveProjectile(ident, owner);
 				return true;
 			}
@@ -2784,8 +2784,8 @@ namespace TShockAPI
 			var text = args.Data.ReadString();
 			if (dmg > 20000) //Abnormal values have the potential to cause infinite loops in the server.
 			{
-				TShock.Utils.ForceKick(args.Player, "Crash Exploit Attempt", true);
-				TShock.Log.ConsoleError("Death Exploit Attempt: Damage {0}", dmg);
+				TShock.Utils.ForceKick(args.Player, "尝试破坏服务器.", true);
+				TShock.Log.ConsoleError("死亡数值上限攻击: 数值 {0}", dmg);
 				return false;
 			}
 
@@ -2799,7 +2799,7 @@ namespace TShockAPI
 
 			if (text.Length > 500)
 			{
-				TShock.Utils.Kick(TShock.Players[id], "Crash attempt", true);
+				TShock.Utils.Kick(TShock.Players[id], "尝试破坏服务器.", true);
 				return true;
 			}
 
@@ -2821,7 +2821,7 @@ namespace TShockAPI
 				if (TShock.Config.BanOnHardcoreDeath)
 				{
 					if (!TShock.Utils.Ban(args.Player, TShock.Config.HardcoreBanReason, false, "hardcore-death"))
-						TShock.Utils.ForceKick(args.Player, "Death results in a ban, but you are immune to bans.", true);
+						TShock.Utils.ForceKick(args.Player, "死亡后封禁, 但你有豁免权.", true);
 				}
 				else
 				{
@@ -2861,7 +2861,7 @@ namespace TShockAPI
 
 			if (args.Player.TileLiquidThreshold >= TShock.Config.TileLiquidThreshold)
 			{
-				args.Player.Disable("Reached TileLiquid threshold.", DisableFlags.WriteToLogAndConsole);
+				args.Player.Disable("达到放置液体速率上限.", DisableFlags.WriteToLogAndConsole);
 				args.Player.SendTileSquare(tileX, tileY, 1);
 				return true;
 			}
@@ -2897,48 +2897,48 @@ namespace TShockAPI
 
 				if (type == 1 && !(bucket == 2 || bucket == 0))
 				{
-					args.Player.SendErrorMessage("You do not have permission to perform this action.");
-					args.Player.Disable("Spreading lava without holding a lava bucket", DisableFlags.WriteToLogAndConsole);
+					args.Player.SendErrorMessage("你不能这样做. (无权限)");
+					args.Player.Disable("非正常玩家行为: 发送岩浆操作", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 1);
 					return true;
 				}
 
 				if (type == 1 && TShock.Itembans.ItemIsBanned("Lava Bucket", args.Player))
 				{
-					args.Player.SendErrorMessage("You do not have permission to perform this action.");
-					args.Player.Disable("Using banned lava bucket without permissions", DisableFlags.WriteToLogAndConsole);
+					args.Player.SendErrorMessage("你不能这样做. (无权限)");
+					args.Player.Disable("使用被禁止的岩浆桶", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 1);
 					return true;
 				}
 
 				if (type == 0 && !(bucket == 1 || bucket == 0 || bucket == 4))
 				{
-					args.Player.SendErrorMessage("You do not have permission to perform this action.");
-					args.Player.Disable("Spreading water without holding a water bucket", DisableFlags.WriteToLogAndConsole);
+					args.Player.SendErrorMessage("你不能这样做. (无权限)");
+					args.Player.Disable("非正常玩家行为: 发送水操作", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 1);
 					return true;
 				}
 
 				if (type == 0 && TShock.Itembans.ItemIsBanned("Water Bucket", args.Player))
 				{
-					args.Player.SendErrorMessage("You do not have permission to perform this action.");
-					args.Player.Disable("Using banned water bucket without permissions", DisableFlags.WriteToLogAndConsole);
+					args.Player.SendErrorMessage("你不能这样做. (无权限)");
+					args.Player.Disable("使用被禁止的水桶", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 1);
 					return true;
 				}
 
 				if (type == 2 && !(bucket == 3 || bucket == 0))
 				{
-					args.Player.SendErrorMessage("You do not have permission to perform this action.");
-					args.Player.Disable("Spreading honey without holding a honey bucket", DisableFlags.WriteToLogAndConsole);
+					args.Player.SendErrorMessage("你不能这样做. (无权限)");
+					args.Player.Disable("非正常玩家行为: 发送蜂蜜操作", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 1);
 					return true;
 				}
 
 				if (type == 2 && TShock.Itembans.ItemIsBanned("Honey Bucket", args.Player))
 				{
-					args.Player.SendErrorMessage("You do not have permission to perform this action.");
-					args.Player.Disable("Using banned honey bucket without permissions", DisableFlags.WriteToLogAndConsole);
+					args.Player.SendErrorMessage("你不能这样做. (无权限)");
+					args.Player.Disable("使用被禁止的蜂蜜桶", DisableFlags.WriteToLogAndConsole);
 					args.Player.SendTileSquare(tileX, tileY, 1);
 					return true;
 				}
@@ -3035,7 +3035,7 @@ namespace TShockAPI
 						if (TShock.Config.BanOnMediumcoreDeath)
 						{
 							if (!TShock.Utils.Ban(args.Player, TShock.Config.MediumcoreBanReason, false, "mediumcore-death"))
-								TShock.Utils.ForceKick(args.Player, "Death results in a ban, but you are immune to bans.", true);
+								TShock.Utils.ForceKick(args.Player,"死亡后封禁, 但你有豁免权.", true);
 						}
 						else
 						{
@@ -3200,7 +3200,7 @@ namespace TShockAPI
 
 			if (!args.Player.HasPermission(Permissions.movenpc))
 			{
-				args.Player.SendErrorMessage("You do not have permission to relocate NPCs.");
+				args.Player.SendErrorMessage("无权限调整NPC住所位置.");
 				args.Player.SendData(PacketTypes.UpdateNPCHome, "", id, Main.npc[id].homeTileX, Main.npc[id].homeTileY,
 									 Convert.ToByte(Main.npc[id].homeless));
 				return true;
@@ -3208,7 +3208,7 @@ namespace TShockAPI
 
 			if (TShock.CheckTilePermission(args.Player, x, y))
 			{
-				args.Player.SendErrorMessage("You do not have access to modify this area.");
+				args.Player.SendErrorMessage("无权限修改该片区域物块.");
 				args.Player.SendData(PacketTypes.UpdateNPCHome, "", id, Main.npc[id].homeTileX, Main.npc[id].homeTileY,
 									 Convert.ToByte(Main.npc[id].homeless));
 				return true;
@@ -3332,7 +3332,7 @@ namespace TShockAPI
 			if ((Main.ServerSideCharacter) && (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond - args.Player.LoginMS < TShock.ServerSideCharacterConfig.LogonDiscardThreshold))
 			{
 				//Player is probably trying to sneak items onto the server in their hands!!!
-				TShock.Log.ConsoleInfo("Player {0} tried to sneak {1} onto the server!", args.Player.Name, item.name);
+				TShock.Log.ConsoleInfo("玩家 {0} 尝试偷带物品 {1} 进入服务器!", args.Player.Name, item.name);
 				args.Player.SendData(PacketTypes.ItemDrop, "", id);
 				return true;
 
@@ -3385,13 +3385,13 @@ namespace TShockAPI
 			{
 				if (TShock.Config.KickOnDamageThresholdBroken)
 				{
-					TShock.Utils.Kick(args.Player, string.Format("Player damage exceeded {0}.", TShock.Config.MaxDamage));
+					TShock.Utils.Kick(args.Player, $"玩家攻击数值超过 {TShock.Config.MaxDamage}.");
 					return true;
 				}
 				else
 				{
-					args.Player.Disable(String.Format("Player damage exceeded {0}.", TShock.Config.MaxDamage), DisableFlags.WriteToLogAndConsole);
-				}
+					args.Player.Disable($"玩家攻击数值超过 {TShock.Config.MaxDamage}.", DisableFlags.WriteToLogAndConsole);
+				}			
 				args.Player.SendData(PacketTypes.PlayerHp, "", id);
 				args.Player.SendData(PacketTypes.PlayerUpdate, "", id);
 				return true;
@@ -3451,12 +3451,12 @@ namespace TShockAPI
 			{
 				if (TShock.Config.KickOnDamageThresholdBroken)
 				{
-					TShock.Utils.Kick(args.Player, string.Format("NPC damage exceeded {0}.", TShock.Config.MaxDamage));
+					TShock.Utils.Kick(args.Player, $"NPC 攻击超过最大数值 {TShock.Config.MaxDamage}.");
 					return true;
 				}
 				else
 				{
-					args.Player.Disable(String.Format("NPC damage exceeded {0}.", TShock.Config.MaxDamage), DisableFlags.WriteToLogAndConsole);
+					args.Player.Disable($"NPC 攻击超过最大数值 {TShock.Config.MaxDamage}.", DisableFlags.WriteToLogAndConsole);
 				}
 				args.Player.SendData(PacketTypes.NpcUpdate, "", id);
 				return true;
@@ -3470,7 +3470,7 @@ namespace TShockAPI
 
 			if (Main.npc[id].townNPC && !args.Player.HasPermission(Permissions.hurttownnpc))
 			{
-				args.Player.SendErrorMessage("You do not have permission to hurt this NPC.");
+				args.Player.SendErrorMessage("无权限伤害NPC.");
 				args.Player.SendData(PacketTypes.NpcUpdate, "", id);
 				return true;
 			}
@@ -3501,7 +3501,7 @@ namespace TShockAPI
 
 			if (type == 1 && TShock.Config.DisableDungeonGuardian)
 			{
-				args.Player.SendMessage("The Dungeon Guardian returned you to your spawn point", Color.Purple);
+				args.Player.SendMessage("地牢守卫者将你传送到出生点.", Color.Purple);
 				args.Player.Spawn();
 				return true;
 			}
@@ -3625,12 +3625,12 @@ namespace TShockAPI
 			}
 			if (spawnboss && !args.Player.HasPermission(Permissions.summonboss))
 			{
-				args.Player.SendErrorMessage("You don't have permission to summon a boss.");
+				args.Player.SendErrorMessage("无法召唤Boss. (缺少权限)");
 				return true;
 			}
 			if (invasion && !args.Player.HasPermission(Permissions.startinvasion))
 			{
-				args.Player.SendErrorMessage("You don't have permission to start an invasion.");
+				args.Player.SendErrorMessage("无法发起入侵. (缺少权限)");
 				return true;
 			}
 			if (!spawnboss && !invasion)
@@ -3643,37 +3643,37 @@ namespace TShockAPI
 			switch (Type)
 			{
 				case -8:
-					boss = "a Moon Lord";
+					boss = "月主";
 					break;
 				case -7:
-					boss = "a Martian invasion";
+					boss = "火星入侵";
 					break;
 				case -6:
-					boss = "an eclipse";
+					boss = "日蚀";
 					break;
 				case -5:
-					boss = "a frost moon";
+					boss = "冰霜之月";
 					break;
 				case -4:
-					boss = "a pumpkin moon";
+					boss = "南瓜狂欢夜";
 					break;
 				case -3:
-					boss = "the Pirates";
+					boss = "海盗入侵";
 					break;
 				case -2:
-					boss = "the Snow Legion";
+					boss = "冰霜军团";
 					break;
 				case -1:
-					boss = "a Goblin Invasion";
+					boss = "哥布林";
 					break;
 				default:
-					boss = String.Format("the {0}", npc.name);
+					boss = $"the {npc.name}";
 					break;
 			}
 			if (TShock.Config.AnonymousBossInvasions)
-				TShock.Utils.SendLogs(string.Format("{0} summoned {1}!", args.Player.Name, boss), Color.PaleVioletRed, args.Player);
+				TShock.Utils.SendLogs($"{args.Player.Name} 召唤了 {boss}!", Color.PaleVioletRed, args.Player);
 			else
-				TShock.Utils.Broadcast(String.Format("{0} summoned {1}!", args.Player.Name, boss), 175, 75, 255);
+				TShock.Utils.Broadcast($"{args.Player.Name} 召唤了 {boss}!", 175, 75, 255);
 			return false;
 		}
 
@@ -3799,7 +3799,7 @@ namespace TShockAPI
 			//Rod of Discord teleport (usually (may be used by modded clients to teleport))
 			if (type == 0 && !args.Player.HasPermission(Permissions.rod))
 			{
-				args.Player.SendErrorMessage("You do not have permission to teleport.");
+				args.Player.SendErrorMessage("无法传送. (没有权限)");
 				args.Player.Teleport(args.TPlayer.position.X, args.TPlayer.position.Y);
 				return true;
 			}
@@ -3820,7 +3820,7 @@ namespace TShockAPI
 
 				if (!args.Player.HasPermission(Permissions.wormhole))
 				{
-					args.Player.SendErrorMessage("You do not have permission to teleport.");
+					args.Player.SendErrorMessage("无法传送. (没有权限)");
 					args.Player.Teleport(args.TPlayer.position.X, args.TPlayer.position.Y);
 					return true;
 				}

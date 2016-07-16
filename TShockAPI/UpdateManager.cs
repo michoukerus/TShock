@@ -87,7 +87,8 @@ namespace TShockAPI
 				{
 					if (resp.StatusCode != HttpStatusCode.OK)
 					{
-						throw new IOException("Server did not respond with an OK.");
+                        // Server did not respond with an OK.
+                        throw new IOException("更新服务器状态回复不是OK.");
 					}
 
 					using(var reader = new StreamReader(resp.GetResponseStream()))
@@ -102,7 +103,7 @@ namespace TShockAPI
 			}
 			catch (Exception e)
 			{
-				TShock.Log.ConsoleError("UpdateManager Exception: {0}", e);
+				TShock.Log.ConsoleError("模块更新异常: {0}", e);
 				throw e;
 			}
 
@@ -124,7 +125,7 @@ namespace TShockAPI
 
 		private void NotifyAdministrator(TSPlayer player, string[] changes)
 		{
-			player.SendMessage("The server is out of date. Latest version: ", Color.Red);
+			player.SendMessage("本程序有新版本. 最新版本: ", Color.Red);
 			for (int j = 0; j < changes.Length; j++)
 			{
 				player.SendMessage(changes[j], Color.Red);

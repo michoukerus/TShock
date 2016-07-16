@@ -31,63 +31,69 @@ namespace TShockAPI
 	public class ConfigFile
 	{
 		/// <summary>InvasionMultiplier - The equation for calculating invasion size = 100 + (multiplier * (number of active players > 200 hp)).</summary>
-		[Description("The equation for calculating invasion size is 100 + (multiplier * (number of active players with greater than 200 health)).")]
+		[Description(
+			"计算入侵规模: 100 + (乘值 * (血量200以上玩家数量))."
+			)]
 		public int InvasionMultiplier = 1;
 
 		/// <summary>DefaultMaximumSpawns - The default max spawns per wave.</summary>
-		[Description("The default maximum mobs that will spawn per wave. Higher means more mobs in that wave.")]
+		[Description("默认每波入侵生成怪物量. 值/怪物数量正相关.")]
 		public int DefaultMaximumSpawns = 5;
 
 		/// <summary>DefaultSpawnRate - The default spawn rate.</summary>
-		[Description("The delay between waves. Lower values lead to more mobs.")]
+		[Description("默认每波刷怪间空隙时间. 值/怪物数量负相关.")]
 		public int DefaultSpawnRate = 600;
 
 		/// <summary>ServerPort - The configured server port.</summary>
-		[Description("The port the server runs on.")]
+		[Description("服务器默认监听运行的端口.")]
 		public int ServerPort = 7777;
 
 		/// <summary>EnableWhitelist - boolean if the whitelist functionality should be turned on.</summary>
-		[Description("Enable or disable the whitelist based on IP addresses in whitelist.txt.")]
+		[Description("开启whitelist.txt中的白名单模式. (使用IP)")]
 		public bool EnableWhitelist;
 
 		/// <summary>InfiniteInvasion - Whether or not infinite invasion mode should be on.</summary>
-		[Description("Enable the ability for invasion size to never decrease. Make sure to run /invade, and note that this adds 2 million+ goblins to the spawn queue for the map.")]
+		[Description(
+			"开启永不停歇的刷怪. 不要忘记使用 /invade, 而且该选项会加入2亿+的哥布林到地图的生成队列."
+			)]
 		public bool InfiniteInvasion;
 
 		/// <summary>PvPMode - The server PvP mode (normal, always, or disabled).</summary>
-		[Description("Set the server pvp mode. Valid types are: \"normal\", \"always\" and \"disabled\".")]
+		[Description("默认PVP模式. 可用模式: \"normal\", \"always\", \"disabled\".")]
 		public string PvPMode = "normal";
 
 		/// <summary>SpawnProtection - Enables the spawn protection system.</summary>
-		[Description("Prevents tiles from being placed within SpawnProtectionRadius of the default spawn.")]
+		[Description("设置是否启用按照\"SpawnProtectionRadius\"设定的出生点半径保护.")]
 		public bool SpawnProtection = true;
 
 		/// <summary>SpawnProtectionRadius - The spawn protection tile radius.</summary>
-		[Description("Radius from spawn tile for SpawnProtection.")]
+		[Description("出生点保护的半径.")]
 		public int SpawnProtectionRadius = 10;
 
 		/// <summary>MaxSlots - The server's max slots.</summary>
-		[Description("Max slots for the server. If you want people to be kicked with \"Server is full\" set this to how many players you want max and then set Terraria max players to 2 higher.")]
+		[Description(
+			"服务器最大容载玩家数. 若满员, 新来的玩家会收到\"服务器已满.\"的通知."
+			)]
 		public int MaxSlots = 8;
 
 		/// <summary>RangeChecks - Whether or not the anti-grief system based on range should be enabled.</summary>
-		[Description("Global protection agent for any block distance based anti-grief check.")]
+		[Description("全局保护模块, 监测物块操作距离.")]
 		public bool RangeChecks = true;
 
 		/// <summary>DisableBuild - Whether or not building should be enabled.</summary>
-		[Description("Disables any building / placing of blocks.")]
+		[Description("禁止玩家建筑.")]
 		public bool DisableBuild;
 
 		/// <summary>SuperAdminChatRGB - The chat color for the superadmin group.</summary>
-		[Description("#.#.# = Red/Blue/Green - RGB Colors for the Admin Chat Color. Max value: 255.")]
+		[Description("#.#.# => R/G/B - superadmin组聊天颜色. 单项最大值: 255")]
 		public int[] SuperAdminChatRGB = { 255, 0, 0 };
 
 		/// <summary>SuperAdminChatPrefix - The superadmin chat prefix.</summary>
-		[Description("Super admin group chat prefix.")]
+		[Description("superadmin组前缀.")]
 		public string SuperAdminChatPrefix = "(Admin) ";
 
 		/// <summary>SuperAdminChatSuffix - The superadmin chat suffix.</summary>
-		[Description("Super admin group chat suffix.")]
+		[Description("superadmin组后缀.")]
 		public string SuperAdminChatSuffix = "";
 
 		/// <summary>BackupInterval - The backup frequency in minutes.</summary>
@@ -136,8 +142,8 @@ namespace TShockAPI
 		[Description("Sends ServerName in place of the world name to clients.")]
 		public bool UseServerName = false;
 		/// <summary>MasterServer - Not implemented.</summary>
-		[Obsolete("Not implemented")]
-		[Description("Not implemented.")]
+		[Obsolete("未完成功能.")]
+		[Description("未完成功能.")]
 		public string MasterServer = "127.0.0.1";
 
 		/// <summary>StorageType - The type of SQL database to use when storing data (either "sqlite" or "mysql").</summary>

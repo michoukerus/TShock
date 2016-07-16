@@ -86,9 +86,10 @@ namespace TShockAPI
 	public class Token : Noun
 	{
 		public Token() : base("token", true, "The REST authentication token.", typeof(String)){}
-	}
+        //todo: verify that if i can use "REST 验证TOKEN." to replace "The REST authentication token."
+    }
 
-	public class RestManager
+    public class RestManager
 	{
 		private Rest Rest;
 
@@ -166,10 +167,10 @@ namespace TShockAPI
 
 		#region RestServerMethods
 
-		[Description("Executes a remote command on the server, and returns the output of the command.")]
+		[Description("在服务器上执行远程指令, 并返回输出结果.")]
 		[RouteAttribute("/v2/server/rawcmd")]
 		[Permission(RestPermissions.restrawcommand)]
-		[Noun("cmd", true, "The command and arguments to execute.", typeof(String))]
+		[Noun("cmd", true, "执行的指令与其参数.", typeof(String))]
 		[Token]
 		private object ServerCommand(RestRequestArgs args)
 		{
@@ -188,10 +189,10 @@ namespace TShockAPI
 			return RestResponse(string.Join("\n", tr.GetCommandOutput()));
 		}
 
-		[Description("Executes a remote command on the server, and returns the output of the command.")]
+		[Description("在服务器上执行远程指令, 并返回输出结果.")]
 		[RouteAttribute("/v3/server/rawcmd")]
 		[Permission(RestPermissions.restrawcommand)]
-		[Noun("cmd", true, "The command and arguments to execute.", typeof(String))]
+		[Noun("cmd", true,"执行的指令与其参数.", typeof(String))]
 		[Token]
 		private object ServerCommandV3(RestRequestArgs args)
 		{
@@ -213,12 +214,12 @@ namespace TShockAPI
 			};
 		}
 
-		[Description("Turn the server off.")]
+		[Description("关闭服务器.")]
 		[Route("/v2/server/off")]
 		[Permission(RestPermissions.restmaintenance)]
-		[Noun("confirm", true, "Required to confirm that actually want to turn the server off.", typeof(bool))]
-		[Noun("message", false, "The shutdown message.", typeof(String))]
-		[Noun("nosave", false, "Shutdown without saving.", typeof(bool))]
+		[Noun("confirm", true, "bool值--再次确认是否关闭服务器.", typeof(bool))]
+		[Noun("message", false, "关服通知消息.", typeof(String))]
+		[Noun("nosave", false, "是否不保存地图并保存.", typeof(bool))]
 		[Token]
 		private object ServerOff(RestRequestArgs args)
 		{
@@ -226,18 +227,18 @@ namespace TShockAPI
 				return RestInvalidParam("confirm");
 
 			// Inform players the server is shutting down
-			var reason = string.IsNullOrWhiteSpace(args.Parameters["message"]) ? "Server is shutting down" : args.Parameters["message"];
+			var reason = string.IsNullOrWhiteSpace(args.Parameters["message"]) ? "服务器关闭." : args.Parameters["message"];
 			TShock.Utils.StopServer(!GetBool(args.Parameters["nosave"], false), reason);
 
-			return RestResponse("The server is shutting down");
+			return RestResponse("服务器关闭.");
 		}
 
-		[Description("Attempt to restart the server.")]
+		[Description("重启服务器.")]
 		[Route("/v3/server/restart")]
 		[Permission(RestPermissions.restmaintenance)]
-		[Noun("confirm", true, "Confirm that you actually want to restart the server", typeof(bool))]
-		[Noun("message", false, "The shutdown message.", typeof(String))]
-		[Noun("nosave", false, "Shutdown without saving.", typeof(bool))]
+		[Noun("confirm", true,"bool值--再次确认是否重启服务器.", typeof(bool))]
+		[Noun("message", false, "通知消息.", typeof(String))]
+		[Noun("nosave", false,"是否不保存地图并保存.", typeof(bool))]
 		[Token]
 		private object ServerRestart(RestRequestArgs args)
 		{
