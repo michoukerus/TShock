@@ -1711,9 +1711,9 @@ namespace TShockAPI
 			}
 			else
 			{
-				args.Player.SendSuccessMessage("成功更改玩家 {0} 的用户组至 {1}. 原因: {2}",
+				args.Player.SendSuccessMessage("成功更改玩家 {0} 的用户组至 {1}. ({2}后过期)",
 					ply[0].Name, g.Name, args.Parameters[2]);
-				ply[0].SendSuccessMessage("你的用户组被临时更改至 {0}. 原因: {1}",
+				ply[0].SendSuccessMessage("你的临时用户组被更改至 {0}. ({1}后过期)",
 					g.Name, args.Parameters[2]);
 			}
 		}
