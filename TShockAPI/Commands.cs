@@ -1651,7 +1651,7 @@ namespace TShockAPI
 		private static void ForceXmas(CommandArgs args)
 		{
 			TShock.Config.ForceXmas = !TShock.Config.ForceXmas;
-			Main.CheckXMas();
+			Main.checkXMas();
 			if (args.Silent)
 				args.Player.SendInfoMessage("{0}了圣诞模式!", (TShock.Config.ForceXmas ? "开启" : "关闭"));
 			else
