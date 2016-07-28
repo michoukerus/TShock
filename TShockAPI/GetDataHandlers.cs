@@ -1250,7 +1250,8 @@ namespace TShockAPI
 					{ PacketTypes.CompleteAnglerQuest, HandleCompleteAnglerQuest },
 					{ PacketTypes.NumberOfAnglerQuestsCompleted, HandleNumberOfAnglerQuestsCompleted },
 					{ PacketTypes.MassWireOperation, HandleMassWireOperation },
-					{ PacketTypes.GemLockToggle, HandleGemLockToggle }
+					{ PacketTypes.GemLockToggle, HandleGemLockToggle },
+					{ PacketTypes.ToggleParty, HandleToggleParty }
 				};
 		}
 
@@ -3514,6 +3515,12 @@ namespace TShockAPI
 				return true;
 			}
 
+			if (type == 3 && !args.Player.HasPermission(Permissions.usesundial))
+			{
+				args.Player.SendErrorMessage("你没有使用日晷的权限!");
+				return true;
+			}
+
 			return false;
 		}
 
@@ -3988,6 +3995,17 @@ namespace TShockAPI
 
 			if (TShock.CheckTilePermission(args.Player, x, y)) 
 			{
+				return true;
+			}
+
+			return false;
+		}
+
+		private static bool HandleToggleParty(GetDataHandlerArgs args)
+		{
+			if (args.Player != null && !args.Player.HasPermission(Permissions.toggleparty))
+			{
+				args.Player.SendErrorMessage("你没有举行派对的权限!");
 				return true;
 			}
 
