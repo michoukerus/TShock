@@ -512,7 +512,7 @@ namespace TShockAPI
 				AllowServer = false,
 				HelpText = "设定世界出生点."
 			});
-			add(new Command(Permissions.dungeonposition, SetDungeon, "setdungeon", , "设置地牢位置")
+			add(new Command(Permissions.dungeonposition, SetDungeon, "setdungeon", "设置地牢位置")
 			{
 				AllowServer = false,
 				HelpText = "设定世界地牢位置."
