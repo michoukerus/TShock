@@ -362,7 +362,7 @@ namespace TShockAPI
 			public int TileY { get; set; }
 		}
 		/// <summary>
-		/// TileKill - When a tile is removed fromt he world
+		/// TileKill - When a tile is removed from the world
 		/// </summary>
 		public static HandlerList<TileKillEventArgs> TileKill;
 
@@ -1259,6 +1259,8 @@ namespace TShockAPI
 					{ PacketTypes.KillPortal, HandleKillPortal },
 					{ PacketTypes.PlaceTileEntity, HandlePlaceTileEntity },
 					{ PacketTypes.PlaceItemFrame, HandlePlaceItemFrame },
+					{ PacketTypes.SyncExtraValue, HandleSyncExtraValue },
+					{ PacketTypes.LoadNetModule, HandleLoadNetModule },
 					{ PacketTypes.ToggleParty, HandleToggleParty }
 				};
 		}
@@ -2013,7 +2015,7 @@ namespace TShockAPI
 						return true;
 					}
 					// If the tile is a pickaxe tile and they aren't selecting a pickaxe, they're hacking.
-					else if ((!Main.tileAxe[tile.type] && !Main.tileHammer[tile.type]) && tile.wall == 0 && (selectedItem.pick == 0 && !ItemID.Sets.Explosives[selectedItem.netID] && args.Player.RecentFuse == 0))
+					else if ((!Main.tileAxe[tile.type] && !Main.tileHammer[tile.type]) && tile.wall == 0 && ((args.TPlayer.mount.Type != 8 && selectedItem.pick == 0) && !ItemID.Sets.Explosives[selectedItem.netID] && args.Player.RecentFuse == 0))
 					{
 						args.Player.SendTileSquare(tileX, tileY, 4);
 						return true;
@@ -2021,7 +2023,7 @@ namespace TShockAPI
 				}
 				else if (action == EditAction.KillWall)
 				{
-					// If they aren't selecting an hammer, they could be hacking.
+					// If they aren't selecting a hammer, they could be hacking.
 					if (selectedItem.hammer == 0 && !ItemID.Sets.Explosives[selectedItem.netID] && args.Player.RecentFuse == 0 && selectedItem.createWall == 0)
 					{
 
@@ -2144,10 +2146,10 @@ namespace TShockAPI
 
 				// Ignore rope placement range
 				if ((editData != TileID.Rope
-					|| editData != TileID.SilkRope
-					|| editData != TileID.VineRope
-					|| editData != TileID.WebRope
-					|| action != EditAction.PlaceTile)
+					&& editData != TileID.SilkRope
+					&& editData != TileID.VineRope
+					&& editData != TileID.WebRope
+					&& action == EditAction.PlaceTile)
 					&& TShock.CheckRangePermission(args.Player, tileX, tileY))
 				{
 					args.Player.SendTileSquare(tileX, tileY, 4);
@@ -4201,6 +4203,36 @@ namespace TShockAPI
 			}
 
 			return false;
+		}
+
+		private static bool HandleSyncExtraValue(GetDataHandlerArgs args)
+		{
+			var npcIndex = args.Data.ReadInt16();
+			var extraValue = args.Data.ReadSingle();
+			var position = new Vector2(args.Data.ReadSingle(), args.Data.ReadSingle());
+
+			if (position.X < 0 || position.X >= Main.maxTilesX || position.Y < 0 || position.Y >= Main.maxTilesY)
+			{
+				return true;
+			}
+
+			if (!Main.expertMode)
+			{
+				return true;
+			}
+
+			if (TShock.CheckRangePermission(args.Player, (int)position.X, (int)position.Y))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		private static bool HandleLoadNetModule(GetDataHandlerArgs args)
+		{
+			// Since this packet is never actually sent to us, every attempt at sending it can be considered as a liquid exploit attempt
+			return true;
 		}
 
 		private static bool HandleToggleParty(GetDataHandlerArgs args)
