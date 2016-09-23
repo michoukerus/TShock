@@ -1233,7 +1233,7 @@ namespace TShockAPI
 					{ PacketTypes.UpdateNPCHome, UpdateNPCHome },
 					{ PacketTypes.PlayerAddBuff, HandlePlayerAddBuff },
 					{ PacketTypes.ItemDrop, HandleItemDrop },
-					{ PacketTypes.UpdateItemDrop, HandleUpdateItemDrop },
+					{ PacketTypes.UpdateItemDrop, HandleItemDrop },
 					{ PacketTypes.ItemOwner, HandleItemOwner },
 					{ PacketTypes.PlayerHp, HandlePlayerHp },
 					{ PacketTypes.PlayerMana, HandlePlayerMana },
@@ -1741,6 +1741,10 @@ namespace TShockAPI
 							continue;
 						}
 
+						// Junction Box
+						if (tile.type == TileID.WirePipe)
+							return false;
+
 						// Orientable tiles
 						if (tile.type == newtile.Type && orientableTiles.Contains(tile.type))
 						{
@@ -1903,6 +1907,12 @@ namespace TShockAPI
 
 				var style = args.Data.ReadInt8();
 
+				if (editData < 0)
+				{
+					args.Player.SendTileSquare(tileX, tileY, 4);
+					return true;
+				}
+
 				if (OnTileEdit(args.Player, tileX, tileY, action, type, editData, style))
 					return true;
 				if (!TShock.Utils.TilePlacementValid(tileX, tileY))
@@ -2026,7 +2036,6 @@ namespace TShockAPI
 					// If they aren't selecting a hammer, they could be hacking.
 					if (selectedItem.hammer == 0 && !ItemID.Sets.Explosives[selectedItem.netID] && args.Player.RecentFuse == 0 && selectedItem.createWall == 0)
 					{
-
 						args.Player.SendTileSquare(tileX, tileY, 1);
 						return true;
 					}
@@ -2046,13 +2055,13 @@ namespace TShockAPI
 					}
 
 					// If they aren't selecting the item which creates the tile or wall, they're hacking.
-					if ((editData != TileID.MagicalIceBlock
-						&& editData != TileID.Rope
-						&& editData != TileID.SilkRope
-						&& editData != TileID.VineRope
-						&& editData != TileID.WebRope)
-						&& editData != (action == EditAction.PlaceTile ? selectedItem.createTile : selectedItem.createWall))
+					if (editData != (action == EditAction.PlaceTile ? selectedItem.createTile : selectedItem.createWall))
 					{
+						if (selectedItem.netID == ItemID.IceRod && editData == TileID.MagicalIceBlock)
+						{
+							return false;
+						}
+
 						args.Player.SendTileSquare(tileX, tileY, 4);
 						return true;
 					}
@@ -2144,14 +2153,18 @@ namespace TShockAPI
 					return true;
 				}
 
-				// Ignore rope placement range
-				if ((editData != TileID.Rope
-					&& editData != TileID.SilkRope
-					&& editData != TileID.VineRope
-					&& editData != TileID.WebRope
-					&& action == EditAction.PlaceTile)
-					&& TShock.CheckRangePermission(args.Player, tileX, tileY))
+				if (TShock.CheckRangePermission(args.Player, tileX, tileY))
 				{
+					if (action == EditAction.PlaceTile && (editData == TileID.Rope || editData == TileID.SilkRope || editData == TileID.VineRope || editData == TileID.WebRope))
+					{
+						return false;
+					}
+
+					if (action == EditAction.KillTile || action == EditAction.KillWall && ItemID.Sets.Explosives[selectedItem.netID] && args.Player.RecentFuse == 0)
+					{
+						return false;
+					}
+
 					args.Player.SendTileSquare(tileX, tileY, 4);
 					return true;
 				}
@@ -3308,7 +3321,8 @@ namespace TShockAPI
 			// player is attempting to crash clients
 			if (type < -48 || type >= Main.maxItemTypes)
 			{
-				args.Player.SendData(PacketTypes.ItemDrop, "", id);
+				// Causes item duplications. Will be re added later if necessary
+				//args.Player.SendData(PacketTypes.ItemDrop, "", id);
 				return true;
 			}
 
@@ -3322,7 +3336,8 @@ namespace TShockAPI
 			{
 				if (TShock.CheckRangePermission(args.Player, (int)(Main.item[id].position.X / 16f), (int)(Main.item[id].position.Y / 16f)))
 				{
-					args.Player.SendData(PacketTypes.ItemDrop, "", id);
+					// Causes item duplications. Will be re added if necessary
+					//args.Player.SendData(PacketTypes.ItemDrop, "", id);
 					return true;
 				}
 
@@ -3359,79 +3374,6 @@ namespace TShockAPI
 			if (TShock.CheckIgnores(args.Player))
 			{
 				args.Player.SendData(PacketTypes.ItemDrop, "", id);
-				return true;
-			}
-
-			return false;
-		}
-
-		private static bool HandleUpdateItemDrop(GetDataHandlerArgs args)
-		{
-			var itemID = args.Data.ReadInt16();
-			var position = new Vector2(args.Data.ReadSingle(), args.Data.ReadSingle());
-			var velocity = new Vector2(args.Data.ReadSingle(), args.Data.ReadSingle());
-			var stacks = args.Data.ReadInt16();
-			var prefix = args.Data.ReadInt8();
-			var noDelay = args.Data.ReadInt8() == 1;
-			var itemNetID = args.Data.ReadInt16();
-
-			if (OnItemDrop(itemID, position, velocity, stacks, prefix, noDelay, itemNetID))
-				return true;
-
-			// Invalid Net IDs can cause client crashes
-			if (itemNetID < -48 || itemNetID >= Main.maxItemTypes)
-			{
-				args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
-				return true;
-			}
-
-			if (prefix > Item.maxPrefixes) // Make sure the prefix is a legit value
-			{
-				args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
-				return true;
-			}
-
-			if (itemNetID == 0) //Item removed, let client do this to prevent item duplication client side (but only if it passed the range check)
-			{
-				if (TShock.CheckRangePermission(args.Player, (int)(Main.item[itemID].position.X / 16f), (int)(Main.item[itemID].position.Y / 16f)))
-				{
-					args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
-					return true;
-				}
-
-				return false;
-			}
-
-			if (TShock.CheckRangePermission(args.Player, (int)(position.X / 16f), (int)(position.Y / 16f)))
-			{
-				args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
-				return true;
-			}
-
-			if (Main.item[itemID].active && Main.item[itemID].netID != itemNetID) //stop the client from changing the item type of a drop but only if the client isn't picking up the item
-			{
-				args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
-				return true;
-			}
-
-			Item item = new Item();
-			item.netDefaults(itemNetID);
-			if ((stacks > item.maxStack || stacks <= 0) || (TShock.Itembans.ItemIsBanned(item.name, args.Player) && !args.Player.HasPermission(Permissions.allowdroppingbanneditems)))
-			{
-				args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
-				return true;
-			}
-			if ((Main.ServerSideCharacter) && (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond - args.Player.LoginMS < TShock.ServerSideCharacterConfig.LogonDiscardThreshold))
-			{
-				//Player is probably trying to sneak items onto the server in their hands!!!
-				TShock.Log.ConsoleInfo("Player {0} tried to sneak {1} onto the server!", args.Player.Name, item.name);
-				args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
-				return true;
-
-			}
-			if (TShock.CheckIgnores(args.Player))
-			{
-				args.Player.SendData(PacketTypes.ItemDrop, "", itemID);
 				return true;
 			}
 
@@ -4009,7 +3951,7 @@ namespace TShockAPI
 		/// <summary>
 		/// For use with a ToggleGemLock event
 		/// </summary>
-		public class GemLockToggleEventArgs : HandledEventArgs 
+		public class GemLockToggleEventArgs : HandledEventArgs
 		{
 			/// <summary>
 			/// X Location
@@ -4030,12 +3972,12 @@ namespace TShockAPI
 		/// </summary>
 		public static HandlerList<GemLockToggleEventArgs> GemLockToggle;
 
-		private static bool OnGemLockToggle(Int32 x, Int32 y, bool on) 
+		private static bool OnGemLockToggle(Int32 x, Int32 y, bool on)
 		{
 			if (GemLockToggle == null)
 				return false;
 
-			var args = new GemLockToggleEventArgs 
+			var args = new GemLockToggleEventArgs
 			{
 				X = x,
 				Y = y,
@@ -4051,12 +3993,12 @@ namespace TShockAPI
 			var y = (int)args.Data.ReadInt16();
 			var on = args.Data.ReadBoolean();
 
-			if (x < 0 || y < 0 || x >= Main.maxTilesX || y >= Main.maxTilesY) 
+			if (x < 0 || y < 0 || x >= Main.maxTilesX || y >= Main.maxTilesY)
 			{
 				return true;
 			}
 
-			if (OnGemLockToggle(x, y, on)) 
+			if (OnGemLockToggle(x, y, on))
 			{
 				return true;
 			}
@@ -4066,17 +4008,17 @@ namespace TShockAPI
 				return false;
 			}
 
-			if (!TShock.Utils.TilePlacementValid(x, y) || (args.Player.Dead && TShock.Config.PreventDeadModification)) 
+			if (!TShock.Utils.TilePlacementValid(x, y) || (args.Player.Dead && TShock.Config.PreventDeadModification))
 			{
 				return true;
 			}
 
-			if (TShock.CheckIgnores(args.Player)) 
+			if (TShock.CheckIgnores(args.Player))
 			{
 				return true;
 			}
 
-			if (TShock.CheckTilePermission(args.Player, x, y)) 
+			if (TShock.CheckTilePermission(args.Player, x, y))
 			{
 				return true;
 			}

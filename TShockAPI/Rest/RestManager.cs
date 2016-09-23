@@ -259,7 +259,7 @@ namespace TShockAPI
 		private object ServerReload(RestRequestArgs args)
 		{
 			TShock.Utils.Reload(new TSRestPlayer(args.TokenData.Username, TShock.Groups.GetGroupByName(args.TokenData.UserGroupName)));
-			
+
 			return RestResponse("Configuration, permissions, and regions reload complete. Some changes may require a server restart.");
 		}
 
@@ -811,6 +811,7 @@ namespace TShockAPI
 				{"username", null == player.User ? "" : player.User.Name},
 				{"ip", player.IP},
 				{"group", player.Group.Name},
+				{"registered", null == player.User ? "" : player.User.Registered},
 				{"position", player.TileX + "," + player.TileY},
 				{"inventory", string.Join(", ", activeItems.Select(p => (p.name + ":" + p.stack)))},
 				{"buffs", string.Join(", ", player.TPlayer.buffType)}
@@ -838,6 +839,7 @@ namespace TShockAPI
 				{"username", null == player.User ? "" : player.User.Name},
 				{"ip", player.IP},
 				{"group", player.Group.Name},
+				{"registered", null == player.User ? "" : player.User.Registered},
 				{"position", player.TileX + "," + player.TileY},
 				{"inventory", string.Join(", ", inventory.Select(p => (p.name + ":" + p.stack)))},
 				{"armor", string.Join(", ", equipment.Select(p => (p.netID + ":" + p.prefix)))},
