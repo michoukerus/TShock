@@ -499,6 +499,10 @@ namespace TShockAPI
 			{
 				HelpText = "开启出生点保护."
 			});
+			add(new Command(Permissions.sandstorm, Sandstorm, "sandstorm", "沙尘暴")
+			{
+				HelpText = "开启/终止 沙尘暴."
+			});
 			add(new Command(Permissions.rain, Rain, "rain", "雨")
 			{
 				HelpText = "更改下雨."
