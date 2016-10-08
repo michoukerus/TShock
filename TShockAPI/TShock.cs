@@ -45,7 +45,7 @@ namespace TShockAPI
 	/// This is the TShock main class. TShock is a plugin on the TerrariaServerAPI, so it extends the base TerrariaPlugin.
 	/// TShock also complies with the API versioning system, and defines its required API version here.
 	/// </summary>
-	[ApiVersion(1, 24)]
+	[ApiVersion(1, 25)]
 	public class TShock : TerrariaPlugin
 	{
 		/// <summary>VersionNum - The version number the TerrariaAPI will return back to the API. We just use the Assembly info.</summary>
@@ -55,7 +55,7 @@ namespace TShockAPI
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "高级汉化-开发";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(1, 3, 1, 0);
+		public static readonly Version CNVersion = new Version(1, 4, 0, 0);
 
         /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
         public static string SavePath = "tshock";
@@ -502,13 +502,13 @@ namespace TShockAPI
 
 			if (args.Chest != null)
 			{
-				if (Config.RegionProtectChests && !Regions.CanBuild((int)args.Position.X, (int)args.Position.Y, tsplr))
+				if (Config.RegionProtectChests && !Regions.CanBuild((int)args.WorldPosition.X, (int)args.WorldPosition.Y, tsplr))
 				{
 					args.Handled = true;
 					return;
 				}
 
-				if (CheckRangePermission(tsplr, (int)args.Position.X, (int)args.Position.Y))
+				if (CheckRangePermission(tsplr, args.Chest.x, args.Chest.y))
 				{
 					args.Handled = true;
 					return;
