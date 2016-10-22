@@ -2,13 +2,22 @@
 
 This is the rolling changelog for TShock for Terraria. Use past tense when adding new entries; sign your name off when you add or change something. This should primarily be things like user changes, not necessarily codebase changes unless it's really relevant or large.
 
+## Upcoming Changes
+
+* Fixed HealOtherPlayer packet exploit (@Simon311).
+* Added associated config option for HealOtherPlayer exploit prevention (@Simon311).
+* Added `/accountinfo` command to get account information for a given TShock account (@Simon311).
+* Removed TShock color parsing from MOTDs (@WhiteXZ).
+* Fixed butterfly statues spawning catchable butterflies (@DogooFalchion).
+* Implemented some missing balance changes lost in prior version patches (@DogooFalchion).
+
 ## TShock 4.3.20
 * Security improvement: The auth system is now automatically disabled if a superadmin exists in the database (@Enerdy).
 * Removed the `auth-verify` command since `auth` now serves its purpose when necessary (@Enerdy).
 * Security: `/"` exploit can no longer break chat mute filters (@Simon311).
 * Fixed an issue where sometimes players could connect briefly during server shutdown, leading to errors (@Simon311).
 * Fixed wyverns despawning & not behaving like normal (@WhiteXZ).
-* Fixed major security issue where InvokeClientConnect could be exploited to do terrible, terrible things (@Simon311, @nicatronTg, @popstarfreas, @ProfessorXZ).
+* Fixed major security issue where InvokeClientConnect could be exploited to do terrible, terrible things (@Simon311, @nicatronTg, @popstarfreas, @ProfessorXZ, @WhiteXZ).
 
 ## TShock 4.3.19
 * Compatibility with Terraria 1.3.3.3 (@Simon311)
@@ -173,7 +182,7 @@ Alternatively, if you do not want to report the crash, just delete the file.
 * API: Fixed issues with SendQ writes failing. (@Wolfje)
 * API: Version tick to 1.21
 
-## TShock 4.3.6 (Pre-Release)
+## TShock 4.3.6
 
 * API: NPCs shoot the right way (@WhiteXZ)
 * API: The server config file works correctly with priority and port (@Patrikkk)
@@ -225,7 +234,7 @@ Alternatively, if you do not want to report the crash, just delete the file.
 * Fix: Logging out is now safe with SSC (/logout) (issue #1037). (@WhiteXZ)
 * API/TShock: Removed -world parameter from TShock, put it back in the API. (@tylerjwatson)
 
-## TShock 4.3.5 (Unreleased)
+## TShock 4.3.5
 
 * Fix HandleSpawnBoss, and as a result the spawnboss command and boss spawning items. (@Ijwu)
 * Rewrite SendQ for more network stack improvements (@tylerjwatson)

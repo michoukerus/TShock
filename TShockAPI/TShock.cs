@@ -55,7 +55,7 @@ namespace TShockAPI
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "高级汉化-开发";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(1, 5, 0, 0);
+		public static readonly Version CNVersion = new Version(1, 5, 1, 0);
 
         /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
         public static string SavePath = "tshock";
@@ -417,8 +417,8 @@ namespace TShockAPI
 				KnownIps = JsonConvert.DeserializeObject<List<String>>(args.Player.User.KnownIps);
 			}
 
-			bool found = KnownIps.Any(s => s.Equals(args.Player.IP));
-			if (!found)
+			bool last = KnownIps.Last() == args.Player.IP;
+			if (!last)
 			{
 				if (KnownIps.Count == 100)
 				{
@@ -1037,6 +1037,15 @@ namespace TShockAPI
 						player.PaintThreshold = 0;
 					}
 
+					if (player.HealOtherThreshold >= TShock.Config.HealOtherThreshold)
+					{
+						player.Disable("达到玩家治疗上限.", flags);
+					}
+					if (player.HealOtherThreshold > 0)
+					{
+						player.HealOtherThreshold = 0;
+					}
+
 					if (player.RespawnTimer > 0 && --player.RespawnTimer == 0 && player.Difficulty != 2)
 					{
 						player.Spawn();
@@ -1466,6 +1475,12 @@ namespace TShockAPI
 		{
 			if (args.Handled)
 				return;
+
+			if (string.IsNullOrWhiteSpace(args.Command))
+			{
+				args.Handled = true;
+				return;
+			}
 
 			// Damn you ThreadStatic and Redigit
 			if (Main.rand == null)

@@ -1261,7 +1261,8 @@ namespace TShockAPI
 					{ PacketTypes.PlaceItemFrame, HandlePlaceItemFrame },
 					{ PacketTypes.SyncExtraValue, HandleSyncExtraValue },
 					{ PacketTypes.LoadNetModule, HandleLoadNetModule },
-					{ PacketTypes.ToggleParty, HandleToggleParty }
+					{ PacketTypes.ToggleParty, HandleToggleParty },
+					{ PacketTypes.PlayerHealOther, HandleHealOther }
 				};
 		}
 
@@ -1280,6 +1281,37 @@ namespace TShockAPI
 					return true;
 				}
 			}
+			return false;
+		}
+
+		private static bool HandleHealOther(GetDataHandlerArgs args)
+		{
+			byte plr = args.Data.ReadInt8();
+			short amount = args.Data.ReadInt16();
+
+			if (amount <= 0 || Main.player[plr] == null || !Main.player[plr].active)
+			{
+				return true;
+			}
+
+			if (amount > TShock.Config.MaxDamage * 0.2)
+			{
+				args.Player.Disable("玩家治疗(HealOtherPlayer) 作弊检测!", DisableFlags.WriteToLogAndConsole);
+				return true;
+			}
+
+			if (args.Player.HealOtherThreshold > TShock.Config.HealOtherThreshold)
+			{
+				args.Player.Disable("达到玩家治疗上限.", DisableFlags.WriteToLogAndConsole);
+				return true;
+			}
+
+			if (TShock.CheckIgnores(args.Player) || (DateTime.UtcNow - args.Player.LastThreat).TotalMilliseconds < 5000)
+			{
+				return true;
+			}
+
+			args.Player.HealOtherThreshold++;
 			return false;
 		}
 

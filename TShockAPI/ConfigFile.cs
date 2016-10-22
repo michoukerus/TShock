@@ -325,6 +325,12 @@ namespace TShockAPI
 		[JsonProperty("发射抛射体速率上限")]
 		public int ProjectileThreshold = 50;
 
+		/// <summary>HealOtherThreshold - Disables a player if this number of HealOtherPlayer packets is sent within 1 second.</summary>
+		[Description("Disables a player if this number of HealOtherPlayer packets is sent within 1 second.")]
+		[JsonProperty("玩家治疗速率上限")]
+		public int HealOtherThreshold = 50;
+
+		/// <summary>ProjIgnoreShrapnel - Whether or not to ignore shrapnel from crystal bullets for the projectile threshold count.</summary>
 		[Description("Ignore shrapnel from crystal bullets for projectile threshold.")]
 		[JsonProperty("忽略抛射体碎片计算")]
 		public bool ProjIgnoreShrapnel = true;

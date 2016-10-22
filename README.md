@@ -43,6 +43,7 @@ TShock 是 Terraria 的服务器模组(修改/mod), 使用C#编写, 并基于 [T
 
 ### 英文
 * [Github Releases](https://github.com/TShock/TShock/releases)
+* [开发版更新](https://travis.tshock.co/)
 * [官网插件资源](https://tshock.co/xf/index.php?resources/)
 * [旧版本TShock](https://github.com/TShock/TShock/downloads)
 

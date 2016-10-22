@@ -244,6 +244,10 @@ namespace TShockAPI
 				DoLog = false,
 				HelpText = "注册新账户."
 			});
+			add(new Command(Permissions.checkaccountinfo, ViewAccountInfo, "accountinfo", "账号信息" "ai")
+			{
+				HelpText = "查看用户的账号信息."
+			});
 			#endregion
 			#region Admin Commands
 			add(new Command(Permissions.ban, Ban, "ban", "封禁")
@@ -1202,6 +1206,43 @@ namespace TShockAPI
 					message.Append(" | 用户名: ").Append(players[0].User.Name).Append(" | 用户组: ").Append(players[0].Group.Name);
 				args.Player.SendSuccessMessage(message.ToString());
 			}
+		}
+
+		private static void ViewAccountInfo(CommandArgs args)
+		{
+			if (args.Parameters.Count < 1)
+			{
+				args.Player.SendErrorMessage("语法无效! 正确语法: {0}accountinfo <账户名>", Specifier);
+				return;
+			}
+
+			string username = String.Join(" ", args.Parameters);
+			if (!string.IsNullOrWhiteSpace(username))
+			{
+				var user = TShock.Users.GetUserByName(username);
+				if (user != null)
+				{
+					DateTime LastSeen = DateTime.Parse(user.LastAccessed).ToLocalTime();
+					string Timezone = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Hours.ToString("+#;-#");
+
+					args.Player.SendSuccessMessage("{0} 的上次登录时间为 {1} {2} UTC{3}.", user.Name, LastSeen.ToShortDateString(),
+						LastSeen.ToShortTimeString(), Timezone);
+
+					if (args.Player.Group.HasPermission(Permissions.advaccountinfo))
+					{
+						List<string> KnownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps);
+						string ip = KnownIps[KnownIps.Count - 1];
+						DateTime Registered = DateTime.Parse(user.Registered).ToLocalTime();
+
+						args.Player.SendSuccessMessage("{0} 的用户组是 {1}.", user.Name, user.Group);
+						args.Player.SendSuccessMessage("{0} 的上次登录IP地址是 {1}.", user.Name, ip);
+						args.Player.SendSuccessMessage("{0} 的注册时间是 {1} {2} UTC{3}.", user.Name, Registered.ToShortDateString(), Registered.ToShortTimeString(), Timezone);
+					}
+				}
+				else
+					args.Player.SendErrorMessage("用户 {0} 不存在.", username);
+			}
+			else args.Player.SendErrorMessage("语法无效! 正确语法: {0}accountinfo <账户名>", Specifier);
 		}
 
 		private static void Kick(CommandArgs args)
