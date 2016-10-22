@@ -1,4 +1,8 @@
-# TShock 中文版本 [![编译状态](https://travis-ci.org/mistzzt/TShock.png?branch=adv-cn_dev)](https://travis-ci.org/mistzzt/TShock) 
+<p align="center">
+  <img src="https://tshock.co/newlogo.png" alt="TShock for Terraria"><br />
+  <a href="https://travis-ci.org/NyxStudios/TShock"><img src="https://travis-ci.org/NyxStudios/TShock.png?branch=general-devel" alt="编译状态"></a><br />
+  <hr />
+</p>
 
 ## 中文版本的说明
 

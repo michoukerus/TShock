@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2015 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2016 Nyx Studios (fka. The TShock Team)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -213,11 +213,7 @@ namespace TShockAPI
 				AllowServer = false,
 				HelpText = "首次登入游戏时验证超管."
 			});
-			add(new Command(Permissions.authverify, AuthVerify, "auth-verify", "完成验证")
-			{
-				HelpText = "关闭密钥验证超管."
-			});
-			add(new Command(Permissions.user, ManageUsers, "user", "用户")
+			add(new Command(Permissions.user, ManageUsers, "user")
 			{
 				DoLog = false,
 				HelpText = "管理用户账户."
@@ -632,12 +628,31 @@ namespace TShockAPI
 			if (cmdPrefix == SilentSpecifier)
 				silent = true;
 
-			var args = ParseParameters(cmdText);
-			if (args.Count < 1)
-				return false;
+			int index = -1;
+			for (int i = 0; i < cmdText.Length; i++)
+			{
+				if (IsWhiteSpace(cmdText[i]))
+				{
+					index = i;
+					break;
+				}
+			}
+			string cmdName;
+			if (index == 0) // Space after the command specifier should not be supported
+			{
+				player.SendErrorMessage("指令无效. 键入 {0}help 以获取可用指令.", Specifier);
+				return true;
+			}
+			else if (index < 0)
+				cmdName = cmdText.ToLower();
+			else
+				cmdName = cmdText.Substring(0, index).ToLower();
 
-			string cmdName = args[0].ToLower();
-			args.RemoveAt(0);
+			List<string> args;
+			if (index < 0)
+				args = new List<string>();
+			else
+				args = ParseParameters(cmdText.Substring(index));
 
 			IEnumerable<Command> cmds = ChatCommands.FindAll(c => c.HasAlias(cmdName));
 
@@ -992,8 +1007,9 @@ namespace TShockAPI
 				}
 				else
 				{
-					args.Player.SendErrorMessage("账户 " + user.Name + " 已经被注册了.");
-					TShock.Log.ConsoleInfo(args.Player.Name + " 尝试注册一个存在的账户: " + user.Name);
+					args.Player.SendErrorMessage("抱歉, 账号 " + user.Name + " 已经被其他人注册了.");
+					args.Player.SendErrorMessage("请用其他的名称注册.");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 注册已有账户失败: " + user.Name);
 				}
 			}
 			catch (UserManagerException ex)
@@ -4631,62 +4647,56 @@ namespace TShockAPI
 		{
 			if (TShock.AuthToken == 0)
 			{
-				args.Player.SendWarningMessage("密钥获取权限已停止, 该次非法尝试讲被记录.");
-				TShock.Utils.ForceKick(args.Player, "验证系统已经停止.", true, true);
-				TShock.Log.Warn("玩家 {0} 尝试执行被禁用的 {1}auth 指令.", args.Player.IP, Specifier);
-				return;
-			}
-			int givenCode = Convert.ToInt32(args.Parameters[0]);
-			if (givenCode == TShock.AuthToken && args.Player.Group.Name != "superadmin")
-			{
-				try
+				if (args.Player.Group.Name == new SuperAdminGroup().Name)
+					args.Player.SendInfoMessage("验证系统已经被关闭.");
+				else
 				{
-					args.Player.Group = TShock.Utils.GetGroup("superadmin");
-					args.Player.SendInfoMessage("你现在已经拥有临时超级管理权, 退出游戏后就会被系统收回.");
-					args.Player.SendInfoMessage("若想长期使用, 请按照下面步骤创建永久超级管理账户..");
-					args.Player.SendInfoMessage("执行 -- {0}user add <用户名> <密码> superadmin", Specifier);
-					args.Player.SendInfoMessage("结果 -- <用户名>(<密码>) 会被添加到超管组.");
-					args.Player.SendInfoMessage("完成上述操作后, 执行 -- {0}login <用户名(若和玩家名一致, 可省略)> <密码> --.", Specifier);
-					args.Player.SendInfoMessage("若明白, 请按照上述说的执行, 完成后, 执行 {0}auth-verify 来关闭验证功能.", Specifier);
+					args.Player.SendWarningMessage("验证系统被禁用; 本次尝试验证将被记录.");
+					TShock.Utils.ForceKick(args.Player, "验证系统被禁用.", true, true);
+					TShock.Log.Warn("{0} 在验证系统被禁用的情况下尝试执行 {1}auth", args.Player.IP, Specifier);
+					return;
 				}
-				catch (UserManagerException ex)
-				{
-					TShock.Log.ConsoleError(ex.ToString());
-					args.Player.SendErrorMessage(ex.Message);
-				}
+			}
+
+			// If the user account is already a superadmin (permanent), disable the system
+			if (args.Player.IsLoggedIn && args.Player.tempGroup == null && args.Player.Group.Name == new SuperAdminGroup().Name)
+			{
+				args.Player.SendSuccessMessage("你的新账户已经验证完毕, 同时 {0}auth 指令已被禁用.", Specifier);
+				args.Player.SendSuccessMessage("你可使用 {0}user 指令管理用户权限.", Specifier);
+				args.Player.SendSuccessMessage("验证系统会持续关闭. (删除 auth.lck 文件也不会开启).");
+				args.Player.SendSuccessMessage("你可以在官方论坛分享你的服务器, 跟其他管理交流经验等.-- https://tshock.co/");
+				args.Player.SendSuccessMessage("若需汉化方面的帮助, 请访问在Github的项目.-- https://github.com/mistzzt/TShock");
+				args.Player.SendSuccessMessage("感谢使用 TShock ! 感谢对该汉化版本的支持.");
+				FileTools.CreateFile(Path.Combine(TShock.SavePath, "auth.lck"));
+				File.Delete(Path.Combine(TShock.SavePath, "authcode.txt"));
+				TShock.AuthToken = 0;
 				return;
 			}
 
-			if (args.Player.Group.Name == "superadmin")
+			if (args.Parameters.Count == 0)
 			{
-				args.Player.SendInfoMessage("请禁用验证系统! 若需要帮助, 联系TShock论坛. https://tshock.co/");
-				args.Player.SendInfoMessage("该账户为超级管理, 请完成下面提示的步骤完成TShock配置:");
-				args.Player.SendInfoMessage("请使用该账户登录, 然后关闭超管验证功能.");
-                args.Player.SendInfoMessage("若明白, 请按照上述说的执行, 完成后, 执行 {0}auth-verify 来关闭验证功能.",Specifier);
-                return;
-			}
-
-			args.Player.SendErrorMessage("无效超管验证密钥. 该非法尝试将被记录.");
-			TShock.Log.Warn(args.Player.IP + " 尝试验证超管失败.");
-		}
-
-		private static void AuthVerify(CommandArgs args)
-		{
-			if (TShock.AuthToken == 0)
-			{
-				args.Player.SendWarningMessage("看上去你已经关闭密钥验证功能了.");
-				args.Player.SendWarningMessage("若是不小心执行该指令, 删除 auth.lck 文件即可恢复功能.");
+				args.Player.SendErrorMessage("你必须提供验证码!");
 				return;
 			}
 
-			args.Player.SendSuccessMessage("你的新账户已经成功验证, 且密钥验证功能已经被关闭.");
-			args.Player.SendSuccessMessage("你以后可以使用 {0}user 管理用户. 记住不要删除 auth.lck 文件.", Specifier);
-			args.Player.SendSuccessMessage("你可以在官方论坛分享你的服务器, 跟其他管理交流经验等.-- https://tshock.co/");
-            args.Player.SendSuccessMessage("若需汉化方面的帮助, 请访问在Github的项目.-- https://github.com/mistzzt/TShock");
-            args.Player.SendSuccessMessage("感谢使用 TShock ! 感谢对该汉化版本的支持.");
-			FileTools.CreateFile(Path.Combine(TShock.SavePath, "auth.lck"));
-			File.Delete(Path.Combine(TShock.SavePath, "authcode.txt"));
-			TShock.AuthToken = 0;
+			int givenCode;
+			if (!Int32.TryParse(args.Parameters[0], out givenCode) || givenCode != TShock.AuthToken)
+			{
+				args.Player.SendErrorMessage("管理验证密码不正确; 该次尝试将被记录.");
+				TShock.Log.Warn(args.Player.IP + " 尝试使用一个不正确的超管验证码.");
+				return;
+			}
+
+			if (args.Player.Group.Name != "superadmin")
+				args.Player.tempGroup = new SuperAdminGroup();
+
+			args.Player.SendInfoMessage("你现在已经拥有临时超级管理权, 退出游戏后就会被系统收回.");
+			args.Player.SendInfoMessage("若想长期使用, 请按照下面步骤创建永久超级管理账户.");
+			args.Player.SendInfoMessage("执行 -- {0}user add <用户名> <密码> superadmin", Specifier);
+			args.Player.SendInfoMessage("结果 -- <用户名>(<密码>) 会被添加到超管组.");
+			args.Player.SendInfoMessage("完成上述操作后, 执行 -- {0}login <用户名(若和玩家名一致, 可省略)> <密码> --.", Specifier);
+			args.Player.SendInfoMessage("若明白, 请按照上述说的执行; 完成后, 输入 {0}auth", Specifier);
+			return;
 		}
 
 		private static void ThirdPerson(CommandArgs args)

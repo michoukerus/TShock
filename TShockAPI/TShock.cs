@@ -1,6 +1,6 @@
 /*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2015 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2016 Nyx Studios (fka. The TShock Team)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ namespace TShockAPI
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "高级汉化-开发";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(1, 4, 0, 0);
+		public static readonly Version CNVersion = new Version(1, 5, 0, 0);
 
         /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
         public static string SavePath = "tshock";
@@ -75,6 +75,9 @@ namespace TShockAPI
 		/// Set by the command line, disables the '/restart' command.
 		/// </summary>
 		internal static bool NoRestart;
+
+		/// <summary>Will be set to true once Utils.StopServer() is called.</summary>
+		public static bool ShuttingDown;
 
 		/// <summary>Players - Contains all TSPlayer objects for accessing TSPlayers currently on the server</summary>
 		public static TSPlayer[] Players = new TSPlayer[Main.maxPlayers];
@@ -795,36 +798,44 @@ namespace TShockAPI
 		private void OnPostInit(EventArgs args)
 		{
 			SetConsoleTitle(false);
-			if (!File.Exists(Path.Combine(SavePath, "auth.lck")) && !File.Exists(Path.Combine(SavePath, "authcode.txt")))
+
+			// Disable the auth system if "auth.lck" is present or a superadmin exists
+			if (File.Exists(Path.Combine(SavePath, "auth.lck")) || Users.GetUsers().Exists(u => u.Group == new SuperAdminGroup().Name))
+			{
+				AuthToken = 0;
+
+				if (File.Exists(Path.Combine(SavePath, "authcode.txt")))
+				{
+					Log.ConsoleInfo("在数据库中存在超管用户, 但是 authcode.txt 依旧存在.");
+					Log.ConsoleInfo("系统将禁用验证功能并删除此文件.");
+					File.Delete(Path.Combine(SavePath, "authcode.txt"));
+				}
+
+				if (!File.Exists(Path.Combine(SavePath, "auth.lck")))
+				{
+					// This avoids unnecessary database work, which can get ridiculously high on old servers as all users need to be fetched
+					File.Create(Path.Combine(SavePath, "auth.lck"));
+				}
+			}
+			else if (!File.Exists(Path.Combine(SavePath, "authcode.txt")))
 			{
 				var r = new Random((int)DateTime.Now.ToBinary());
 				AuthToken = r.Next(100000, 10000000);
 				Console.ForegroundColor = ConsoleColor.Yellow;
 				Console.WriteLine("提示: 进入游戏后输入\"{0}auth {1}\"(不含引号) 即可获得权限.", Commands.Specifier, AuthToken);
-				Console.WriteLine("该密码会在启动服务器时显示. (关闭: 执行\"{0}auth-verify\")", Commands.Specifier);
-				Console.ForegroundColor = ConsoleColor.Gray;
-				FileTools.CreateFile(Path.Combine(SavePath, "authcode.txt"));
-				using (var tw = new StreamWriter(Path.Combine(SavePath, "authcode.txt")))
-				{
-					tw.WriteLine(AuthToken);
-				}
-			}
-			else if (File.Exists(Path.Combine(SavePath, "authcode.txt")))
-			{
-				using (var tr = new StreamReader(Path.Combine(SavePath, "authcode.txt")))
-				{
-					AuthToken = Convert.ToInt32(tr.ReadLine());
-				}
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.WriteLine(
-					"提示: 认证管理密码将继续采用 authcode.txt 中的数值.");
-                Console.WriteLine("进入游戏后输入\"{0}auth {1}\"(不含引号) 即可获得权限.",Commands.Specifier,AuthToken);
-                Console.WriteLine("该密码会在启动服务器时显示. (关闭: 执行\"{0}auth-verify\")",Commands.Specifier);
-                Console.ForegroundColor = ConsoleColor.Gray;
+				Console.WriteLine("该密码会在启动服务器时显示, 直到验证完毕. ({0}auth)", Commands.Specifier);
+				Console.ResetColor();
+				File.WriteAllText(Path.Combine(SavePath, "authcode.txt"), AuthToken.ToString());
 			}
 			else
 			{
-				AuthToken = 0;
+				AuthToken = Convert.ToInt32(File.ReadAllText(Path.Combine(SavePath, "authcode.txt")));
+				Console.ForegroundColor = ConsoleColor.Yellow;
+				Console.WriteLine(
+					"提示: 认证管理密码将继续采用 authcode.txt 中的数值.");
+				Console.WriteLine("进入游戏后输入\"{0}auth {1}\"(不含引号) 即可获得权限.", Commands.Specifier, AuthToken);
+				Console.WriteLine("该密码会在启动服务器时显示, 直到验证完毕. ({0}auth)", Commands.Specifier);
+				Console.ResetColor();
 			}
 
 			Regions.Reload();
@@ -1200,6 +1211,13 @@ namespace TShockAPI
 		/// <param name="args">args - The ConnectEventArgs object.</param>
 		private void OnConnect(ConnectEventArgs args)
 		{
+			if (ShuttingDown)
+			{
+				NetMessage.SendData((int)PacketTypes.Disconnect, args.Who, -1, "服务器正在关闭...");
+				args.Handled = true;
+				return;
+			}
+
 			var player = new TSPlayer(args.Who);
 
 			if (Utils.ActivePlayers() + 1 > Config.MaxSlots + Config.ReservedSlots)
@@ -1383,7 +1401,13 @@ namespace TShockAPI
 			{
 				try
 				{
-					args.Handled = Commands.HandleCommand(tsplr, args.Text);
+					args.Handled = true;
+					if (!Commands.HandleCommand(tsplr, args.Text))
+					{
+						// This is required in case anyone makes HandleCommand return false again
+						tsplr.SendErrorMessage("无法识别指令. 请联系管理员以寻求帮助.");
+						Log.ConsoleError("无法识别指令文本 '{0}' (玩家: {1}).", args.Text, tsplr.Name);
+					}
 				}
 				catch (Exception ex)
 				{
