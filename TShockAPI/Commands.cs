@@ -244,9 +244,9 @@ namespace TShockAPI
 				DoLog = false,
 				HelpText = "注册新账户."
 			});
-			add(new Command(Permissions.checkaccountinfo, ViewAccountInfo, "accountinfo", "账号信息" "ai")
+			add(new Command(Permissions.checkaccountinfo, ViewAccountInfo, "accountinfo", "账户信息", "ai")
 			{
-				HelpText = "查看用户的账号信息."
+				HelpText = "查看用户的账户信息."
 			});
 			#endregion
 			#region Admin Commands
