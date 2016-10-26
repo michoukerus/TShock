@@ -298,6 +298,10 @@ namespace TShockAPI
 			{
 				HelpText = "保存所有玩家的云存档."
 			});
+			add(new Command(Permissions.uploaddata, UploadJoinData, "uploadssc", "上传云存档")
+			{
+				HelpText = "加入游戏时上传存档数据作为SSC数据."
+			});
 			add(new Command(Permissions.settempgroup, TempGroup, "tempgroup", "临时组")
 			{
 				HelpText = "暂时更改用户组."
@@ -330,11 +334,11 @@ namespace TShockAPI
 			{
 				HelpText = "检查TShock更新."
 			});
-			add(new Command(Permissions.maintenance, Off, "off", "关服","exit")
+			add(new Command(Permissions.maintenance, Off, "off", "关服", "exit", "stop")
 			{
 				HelpText = "关闭服务器."
 			});
-			add(new Command(Permissions.maintenance, OffNoSave, "off-nosave", "不保存关服","exit-nosave")
+			add(new Command(Permissions.maintenance, OffNoSave, "off-nosave", "不保存关服", "exit-nosave", "stop-nosave")
 			{
 				HelpText = "不保存地图的情况下关闭服务器."
 			});
@@ -354,11 +358,6 @@ namespace TShockAPI
 			{
 				HelpText = "查看TShock版本."
 			});
-			/* Does nothing atm.
-			 *
-			 * add(new Command(Permissions.updateplugins, UpdatePlugins, "updateplugins")
-			{
-			});*/
 			add(new Command(Permissions.whitelist, Whitelist, "whitelist", "白名单")
 			{
 				HelpText = "更改服务器白名单."
@@ -1697,6 +1696,63 @@ namespace TShockAPI
 
 			TShock.CharacterDB.InsertPlayerData(matchedPlayer);
 			args.Player.SendSuccessMessage("玩家 {0} 的云存档已被覆盖保存.", matchedPlayer.Name);
+		}
+
+		private static void UploadJoinData(CommandArgs args)
+		{
+			TSPlayer targetPlayer = args.Player;
+			if (args.Parameters.Count == 1 && args.Player.HasPermission(Permissions.uploadothersdata))
+			{
+				List<TSPlayer> players = TShock.Utils.FindPlayer(args.Parameters[0]);
+				if (players.Count > 1)
+				{
+					TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
+					return;
+				}
+				else if (players.Count == 0)
+				{
+					args.Player.SendErrorMessage("找不到玩家 '{0}'", args.Parameters[0]);
+					return;
+				}
+				else
+				{
+					targetPlayer = players[0];
+				}
+			}
+			else if (args.Parameters.Count == 1)
+			{
+				args.Player.SendErrorMessage("缺少权限: 无法上传其他玩家人物存档.");
+				return;
+			}
+			else if (args.Parameters.Count > 0)
+			{
+				args.Player.SendErrorMessage("语法无效! 正确用法: /uploadssc [玩家名]");
+				return;
+			}
+			else if (args.Parameters.Count == 0 && args.Player is TSServerPlayer)
+			{
+				args.Player.SendErrorMessage("控制台无法上传数据.");
+				args.Player.SendErrorMessage("语法无效! 正确用法: /uploadssc [玩家名]");
+				return;
+			}
+
+			if (targetPlayer.IsLoggedIn)
+			{
+				if (TShock.CharacterDB.InsertSpecificPlayerData(targetPlayer, targetPlayer.DataWhenJoined))
+				{
+					targetPlayer.DataWhenJoined.RestoreCharacter(targetPlayer);
+					targetPlayer.SendSuccessMessage("你的本地存档数据已被上传至服务器.");
+					args.Player.SendSuccessMessage("玩家本地存档数据已被上传至服务器.");
+				}
+				else
+				{
+					args.Player.SendErrorMessage("上传存档数据失败, 确定你登录游戏了?");
+				}
+			}
+			else
+			{
+				args.Player.SendErrorMessage("目标玩家还未登录.");
+			}
 		}
 
 		private static void ForceHalloween(CommandArgs args)
@@ -4817,12 +4873,12 @@ namespace TShockAPI
 
 		private static void Motd(CommandArgs args)
 		{
-			TShock.Utils.ShowFileToUser(args.Player, "motd.txt");
+			TShock.Utils.ShowFileToUser(args.Player, FileTools.MotdPath);
 		}
 
 		private static void Rules(CommandArgs args)
 		{
-			TShock.Utils.ShowFileToUser(args.Player, "rules.txt");
+			TShock.Utils.ShowFileToUser(args.Player, FileTools.RulesPath);
 		}
 
 		private static void Whisper(CommandArgs args)

@@ -50,7 +50,11 @@ namespace TShockAPI
 		/// <summary>instance - an instance of the utils class</summary>
 		private static readonly Utils instance = new Utils();
 
-		private Regex byteRegex = new Regex("%\\s*(?<r>\\d{1,3})\\s*,\\s*(?<g>\\d{1,3})\\s*,\\s*(?<b>\\d{1,3})\\s*%");
+		/// <summary> This regex will look for the old MotD format for colors and replace them with the new chat format. </summary>
+		private Regex motdColorRegex = new Regex(@"\%\s*(?<r>\d{1,3})\s*,\s*(?<g>\d{1,3})\s*,\s*(?<b>\d{1,3})\s*\%(?<text>((?!(\%\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\%)|(\[[a-zA-Z]/[^:]+:[^\]]*\])).)*)");
+
+		/// <summary> Matches the start of a line with our legacy color format</summary>
+		private Regex startOfLineColorRegex = new Regex(@"^\%\s*(?<r>\d{1,3})\s*,\s*(?<g>\d{1,3})\s*,\s*(?<b>\d{1,3})\s*\%");
 
 		/// <summary>Utils - Creates a utilities object.</summary>
 		private Utils() {}
@@ -58,10 +62,6 @@ namespace TShockAPI
 		/// <summary>Instance - An instance of the utils class.</summary>
 		/// <value>value - the Utils instance</value>
 		public static Utils Instance { get { return instance; } }
-
-		/// <summary>Random - An instance of random for generating random data.</summary>
-		[Obsolete("Please create your own random objects; this will be removed in the next version of TShock.")]
-		public Random Random = new Random();
 
 		/// <summary>
 		/// Provides the real IP address from a RemoteEndPoint string that contains a port and an IP
@@ -193,7 +193,7 @@ namespace TShockAPI
 			TSPlayer.Server.SendMessage(log, color);
 			foreach (TSPlayer player in TShock.Players)
 			{
-				if (player != null && player != excludedPlayer && player.Active && player.HasPermission(Permissions.logs) && 
+				if (player != null && player != excludedPlayer && player.Active && player.HasPermission(Permissions.logs) &&
 						player.DisplayLogs && TShock.Config.DisableSpewLogs == false)
 					player.SendMessage(log, color);
 			}
@@ -502,7 +502,7 @@ namespace TShockAPI
 			}
 			return found;
 		}
-				
+
 				/// <summary>
 		/// Gets a prefix by ID or name
 		/// </summary>
@@ -557,7 +557,7 @@ namespace TShockAPI
 		}
 
 		/// <summary>
-		/// Stops the server after kicking all players with a reason message, and optionally saving the world then attempts to 
+		/// Stops the server after kicking all players with a reason message, and optionally saving the world then attempts to
 		/// restart it.
 		/// </summary>
 		/// <param name="save">bool perform a world save before stop (default: true)</param>
@@ -683,7 +683,7 @@ namespace TShockAPI
 							{
 									TShock.Bans.RemoveBan(ban.IP, false, false, false);
 							}
-							
+
 							return true;
 					}
 
@@ -699,10 +699,12 @@ namespace TShockAPI
 		{
 			string foo = "";
 			bool containsOldFormat = false;
-			using (var tr = new StreamReader(Path.Combine(TShock.SavePath, file)))
+			using (var tr = new StreamReader(file))
 			{
+				Color lineColor;
 				while ((foo = tr.ReadLine()) != null)
 				{
+					lineColor = Color.White;
 					if (string.IsNullOrWhiteSpace(foo))
 					{
 						continue;
@@ -710,15 +712,96 @@ namespace TShockAPI
 
 					foo = foo.Replace("%map%", (TShock.Config.UseServerName ? TShock.Config.ServerName : Main.worldName));
 					foo = foo.Replace("%players%", String.Join(",", GetPlayers(false)));
-					if (byteRegex.IsMatch(foo) && !containsOldFormat)
+
+					var legacyColorMatch = startOfLineColorRegex.Match(foo);
+					if (legacyColorMatch.Success)
+					{
+						lineColor = new Color(Int32.Parse(legacyColorMatch.Groups["r"].Value),
+												Int32.Parse(legacyColorMatch.Groups["g"].Value),
+												Int32.Parse(legacyColorMatch.Groups["b"].Value));
+						foo = foo.Replace(legacyColorMatch.Groups[0].Value, "");
+					}
+
+					bool upgraded = false;
+					string newFoo = ReplaceDeprecatedColorCodes(foo, out upgraded);
+					if (upgraded && !containsOldFormat)
 					{
 						TShock.Log.ConsoleInfo($"文件 {file} 中存在旧的颜色代码格式.");
 						TShock.Log.ConsoleInfo("请换用 Terraria 内建的颜色文本处理方式: [c/#HEX码:文本].");
 						TShock.Log.ConsoleInfo("例子: [c/ff00aa:这是颜色信息!].");
 						containsOldFormat = true;
 					}
-					player.SendMessage(foo, Color.White);
+					foo = newFoo;
+
+					player.SendMessage(foo, lineColor);
 				}
+			}
+		}
+
+		/// <summary>
+		/// Returns a string with deprecated %###,###,###% formats replaced with the new chat format colors.
+		/// </summary>
+		/// <param name="input">The input string</param>
+		/// <param name="upgradedFormat">An out parameter that denotes if this line of text was upgraded.</param>
+		/// <returns>A replaced version of the input with the new chat color format.</returns>
+		private string ReplaceDeprecatedColorCodes(string input, out bool upgradedFormat)
+		{
+			String tempString = input;
+			Match match = null;
+			bool uFormat = false;
+
+			while ((match = motdColorRegex.Match(tempString)).Success)
+			{
+				uFormat = true;
+				tempString = tempString.Replace(match.Groups[0].Value, String.Format("[c/{0:X2}{1:X2}{2:X2}:{3}]", Int32.Parse(match.Groups["r"].Value), Int32.Parse(match.Groups["g"].Value), Int32.Parse(match.Groups["b"].Value), match.Groups["text"]));
+			}
+
+			upgradedFormat = uFormat;
+			return tempString;
+		}
+
+		/// <summary>
+		/// Upgrades a legacy MotD file to the new terraria chat tags version.
+		/// </summary>
+		public void UpgradeMotD()
+		{
+			string foo = "";
+			StringBuilder motd = new StringBuilder();
+			bool informedOwner = false;
+			using (var tr = new StreamReader(FileTools.MotdPath))
+			{
+				Color lineColor;
+				while ((foo = tr.ReadLine()) != null)
+				{
+					lineColor = Color.White;
+					var legacyColorMatch = startOfLineColorRegex.Match(foo);
+					if (legacyColorMatch.Success)
+					{
+						lineColor = new Color(Int32.Parse(legacyColorMatch.Groups["r"].Value),
+												Int32.Parse(legacyColorMatch.Groups["g"].Value),
+												Int32.Parse(legacyColorMatch.Groups["b"].Value));
+						foo = foo.Replace(legacyColorMatch.Groups[0].Value, "");
+					}
+
+					bool upgraded = false;
+					string newFoo = ReplaceDeprecatedColorCodes(foo, out upgraded);
+					if (!informedOwner && upgraded)
+					{
+						informedOwner = true;
+						TShock.Log.ConsoleInfo("公告文件已被升级; 备份已生成.");
+					}
+
+					if (lineColor != Color.White)
+						motd.Append(String.Format("%{0:d3},{1:d3},{2:d3}%", lineColor.R, lineColor.G, lineColor.B));
+
+					motd.AppendLine(newFoo);
+				}
+			}
+
+			if (informedOwner)
+			{
+				File.Copy(FileTools.MotdPath, String.Format("{0}_{1}.backup", FileTools.MotdPath, DateTime.Now.ToString("ddMMMyy_hhmmss")));
+				File.WriteAllText(FileTools.MotdPath, motd.ToString());
 			}
 		}
 
@@ -771,76 +854,6 @@ namespace TShockAPI
 		}
 
 		/// <summary>
-		/// Default hashing algorithm.
-		/// </summary>
-		[Obsolete("This is no longer necessary, please use TShock.Config.HashAlgorithm instead if you really need it (but use User.VerifyPassword(password)) for verifying passwords.")]
-		public string HashAlgo = "sha512";
-
-		/// <summary>
-		/// A dictionary of hashing algortihms and an implementation object.
-		/// </summary>
-		[Obsolete("This is no longer necessary, after switching to User.VerifyPassword(password) instead.")]
-		public readonly Dictionary<string, Func<HashAlgorithm>> HashTypes = new Dictionary<string, Func<HashAlgorithm>>
-			{
-					{"sha512", () => new SHA512Managed()},
-					{"sha256", () => new SHA256Managed()},
-					{"md5", () => new MD5Cng()},
-					{"sha512-xp", SHA512.Create},
-					{"sha256-xp", SHA256.Create},
-					{"md5-xp", MD5.Create},
-			};
-
-		/// <summary>
-		/// Returns a Sha256 string for a given string
-		/// </summary>
-		/// <param name="bytes">bytes to hash</param>
-		/// <returns>string sha256</returns>
-		[Obsolete("Please use User.VerifyPassword(password) instead. Warning: This will upgrade passwords to BCrypt. Already converted passwords will not hash correctly using this method.")]
-		public string HashPassword(byte[] bytes)
-		{
-			if (bytes == null)
-				throw new NullReferenceException("bytes");
-			Func<HashAlgorithm> func;
-			if (!HashTypes.TryGetValue(HashAlgo.ToLower(), out func))
-				throw new NotSupportedException("Hashing algorithm {0} is not supported".SFormat(HashAlgo.ToLower()));
-
-			using (var hash = func())
-			{
-				var ret = hash.ComputeHash(bytes);
-				return ret.Aggregate("", (s, b) => s + b.ToString("X2"));
-			}
-		}
-
-		/// <summary>
-		/// Returns a Sha256 string for a given string
-		/// </summary>
-		/// <param name="password">string to hash</param>
-		/// <returns>string sha256</returns>
-		[Obsolete("Please use User.VerifyPassword(password) instead. Warning: This will upgrade passwords to BCrypt. Already converted passwords will not hash correctly using this method.")]
-		public string HashPassword(string password)
-		{
-			if (string.IsNullOrEmpty(password) || password == "non-existant password")
-				return "non-existant password";
-			return HashPassword(Encoding.UTF8.GetBytes(password));
-		}
-
-		/// <summary>
-		/// Checks if the string contains any unprintable characters
-		/// </summary>
-		/// <param name="str">String to check</param>
-		/// <returns>True if the string only contains printable characters</returns>
-		[Obsolete("ValidString is being removed as it serves no purpose to TShock at this time.")]
-		public bool ValidString(string str)
-		{
-			foreach (var c in str)
-			{
-				if (c < 0x20 || c > 0xA9)
-					return false;
-			}
-			return true;
-		}
-
-		/// <summary>
 		/// Checks if world has hit the max number of chests
 		/// </summary>
 		/// <returns>True if the entire chest array is used</returns>
@@ -874,7 +887,7 @@ namespace TShockAPI
 					int num;
 					if (!int.TryParse(sb.ToString(), out num))
 						return false;
-					
+
 					sb.Clear();
 					switch (str[i])
 					{
@@ -914,23 +927,6 @@ namespace TShockAPI
 					return i;
 			}
 			return 1000;
-		}
-
-		/// <summary>
-		/// Sanitizes input strings
-		/// </summary>
-		/// <param name="str">string</param>
-		/// <returns>sanitized string</returns>
-		[Obsolete("SanitizeString is being removed from TShock as it currently serves no purpose.")]
-		public string SanitizeString(string str)
-		{
-			var returnstr = str.ToCharArray();
-			for (int i = 0; i < str.Length; i++)
-			{
-				if (!ValidString(str[i].ToString()))
-					returnstr[i] = ' ';
-			}
-			return new string(returnstr);
 		}
 
 		/// <summary>

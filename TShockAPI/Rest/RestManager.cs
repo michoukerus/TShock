@@ -104,14 +104,12 @@ namespace TShockAPI
 			if (TShock.Config.EnableTokenEndpointAuthentication)
 			{
 				Rest.Register(new SecureRestCommand("/v2/server/status", ServerStatusV2));
-				Rest.Register(new SecureRestCommand("/status", ServerStatus));
 				Rest.Register(new SecureRestCommand("/v3/server/motd", ServerMotd));
 				Rest.Register(new SecureRestCommand("/v3/server/rules", ServerRules));
 			}
 			else
 			{
 				Rest.Register(new RestCommand("/v2/server/status", (a) => this.ServerStatusV2(new RestRequestArgs(a.Verbs, a.Parameters, a.Request, SecureRest.TokenData.None, a.Context))));
-				Rest.Register(new RestCommand("/status", (a) => this.ServerStatus(new RestRequestArgs(a.Verbs, a.Parameters, a.Request, SecureRest.TokenData.None, a.Context))));
 				Rest.Register(new RestCommand("/v3/server/motd", (a) => this.ServerMotd(new RestRequestArgs(a.Verbs, a.Parameters, a.Request, SecureRest.TokenData.None, a.Context))));
 				Rest.Register(new RestCommand("/v3/server/rules", (a) => this.ServerRules(new RestRequestArgs(a.Verbs, a.Parameters, a.Request, SecureRest.TokenData.None, a.Context))));
 			}
@@ -120,7 +118,6 @@ namespace TShockAPI
 			Rest.Register(new SecureRestCommand("/v3/server/reload", ServerReload, RestPermissions.restcfg));
 			Rest.Register(new SecureRestCommand("/v2/server/off", ServerOff, RestPermissions.restmaintenance));
 			Rest.Register(new SecureRestCommand("/v3/server/restart", ServerRestart, RestPermissions.restmaintenance));
-			Rest.Register(new SecureRestCommand("/v2/server/rawcmd", ServerCommand, RestPermissions.restrawcommand));
 			Rest.Register(new SecureRestCommand("/v3/server/rawcmd", ServerCommandV3, RestPermissions.restrawcommand));
 			Rest.Register(new SecureRestCommand("/tokentest", ServerTokenTest));
 
@@ -149,7 +146,6 @@ namespace TShockAPI
 			// Player Commands
 			Rest.Register(new SecureRestCommand("/lists/players", PlayerList));
 			Rest.Register(new SecureRestCommand("/v2/players/list", PlayerListV2));
-			Rest.Register(new SecureRestCommand("/v2/players/read", PlayerReadV2, RestPermissions.restuserinfo));
 			Rest.Register(new SecureRestCommand("/v3/players/read", PlayerReadV3, RestPermissions.restuserinfo));
 			Rest.Register(new SecureRestCommand("/v2/players/kick", PlayerKickV2, RestPermissions.restkick));
 			Rest.Register(new SecureRestCommand("/v2/players/ban", PlayerBanV2, RestPermissions.restban, RestPermissions.restmanagebans));
@@ -167,29 +163,7 @@ namespace TShockAPI
 
 		#region RestServerMethods
 
-		[Description("在服务器上执行远程指令, 并返回输出结果.")]
-		[RouteAttribute("/v2/server/rawcmd")]
-		[Permission(RestPermissions.restrawcommand)]
-		[Noun("cmd", true, "执行的指令与其参数.", typeof(String))]
-		[Token]
-		private object ServerCommand(RestRequestArgs args)
-		{
-			if (string.IsNullOrWhiteSpace(args.Parameters["cmd"]))
-				return RestMissingParam("cmd");
-
-			Group restPlayerGroup;
-			// TODO: Get rid of this when the old REST permission model is removed.
-			if (TShock.Config.RestUseNewPermissionModel)
-				restPlayerGroup = TShock.Groups.GetGroupByName(args.TokenData.UserGroupName);
-			else
-				restPlayerGroup = new SuperAdminGroup();
-
-			TSRestPlayer tr = new TSRestPlayer(args.TokenData.Username, restPlayerGroup);
-			Commands.HandleCommand(tr, args.Parameters["cmd"]);
-			return RestResponse(string.Join("\n", tr.GetCommandOutput()));
-		}
-
-		[Description("在服务器上执行远程指令, 并返回输出结果.")]
+		[Description("Executes a remote command on the server, and returns the output of the command.")]
 		[RouteAttribute("/v3/server/rawcmd")]
 		[Permission(RestPermissions.restrawcommand)]
 		[Noun("cmd", true,"执行的指令与其参数.", typeof(String))]
@@ -199,12 +173,7 @@ namespace TShockAPI
 			if (string.IsNullOrWhiteSpace(args.Parameters["cmd"]))
 				return RestMissingParam("cmd");
 
-			Group restPlayerGroup;
-			// TODO: Get rid of this when the old REST permission model is removed.
-			if (TShock.Config.RestUseNewPermissionModel)
-				restPlayerGroup = TShock.Groups.GetGroupByName(args.TokenData.UserGroupName);
-			else
-				restPlayerGroup = new SuperAdminGroup();
+			Group restPlayerGroup = TShock.Groups.GetGroupByName(args.TokenData.UserGroupName);
 
 			TSRestPlayer tr = new TSRestPlayer(args.TokenData.Username, restPlayerGroup);
 			Commands.HandleCommand(tr, args.Parameters["cmd"]);
@@ -281,7 +250,7 @@ namespace TShockAPI
 		[Token]
 		private object ServerMotd(RestRequestArgs args)
 		{
-			string motdFilePath = Path.Combine(TShock.SavePath, "motd.txt");
+			string motdFilePath = FileTools.MotdPath;
 			if (!File.Exists(motdFilePath))
 				return this.RestError("The motd.txt was not found.", "500");
 
@@ -303,21 +272,6 @@ namespace TShockAPI
 			return new RestObject()
 			{
 				{"rules", File.ReadAllLines(rulesFilePath)}
-			};
-		}
-
-		[Description("Returns the current status of the server.")]
-		[Route("/status")]
-		[Token]
-		private object ServerStatus(RestRequestArgs args)
-		{
-			var activeplayers = Main.player.Where(p => null != p && p.active).ToList();
-			return new RestObject()
-			{
-				{"name", TShock.Config.ServerName},
-				{"port", Convert.ToString(Netplay.ListenPort)},
-				{"playercount", Convert.ToString(activeplayers.Count())},
-				{"players", string.Join(", ", activeplayers.Select(p => p.name))},
 			};
 		}
 
@@ -790,32 +744,6 @@ namespace TShockAPI
 					playerList.Add(p);
 			}
 			return new RestObject() { { "players", playerList } };
-		}
-
-		[Description("Get information for a user.")]
-		[Route("/v2/players/read")]
-		[Permission(RestPermissions.restuserinfo)]
-		[Noun("player", true, "The player to lookup", typeof(String))]
-		[Token]
-		private object PlayerReadV2(RestRequestArgs args)
-		{
-			var ret = PlayerFind(args.Parameters);
-			if (ret is RestObject)
-				return ret;
-
-			TSPlayer player = (TSPlayer)ret;
-			var activeItems = player.TPlayer.inventory.Where(p => p.active).ToList();
-			return new RestObject()
-			{
-				{"nickname", player.Name},
-				{"username", null == player.User ? "" : player.User.Name},
-				{"ip", player.IP},
-				{"group", player.Group.Name},
-				{"registered", null == player.User ? "" : player.User.Registered},
-				{"position", player.TileX + "," + player.TileY},
-				{"inventory", string.Join(", ", activeItems.Select(p => (p.name + ":" + p.stack)))},
-				{"buffs", string.Join(", ", player.TPlayer.buffType)}
-			};
 		}
 
 		[Description("Get information for a user.")]

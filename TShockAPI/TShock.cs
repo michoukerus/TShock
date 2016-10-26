@@ -55,7 +55,7 @@ namespace TShockAPI
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "高级汉化-开发";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(1, 5, 2, 0);
+		public static readonly Version CNVersion = new Version(1, 5, 3, 0);
 
         /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
         public static string SavePath = "tshock";
@@ -111,9 +111,6 @@ namespace TShockAPI
 		public static IDbConnection DB;
 		/// <summary>OverridePort - Determines if TShock should override the server port.</summary>
 		public static bool OverridePort;
-		/// <summary>PacketBuffer - Static reference to the packet bufferer system, which buffers packets to clients for better performance.</summary>
-		[Obsolete("PacketBufferer is no longer used", true)]
-		public static PacketBufferer PacketBuffer;
 		/// <summary>Geo - Static reference to the GeoIP system which determines the location of an IP address.</summary>
 		public static GeoIPCountry Geo;
 		/// <summary>RestApi - Static reference to the Rest API authentication manager.</summary>
@@ -417,15 +414,22 @@ namespace TShockAPI
 				KnownIps = JsonConvert.DeserializeObject<List<String>>(args.Player.User.KnownIps);
 			}
 
-			bool last = KnownIps.Last() == args.Player.IP;
-			if (!last)
+			if (KnownIps.Count == 0)
 			{
-				if (KnownIps.Count == 100)
-				{
-					KnownIps.RemoveAt(0);
-				}
-
 				KnownIps.Add(args.Player.IP);
+			}
+			else
+			{
+				bool last = KnownIps.Last() == args.Player.IP;
+				if (!last)
+				{
+					if (KnownIps.Count == 100)
+					{
+						KnownIps.RemoveAt(0);
+					}
+
+					KnownIps.Add(args.Player.IP);
+				}
 			}
 
 			args.Player.User.KnownIps = JsonConvert.SerializeObject(KnownIps, Formatting.Indented);
@@ -843,6 +847,8 @@ namespace TShockAPI
 
 			ComputeMaxStyles();
 			FixChestStacks();
+
+			Utils.UpgradeMotD();
 
 			if (Config.UseServerName)
 			{
@@ -1583,7 +1589,7 @@ namespace TShockAPI
 			if (Config.DisplayIPToAdmins)
 				Utils.SendLogs(string.Format("{0} 加入游戏. IP: {1}", player.Name, player.IP), Color.Blue);
 
-			Utils.ShowFileToUser(player, "motd.txt");
+			Utils.ShowFileToUser(player, FileTools.MotdPath);
 
 			string pvpMode = Config.PvPMode.ToLowerInvariant();
 			if (pvpMode == "always")

@@ -166,9 +166,6 @@ namespace TShockAPI
 		[Description("Sends ServerName in place of the world name to clients.")]
 		[JsonProperty("使用服务器名")]
 		public bool UseServerName = false;
-		[Description("未完成功能.")]
-		[JsonProperty("主服IP")]
-		public string MasterServer = "127.0.0.1";
 
 		[Description("Valid types are \"sqlite\" and \"mysql\"")]
 		[JsonProperty("数据库类型")]
@@ -194,10 +191,7 @@ namespace TShockAPI
 		[JsonProperty("中等难度玩家驱逐原因")]
 		public string MediumcoreKickReason = "玩家死亡后驱逐";
 
-		[Description("Enables DNS resolution of incoming connections with GetGroupForIPExpensive.")]
-		[JsonProperty("启用DNS解析")]
-		public bool EnableDNSHostResolution;
-
+		/// <summary>EnableIPBans - Whether or not to kick players on join that match a banned IP address.</summary>
 		[Description("Enables kicking of banned users by matching their IP Address.")]
 		[JsonProperty("启用IP封禁")]
 		public bool EnableIPBans = true;
@@ -230,11 +224,7 @@ namespace TShockAPI
 		[JsonProperty("哈希算法")]
 		public string HashAlgorithm = "sha512";
 
-		[Obsolete("PacketBuffered is no longer used")]
-		[Description("Buffers up the packets and sends them out at the end of each frame.")]
-		[JsonProperty("缓冲包")]
-		public bool BufferPackets = true;
-
+		/// <summary>ServerFullReason - The reason given when kicking players when the server is full.</summary>
 		[Description("String that is used when kicking people when the server is full.")]
 		[JsonProperty("服务器人满驱逐原因")]
 		public string ServerFullReason = "服务器已满! 请稍后再进入.";
@@ -477,13 +467,7 @@ namespace TShockAPI
 		[JsonProperty("服务器通知颜色")]
 		public int[] BroadcastRGB = { 127, 255, 212 };
 
-		// TODO: Get rid of this when the old REST permission model is removed.
-		[Description(
-			"Whether the REST API should use the new permission model. Note: The old permission model will become depracted in the future."
-			)]
-		[JsonProperty("启用REST新权限方式")]
-		public bool RestUseNewPermissionModel = true;
-
+		/// <summary>ApplicationRestTokens - A dictionary of REST tokens that external applications may use to make queries to your server.</summary>
 		[Description("A dictionary of REST tokens that external applications may use to make queries to your server.")]
 		[JsonProperty("应用的REST密钥")]
 		public Dictionary<string, SecureRest.TokenData> ApplicationRestTokens = new Dictionary<string, SecureRest.TokenData>();
@@ -508,14 +492,7 @@ namespace TShockAPI
 		[JsonProperty("物块上色速率上限")]
 		public int TilePaintThreshold = 15;
 
-		[Description("Enables max packet bufferer size.")]
-		[JsonProperty("启用包内最大字节数")]
-		public bool EnableMaxBytesInBuffer = false;
-
-		[Description("Number of bytes in the packet buffer before we disconnect the player.")]
-		[JsonProperty("包内最大字节数")]
-		public int MaxBytesInBuffer = 5242880;
-
+		/// <summary>ForceHalloween - Forces Halloween-only events to occur all year.</summary>
 		[Description("Forces your world to be in Halloween mode regardless of the data.")]
 		[JsonProperty("强制万圣节模式")]
 		public bool ForceHalloween = false;
