@@ -2063,7 +2063,7 @@ namespace TShockAPI
 						TSPlayer.Server.SetPumpkinMoon(true);
 						Main.bloodMoon = false;
 						NPC.waveKills = 0f;
-						NPC.waveCount = wave;
+						NPC.waveNumber = wave;
 						TSPlayer.All.SendInfoMessage("{0} 开始了南瓜狂欢夜. 当前回合: {1}!", args.Player.Name, wave);
 						break;
 
@@ -2081,7 +2081,7 @@ namespace TShockAPI
 						TSPlayer.Server.SetFrostMoon(true);
 						Main.bloodMoon = false;
 						NPC.waveKills = 0f;
-						NPC.waveCount = wave;
+						NPC.waveNumber = wave;
 						TSPlayer.All.SendInfoMessage("{0} 开始了冰霜之月. 当前回合: {1}!", args.Player.Name, wave);
 						break;
 
