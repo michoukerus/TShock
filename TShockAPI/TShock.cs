@@ -38,6 +38,9 @@ using TerrariaApi.Server;
 using TShockAPI.DB;
 using TShockAPI.Hooks;
 using TShockAPI.ServerSideCharacters;
+using Terraria.Utilities;
+using Microsoft.Xna.Framework;
+using TShockAPI.Sockets;
 
 namespace TShockAPI
 {
@@ -45,20 +48,20 @@ namespace TShockAPI
 	/// This is the TShock main class. TShock is a plugin on the TerrariaServerAPI, so it extends the base TerrariaPlugin.
 	/// TShock also complies with the API versioning system, and defines its required API version here.
 	/// </summary>
-	[ApiVersion(1, 25)]
+	[ApiVersion(2, 0)]
 	public class TShock : TerrariaPlugin
 	{
 		/// <summary>VersionNum - The version number the TerrariaAPI will return back to the API. We just use the Assembly info.</summary>
 		public static readonly Version VersionNum = Assembly.GetExecutingAssembly().GetName().Version;
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
-		public static readonly string VersionCodename = "Yoraiz0r R0cks";
+		public static readonly string VersionCodename = "Mintaka";
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "高级汉化-开发";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(1, 5, 3, 0);
+		public static readonly Version CNVersion = new Version(2, 0, 0, 0);
 
-        /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
-        public static string SavePath = "tshock";
+		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
+		public static string SavePath = "tshock";
 		/// <summary>LogFormatDefault - This is the default log file naming format. Actually, this is the only log format, because it never gets set again.</summary>
 		private const string LogFormatDefault = "yyyy-MM-dd_HH-mm-ss";
 		//TODO: Set the log path in the config file.
@@ -186,7 +189,20 @@ namespace TShockAPI
 			string logFilename;
 			string logPathSetupWarning;
 
-			TerrariaApi.Reporting.CrashReporter.HeapshotRequesting += CrashReporter_HeapshotRequesting;
+            OTAPI.Hooks.Net.Socket.Create = () =>
+            {
+                //Console.WriteLine($"Creating socket {nameof(LinuxTcpSocket)}");
+                return new LinuxTcpSocket();
+                //return new OTAPI.Sockets.PoolSocket();
+                //return new Terraria.Net.Sockets.TcpSocket();
+            };
+            OTAPI.Hooks.Player.Announce = (int playerId) =>
+            {
+                //TShock handles this
+                return OTAPI.HookResult.Cancel;
+            };
+
+            TerrariaApi.Reporting.CrashReporter.HeapshotRequesting += CrashReporter_HeapshotRequesting;
 
 			try
 			{
@@ -199,6 +215,10 @@ namespace TShockAPI
 				FileTools.SetupConfig();
 
 				Main.ServerSideCharacter = ServerSideCharacterConfig.Enabled;
+
+				//TSAPI previously would do this automatically, but the vanilla server wont
+				if (Netplay.ServerIP == null)
+					Netplay.ServerIP = IPAddress.Any;
 
 				DateTime now = DateTime.Now;
 				// Log path was not already set by the command line parameter?
@@ -582,7 +602,7 @@ namespace TShockAPI
 			{
 				if (Main.worldPathName != null && Config.SaveWorldOnCrash)
 				{
-					Main.worldPathName += ".crash";
+					Main.ActiveWorldFileData._path += ".crash";
 					SaveManager.Instance.SaveWorld();
 				}
 			}
@@ -680,7 +700,7 @@ namespace TShockAPI
 						}
 					case "-autoshutdown":
 						{
-							Main.instance.autoShut();
+							Main.instance.EnableAutoShutdown();
 							break;
 						}
 					case "-autocreate":
@@ -710,9 +730,11 @@ namespace TShockAPI
 							int limit;
 							if (int.TryParse(parms[++i], out limit))
 							{
+								/* Todo - Requires an OTAPI modification
 								Netplay.MaxConnections = limit;
-								ServerApi.LogWriter.PluginWriteLine(this, 
-                                    $"相同IP最大连接数设定为{limit}.", TraceLevel.Verbose);
+								ServerApi.LogWriter.PluginWriteLine(this, string.Format(
+									"Connections per IP have been limited to {0} connections.", limit), TraceLevel.Verbose);*/
+								ServerApi.LogWriter.PluginWriteLine(this, "\"-connperip\" 选项在此TShock版本内不支持.", TraceLevel.Verbose);
 							}
 							else
 								ServerApi.LogWriter.PluginWriteLine(this,"命令行参数\"-connperip\"值无效.", TraceLevel.Warning);
@@ -1187,7 +1209,7 @@ namespace TShockAPI
 		{
 			if (args.Handled)
 				return;
-			
+
 			if (!Config.AllowCrimsonCreep && (args.Type == TileID.Dirt || args.Type == TileID.FleshWeeds
 				|| TileID.Sets.Crimson[args.Type]))
 			{
@@ -1491,11 +1513,7 @@ namespace TShockAPI
 			// Damn you ThreadStatic and Redigit
 			if (Main.rand == null)
 			{
-				Main.rand = new Random();
-			}
-			if (WorldGen.genRand == null)
-			{
-				WorldGen.genRand = new Random();
+				Main.rand = new UnifiedRandom();
 			}
 
 			if (args.Command == "autosave")
@@ -1693,7 +1711,10 @@ namespace TShockAPI
 				invasionSize = 100 + (Config.InvasionMultiplier * Utils.ActivePlayers());
 			}
 
-			Main.StartInvasion(type, invasionSize);
+			// Note: This is a workaround to previously providing the size as a parameter in StartInvasion
+			Main.invasionSize = invasionSize;
+
+			Main.StartInvasion(type);
 		}
 
 		/// <summary>CheckProjectilePermission - Checks if a projectile is banned.</summary>
@@ -1935,6 +1956,7 @@ namespace TShockAPI
 			Item[] miscDyes = player.TPlayer.miscDyes;
 			Item[] piggy = player.TPlayer.bank.item;
 			Item[] safe = player.TPlayer.bank2.item;
+			Item[] forge = player.TPlayer.bank3.item;
 			Item trash = player.TPlayer.trashItem;
 
 			for (int i = 0; i < NetItem.MaxInventory; i++)
@@ -2080,6 +2102,29 @@ namespace TShockAPI
 							player.SendMessage(
                                 $"你保险箱有物品超过数量上限({safe[index].stack}/{item.maxStack}). 丢掉 {safe[index].name}({safe[index].stack}) 然后重新加入游戏.",
                                 Color.Cyan);
+						}
+					}
+				}
+				else if (i <
+					NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots +
+					NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots + NetItem.ForgeSlots)
+				{
+					//179-219
+					Item item = new Item();
+					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots
+						+ NetItem.MiscEquipSlots + NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots);
+					if (forge[index] != null && forge[index].netID != 0)
+					{
+						item.netDefaults(forge[index].netID);
+						item.Prefix(forge[index].prefix);
+						item.AffixName();
+
+						if (forge[index].stack > item.maxStack)
+						{
+							check = true;
+							player.SendMessage(
+								String.Format("Stack cheat detected. Remove Defender's Forge item {0} ({1}) and then rejoin", item.name, forge[index].stack),
+								Color.Cyan);
 						}
 					}
 				}

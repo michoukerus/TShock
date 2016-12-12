@@ -30,6 +30,9 @@ using Terraria.ID;
 using TShockAPI.DB;
 using TerrariaApi.Server;
 using TShockAPI.Hooks;
+using Terraria.GameContent.Events;
+using Microsoft.Xna.Framework;
+using OTAPI.Tile;
 
 namespace TShockAPI
 {
@@ -2089,6 +2092,11 @@ namespace TShockAPI
 						break;
 				}
 			}
+			else if (DD2Event.Ongoing)
+			{
+				DD2Event.StopInvasion();
+				TSPlayer.All.SendInfoMessage("{0} has ended the Old One's Army event.", args.Player.Name);
+			}
 			else
 			{
 				TSPlayer.All.SendInfoMessage("{0} 停止了入侵事件.", args.Player.Name);
@@ -2117,7 +2125,7 @@ namespace TShockAPI
 			else
 			{
 				Main.anglerWhoFinishedToday.Clear();
-				NetMessage.SendAnglerQuest();
+				NetMessage.SendAnglerQuest(-1);
 				args.Player.SendSuccessMessage("清空了所有玩家今日渔夫任务完成情况.");
 			}
 		}
@@ -4440,7 +4448,7 @@ namespace TShockAPI
 									// Could be improved by sending raw tile data to the client instead but not really
 									// worth the effort as chances are very low that overwriting the wire for a few
 									// nanoseconds will cause much trouble.
-									Tile tile = Main.tile[boundaryPoint.X, boundaryPoint.Y];
+									ITile tile = Main.tile[boundaryPoint.X, boundaryPoint.Y];
 									bool oldWireState = tile.wire();
 									tile.wire(true);
 
@@ -5182,7 +5190,7 @@ namespace TShockAPI
 			else
 			{
 				var plr = players[0];
-				plr.DamagePlayer(999999);
+				plr.KillPlayer();
 				args.Player.SendSuccessMessage(string.Format("你杀死了 {0}!", plr.Name));
 				plr.SendErrorMessage("你已死亡, 凶手是 {0} .", args.Player.Name);
 			}

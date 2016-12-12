@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-﻿using Terraria;
+using Microsoft.Xna.Framework;
+using Terraria;
 using TShockAPI;
 
 namespace TShockAPI
@@ -117,6 +118,7 @@ namespace TShockAPI
 			Item[] miscDyes = player.TPlayer.miscDyes;
 			Item[] piggy = player.TPlayer.bank.item;
 			Item[] safe = player.TPlayer.bank2.item;
+			Item[] forge = player.TPlayer.bank3.item;
 			Item trash = player.TPlayer.trashItem;
 
 			for (int i = 0; i < NetItem.MaxInventory; i++)
@@ -172,9 +174,18 @@ namespace TShockAPI
 						+ NetItem.MiscEquipSlots + NetItem.MiscDyeSlots + NetItem.PiggySlots);
 					this.inventory[i] = (NetItem)safe[index];
 				}
+				else if (i <
+					NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots +
+					NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots + NetItem.ForgeSlots)
+				{
+					//179-219
+					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots
+						+ NetItem.MiscEquipSlots + NetItem.MiscDyeSlots + NetItem.PiggySlots);
+					this.inventory[i] = (NetItem)forge[index];
+				}
 				else
 				{
-					//179
+					//220
 					this.inventory[i] = (NetItem)trash;
 				}
 			}
@@ -320,6 +331,20 @@ namespace TShockAPI
 						player.TPlayer.bank2.item[index].prefix = (byte)this.inventory[i].PrefixId;
 					}
 				}
+				else if (i <
+				   NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots +
+				   NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots + NetItem.ForgeSlots)
+				{
+					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots
+						+ NetItem.MiscEquipSlots + NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots);
+					player.TPlayer.bank3.item[index].netDefaults(this.inventory[i].NetId);
+
+					if (player.TPlayer.bank3.item[index].netID != 0)
+					{
+						player.TPlayer.bank3.item[index].stack = this.inventory[i].Stack;
+						player.TPlayer.bank3.item[index].prefix = (byte)this.inventory[i].PrefixId;
+					}
+				}
 				else
 				{
 					player.TPlayer.trashItem.netDefaults(this.inventory[i].NetId);
@@ -368,6 +393,11 @@ namespace TShockAPI
 				NetMessage.SendData(5, -1, -1, Main.player[player.Index].bank2.item[k].name, player.Index, slot, (float)Main.player[player.Index].bank2.item[k].prefix);
 				slot++;
 			}
+			for (int k = 0; k < NetItem.ForgeSlots; k++)
+			{
+				NetMessage.SendData(5, -1, -1, Main.player[player.Index].bank3.item[k].name, player.Index, slot, (float)Main.player[player.Index].bank3.item[k].prefix);
+				slot++;
+			}
 
 			NetMessage.SendData(5, -1, -1, Main.player[player.Index].trashItem.name, player.Index, slot, (float)Main.player[player.Index].trashItem.prefix);
 
@@ -409,6 +439,11 @@ namespace TShockAPI
 			for (int k = 0; k < NetItem.SafeSlots; k++)
 			{
 				NetMessage.SendData(5, player.Index, -1, Main.player[player.Index].bank2.item[k].name, player.Index, slot, (float)Main.player[player.Index].bank2.item[k].prefix);
+				slot++;
+			}
+			for (int k = 0; k < NetItem.ForgeSlots; k++)
+			{
+				NetMessage.SendData(5, player.Index, -1, Main.player[player.Index].bank3.item[k].name, player.Index, slot, (float)Main.player[player.Index].bank3.item[k].prefix);
 				slot++;
 			}
 

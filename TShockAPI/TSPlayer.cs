@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,7 +25,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Timers;
+using OTAPI.Tile;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using TShockAPI.DB;
 using TShockAPI.Hooks;
@@ -120,12 +123,12 @@ namespace TShockAPI
 		/// <summary>
 		/// A queue of tiles destroyed by the player for reverting.
 		/// </summary>
-		public Dictionary<Vector2, Tile> TilesDestroyed { get; protected set; }
+		public Dictionary<Vector2, ITile> TilesDestroyed { get; protected set; }
 
 		/// <summary>
 		/// A queue of tiles placed by the player for reverting.
 		/// </summary>
-		public Dictionary<Vector2, Tile> TilesCreated { get; protected set; }
+		public Dictionary<Vector2, ITile> TilesCreated { get; protected set; }
 
 		/// <summary>
 		/// The player's group.
@@ -640,8 +643,8 @@ namespace TShockAPI
 		/// <param name="index">The player's index in the.</param>
 		public TSPlayer(int index)
 		{
-			TilesDestroyed = new Dictionary<Vector2, Tile>();
-			TilesCreated = new Dictionary<Vector2, Tile>();
+			TilesDestroyed = new Dictionary<Vector2, ITile>();
+			TilesCreated = new Dictionary<Vector2, ITile>();
 			Index = index;
 			Group = Group.DefaultGroup;
 			IceTiles = new List<Point>();
@@ -654,8 +657,8 @@ namespace TShockAPI
 		/// <param name="playerName">The player's name.</param>
 		protected TSPlayer(String playerName)
 		{
-			TilesDestroyed = new Dictionary<Vector2, Tile>();
-			TilesCreated = new Dictionary<Vector2, Tile>();
+			TilesDestroyed = new Dictionary<Vector2, ITile>();
+			TilesCreated = new Dictionary<Vector2, ITile>();
 			Index = -1;
 			FakePlayer = new Player {name = playerName, whoAmI = -1};
 			Group = Group.DefaultGroup;
@@ -1018,8 +1021,15 @@ namespace TShockAPI
 		/// <param name="damage">The amount of damage the player will take.</param>
 		public virtual void DamagePlayer(int damage)
 		{
-			NetMessage.SendData((int) PacketTypes.PlayerDamage, -1, -1, "", Index, ((new Random()).Next(-1, 1)), damage,
-								(float) 0);
+			NetMessage.SendPlayerHurt(Index, PlayerDeathReason.LegacyDefault(), damage, (new Random()).Next(-1, 1), false, false, 0, -1, -1);
+		}
+
+		/// <summary>
+		/// Kills the player.
+		/// </summary>
+		public virtual void KillPlayer()
+		{
+			NetMessage.SendPlayerDeath(Index, PlayerDeathReason.LegacyDefault(), 99999, (new Random()).Next(-1, 1), false, -1, -1);
 		}
 
 		/// <summary>
