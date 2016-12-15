@@ -18,9 +18,14 @@
 
 ## 什么是 TShock
 
-TShock 是 Terraria 的服务器模组(修改/mod), 使用C#编写, 并基于 [Terraria Server API](https://github.com/NyxStudios/TerrariaAPI-Server). 
+TShock 是 Terraria 的服务器模组(修改/mod), 使用C#编写, 并基于 [Terraria Server API](https://github.com/NyxStudios/TerrariaAPI-Server).
 
-此mod提供一些原版服务器没有的新功能, 并支持多种扩展插件.
+此mod提供一些原版服务器没有的新功能, 并支持多种扩展插件. 
+
+## :star: 快速开始
+
+https://tshock.readme.io/docs/getting-started
+
 
 ## 特性
 
@@ -37,7 +42,9 @@ TShock 是 Terraria 的服务器模组(修改/mod), 使用C#编写, 并基于 [T
 ## 社区/支持
 
 * [英文官网/论坛](https://tshock.co/xf/)
-* [Wiki](https://tshock.atlassian.net/wiki/display/TSHOCKPLUGINS/Home)
+* [对readme.io上的文档作贡献](https://tshock.readme.io/)
+
+提交PR前请参阅Contributing文件.
 
 ## 下载途径
 
