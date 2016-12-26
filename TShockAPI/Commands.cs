@@ -216,7 +216,7 @@ namespace TShockAPI
 				AllowServer = false,
 				HelpText = "首次登入游戏时验证超管."
 			});
-			add(new Command(Permissions.user, ManageUsers, "user")
+			add(new Command(Permissions.user, ManageUsers, "user", "用户")
 			{
 				DoLog = false,
 				HelpText = "管理用户账户."

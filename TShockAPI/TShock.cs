@@ -58,7 +58,7 @@ namespace TShockAPI
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "高级汉化-开发";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(2, 1, 0, 0);
+		public static readonly Version CNVersion = new Version(2, 1, 1, 0);
 
 		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
 		public static string SavePath = "tshock";
