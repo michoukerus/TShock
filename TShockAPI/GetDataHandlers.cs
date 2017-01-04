@@ -1719,15 +1719,7 @@ namespace TShockAPI
 			var tileX = args.Data.ReadInt16();
 			var tileY = args.Data.ReadInt16();
 
-			bool isTrapdoor = false;
-
-			if (Main.tile[tileX, tileY].type == TileID.TrapdoorClosed
-				|| Main.tile[tileX, tileY].type == TileID.TrapdoorOpen)
-			{
-				isTrapdoor = true;
-			}
-
-			if (args.Player.HasPermission(Permissions.allowclientsideworldedit) && !isTrapdoor)
+			if (args.Player.HasPermission(Permissions.allowclientsideworldedit))
 				return false;
 
 			if (OnSendTileSquare(size, tileX, tileY))
@@ -1826,7 +1818,7 @@ namespace TShockAPI
 							changed = true;
 						}
 
-						if (tile.active() && newtile.Active)
+						if (tile.active() && newtile.Active && tile.type != newtile.Type)
 						{
 							// Grass <-> Grass
 							if ((TileID.Sets.Conversion.Grass[tile.type] && TileID.Sets.Conversion.Grass[newtile.Type]) ||
@@ -1857,6 +1849,17 @@ namespace TShockAPI
 							((newtile.Wall >= 63 && newtile.Wall <= 70) || newtile.Wall == 81)))
 						{
 							Main.tile[realx, realy].wall = newtile.Wall;
+							changed = true;
+						}
+
+						if ((tile.type == TileID.TrapdoorClosed && (newtile.Type == TileID.TrapdoorOpen || !newtile.Active)) ||
+							(tile.type == TileID.TrapdoorOpen && (newtile.Type == TileID.TrapdoorClosed || !newtile.Active)) ||
+							(!tile.active() && newtile.Active && (newtile.Type == TileID.TrapdoorOpen||newtile.Type == TileID.TrapdoorClosed)))
+						{
+							Main.tile[realx, realy].type = newtile.Type;
+							Main.tile[realx, realy].frameX = newtile.FrameX;
+							Main.tile[realx, realy].frameY = newtile.FrameY;
+							Main.tile[realx, realy].active(newtile.Active);
 							changed = true;
 						}
 					}
@@ -1938,6 +1941,14 @@ namespace TShockAPI
 			{ ProjectileID.EbonsandBallGun, TileID.Ebonsand },
 			{ ProjectileID.PearlSandBallGun, TileID.Pearlsand },
 			{ ProjectileID.CrimsandBallGun, TileID.Crimsand },
+		};
+
+		private static Dictionary<int, int> ropeCoilPlacements = new Dictionary<int, int>
+		{
+			{ItemID.RopeCoil, TileID.Rope},
+			{ItemID.SilkRopeCoil, TileID.SilkRope},
+			{ItemID.VineRopeCoil, TileID.VineRope},
+			{ItemID.WebRopeCoil, TileID.WebRope}
 		};
 
 		/// <summary>
@@ -2115,7 +2126,8 @@ namespace TShockAPI
 
 					// If they aren't selecting the item which creates the tile or wall, they're hacking.
 					if (!(selectedItem.netID == ItemID.IceRod && editData == TileID.MagicalIceBlock) &&
-						editData != (action == EditAction.PlaceTile ? selectedItem.createTile : selectedItem.createWall))
+						(editData != (action == EditAction.PlaceTile ? selectedItem.createTile : selectedItem.createWall) &&
+						!(ropeCoilPlacements.ContainsKey(selectedItem.netID) && editData == ropeCoilPlacements[selectedItem.netID])))
 					{
 						args.Player.SendTileSquare(tileX, tileY, 4);
 						return true;
@@ -2191,8 +2203,13 @@ namespace TShockAPI
 						return true;
 					}
 				}
-				if (TShock.Config.AllowCutTilesAndBreakables && Main.tileCut[Main.tile[tileX, tileY].type])
+				if (TShock.Config.AllowCutTilesAndBreakables && Main.tileCut[tile.type])
 				{
+					if (action == EditAction.KillWall)
+					{
+						args.Player.SendTileSquare(tileX, tileY, 1);
+						return true;
+					}
 					return false;
 				}
 

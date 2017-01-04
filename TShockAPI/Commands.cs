@@ -892,29 +892,7 @@ namespace TShockAPI
 				return;
 			}
 
-			PlayerHooks.OnPlayerLogout(args.Player);
-
-
-			if (Main.ServerSideCharacter)
-			{
-				args.Player.IgnoreActionsForInventory = String.Format("云端存档/强制开荒 模式. 请使用 {0}register \\ {0}login 加入游戏!", Commands.Specifier);
-				if (!args.Player.IgnoreActionsForClearingTrashCan && (!args.Player.Dead || args.Player.TPlayer.difficulty != 2))
-				{
-					args.Player.PlayerData.CopyCharacter(args.Player);
-					TShock.CharacterDB.InsertPlayerData(args.Player);
-				}
-			}
-
-			args.Player.PlayerData = new PlayerData(args.Player);
-			args.Player.Group = TShock.Groups.GetGroupByName(TShock.Config.DefaultGuestGroupName);
-			args.Player.tempGroup = null;
-			if (args.Player.tempGroupTimer != null)
-			{
-				args.Player.tempGroupTimer.Stop();
-			}
-			args.Player.User = null;
-			args.Player.IsLoggedIn = false;
-
+			args.Player.Logout();
 			args.Player.SendSuccessMessage("成功登出游戏.");
 			if (Main.ServerSideCharacter)
 			{
@@ -1224,16 +1202,20 @@ namespace TShockAPI
 				var user = TShock.Users.GetUserByName(username);
 				if (user != null)
 				{
-					DateTime LastSeen = DateTime.Parse(user.LastAccessed).ToLocalTime();
+					DateTime LastSeen;
 					string Timezone = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Hours.ToString("+#;-#");
 
-					args.Player.SendSuccessMessage("{0} 的上次登录时间为 {1} {2} UTC{3}.", user.Name, LastSeen.ToShortDateString(),
-						LastSeen.ToShortTimeString(), Timezone);
+					if (DateTime.TryParse(user.LastAccessed, out LastSeen))
+					{
+						LastSeen = DateTime.Parse(user.LastAccessed).ToLocalTime();
+						args.Player.SendSuccessMessage("{0} 的上次登录时间为 {1} {2} UTC{3}.", user.Name, LastSeen.ToShortDateString(),
+							LastSeen.ToShortTimeString(), Timezone);
+					}
 
 					if (args.Player.Group.HasPermission(Permissions.advaccountinfo))
 					{
-						List<string> KnownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps);
-						string ip = KnownIps[KnownIps.Count - 1];
+						List<string> KnownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps?.ToString() ?? string.Empty);
+						string ip = KnownIps?[KnownIps.Count - 1] ?? "N/A";
 						DateTime Registered = DateTime.Parse(user.Registered).ToLocalTime();
 
 						args.Player.SendSuccessMessage("{0} 的用户组是 {1}.", user.Name, user.Group);

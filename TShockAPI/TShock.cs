@@ -56,9 +56,9 @@ namespace TShockAPI
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
 		public static readonly string VersionCodename = "Mintaka";
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
-		public static readonly string CNMode = "高级汉化-开发";
+		public static readonly string CNMode = "advcn-stable";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(2, 1, 1, 0);
+		public static readonly Version CNVersion = new Version(2, 2, 0, 0);
 
 		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
 		public static string SavePath = "tshock";
@@ -828,12 +828,23 @@ namespace TShockAPI
 
 		/// <summary>AuthToken - The auth token used by the /auth system to grant temporary superadmin access to new admins.</summary>
 		public static int AuthToken = -1;
+		private string _cliPassword = null;
 
 		/// <summary>OnPostInit - Fired when the server loads a map, to perform world specific operations.</summary>
 		/// <param name="args">args - The EventArgs object.</param>
 		private void OnPostInit(EventArgs args)
 		{
 			SetConsoleTitle(false);
+
+			//This is to prevent a bug where a CLI-defined password causes packets to be
+			//sent in an unexpected order, resulting in clients being unable to connect
+			if (!string.IsNullOrEmpty(Netplay.ServerPassword))
+			{
+				//CLI defined password overrides a config password
+				_cliPassword = Netplay.ServerPassword;
+				Netplay.ServerPassword = "";
+				Config.ServerPassword = _cliPassword;
+			}
 
 			// Disable the auth system if "auth.lck" is present or a superadmin exists
 			if (File.Exists(Path.Combine(SavePath, "auth.lck")) || Users.GetUsers().Exists(u => u.Group == new SuperAdminGroup().Name))
@@ -1968,10 +1979,9 @@ namespace TShockAPI
 			Item[] safe = player.TPlayer.bank2.item;
 			Item[] forge = player.TPlayer.bank3.item;
 			Item trash = player.TPlayer.trashItem;
-
 			for (int i = 0; i < NetItem.MaxInventory; i++)
 			{
-				if (i < NetItem.InventorySlots)
+				if (i < NetItem.InventoryIndex.Item2)
 				{
 					//0-58
 					Item item = new Item();
@@ -1989,11 +1999,11 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (i < NetItem.InventorySlots + NetItem.ArmorSlots)
+				else if (i < NetItem.ArmorIndex.Item2)
 				{
 					//59-78
+					var index = i - NetItem.ArmorIndex.Item1;
 					Item item = new Item();
-					var index = i - NetItem.InventorySlots;
 					if (armor[index] != null && armor[index].netID != 0)
 					{
 						item.netDefaults(armor[index].netID);
@@ -2008,11 +2018,11 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (i < NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots)
+				else if (i < NetItem.DyeIndex.Item2)
 				{
 					//79-88
+					var index = i - NetItem.DyeIndex.Item1;
 					Item item = new Item();
-					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots);
 					if (dye[index] != null && dye[index].netID != 0)
 					{
 						item.netDefaults(dye[index].netID);
@@ -2027,12 +2037,11 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (i <
-					NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots)
+				else if (i < NetItem.MiscEquipIndex.Item2)
 				{
 					//89-93
+					var index = i - NetItem.MiscEquipIndex.Item1;
 					Item item = new Item();
-					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots);
 					if (miscEquips[index] != null && miscEquips[index].netID != 0)
 					{
 						item.netDefaults(miscEquips[index].netID);
@@ -2047,14 +2056,11 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (i <
-					NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots
-					+ NetItem.MiscDyeSlots)
+				else if (i < NetItem.MiscDyeIndex.Item2)
 				{
 					//93-98
+					var index = i - NetItem.MiscDyeIndex.Item1;
 					Item item = new Item();
-					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots
-						+ NetItem.MiscEquipSlots);
 					if (miscDyes[index] != null && miscDyes[index].netID != 0)
 					{
 						item.netDefaults(miscDyes[index].netID);
@@ -2069,14 +2075,11 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (i <
-				   NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots +
-				   NetItem.MiscDyeSlots + NetItem.PiggySlots)
+				else if (i < NetItem.PiggyIndex.Item2)
 				{
 					//98-138
+					var index = i - NetItem.PiggyIndex.Item1;
 					Item item = new Item();
-					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots
-						+ NetItem.MiscEquipSlots + NetItem.MiscDyeSlots);
 					if (piggy[index] != null && piggy[index].netID != 0)
 					{
 						item.netDefaults(piggy[index].netID);
@@ -2092,14 +2095,11 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (i <
-					NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots +
-					NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots)
+				else if (i < NetItem.SafeIndex.Item2)
 				{
 					//138-178
+					var index = i - NetItem.SafeIndex.Item1;
 					Item item = new Item();
-					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots
-						+ NetItem.MiscEquipSlots + NetItem.MiscDyeSlots + NetItem.PiggySlots);
 					if (safe[index] != null && safe[index].netID != 0)
 					{
 						item.netDefaults(safe[index].netID);
@@ -2115,31 +2115,9 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (i <
-					NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots + NetItem.MiscEquipSlots +
-					NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots + NetItem.ForgeSlots)
+				else if (i < NetItem.TrashIndex.Item2)
 				{
 					//179-219
-					Item item = new Item();
-					var index = i - (NetItem.InventorySlots + NetItem.ArmorSlots + NetItem.DyeSlots
-						+ NetItem.MiscEquipSlots + NetItem.MiscDyeSlots + NetItem.PiggySlots + NetItem.SafeSlots);
-					if (forge[index] != null && forge[index].netID != 0)
-					{
-						item.netDefaults(forge[index].netID);
-						item.Prefix(forge[index].prefix);
-						item.AffixName();
-
-						if (forge[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								String.Format("Stack cheat detected. Remove Defender's Forge item {0} ({1}) and then rejoin", item.name, forge[index].stack),
-								Color.Cyan);
-						}
-					}
-				}
-				else
-				{
 					Item item = new Item();
 					if (trash != null && trash.netID != 0)
 					{
@@ -2151,10 +2129,31 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-                                $"你的垃圾箱物品超过数量上限({trash.stack}/{item.maxStack}). 丢掉 {trash.name}({trash.stack}) 然后重新加入游戏.",
-                                Color.Cyan);
+								$"你的垃圾箱物品超过数量上限({trash.stack}/{item.maxStack}). 丢掉 {trash.name}({trash.stack}) 然后重新加入游戏.",
+								Color.Cyan);
 						}
 					}
+				}
+				else
+				{
+					//220
+					var index = i - NetItem.ForgeIndex.Item1;
+					Item item = new Item();
+					if (forge[index] != null && forge[index].netID != 0)
+					{
+						item.netDefaults(forge[index].netID);
+						item.Prefix(forge[index].prefix);
+						item.AffixName();
+
+						if (forge[index].stack > item.maxStack)
+						{
+							check = true;
+							player.SendMessage(
+								String.Format("你的守卫者熔炉内物品超过数量上限. 请丢掉 {0} ({1}) 后再加入游戏.", item.name, forge[index].stack),
+								Color.Cyan);
+						}
+					}
+
 				}
 			}
 
@@ -2190,7 +2189,14 @@ namespace TShockAPI
 			if (file.MaxSlots > 235)
 				file.MaxSlots = 235;
 			Main.maxNetPlayers = file.MaxSlots + 20;
+
 			Netplay.ServerPassword = "";
+			if (!string.IsNullOrEmpty(_cliPassword))
+			{
+				//This prevents a config reload from removing/updating a CLI-defined password
+				file.ServerPassword = _cliPassword;
+			}
+
 			Netplay.spamCheck = false;
 		}
 	}

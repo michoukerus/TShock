@@ -4,6 +4,20 @@ This is the rolling changelog for TShock for Terraria. Use past tense when addin
 
 ## Upcoming Changes
 
+## TShock 4.3.22
+* Compatibility with Terraria 1.3.4.4
+* API: Version tick 2.0
+* API: Reduced RAM usage by ~80MB (Large server) (@deathcradle)
+* API: Added TSPlayer.KillPlayer() (@WhiteXZ)
+* API: Added TSPlayer.Logout() (@ProfessorXZ)
+* Fixed connections after max slot is reached (@DeathCradle)
+* Fixed server crashes caused by client disconnections when attempting to read closed sockets (@Enerdy)
+* Added some code to make trapdoors work better (@DogooFalchion)
+* AllowCutTilesAndBreakables config option now correctly allows flowers/vines/herbs to be cut in regions without breaking walls (@WhiteXZ)
+* REST: `/status` has been re-added. It will now always point to `/v2/server/status` and includes an `upgrade` field describing the newest status route (@WhiteXZ)
+* REST: `/v3/players/read` now includes a `muted` field (@WhiteXZ)
+* Fixed fishing quests not saving/loading correctly when login before join, UUID login, and SSC were enabled together (@DogooFalchion)
+
 ## TShock 4.3.21
 * Compatibility with Terraria 1.3.4.3 (@Patrikkk, @Zaicon).
 * API: Version tick 1.26.
@@ -26,7 +40,6 @@ This is the rolling changelog for TShock for Terraria. Use past tense when addin
 * Added `/uploadssc [player]` which allows someone to upload SSC data for [player] and store it on the server. Adds `tshock.ssc.upload` and `tshock.ssc.upload.others` permission nodes to match (@DogooFalchion).
 * Added hardened stone to the whitelist of tiles editable by players (@DogooFalchion).
 * Added conversion system to send convert old MOTD format into smart text, while preserving initial line starting values to keep byte optimization for background colors Thanks to (@WhiteXZ, @Simon311, and especially @DogooFalchion) for the hard work on this issue.
-* Fixed server-sided inventory issues caused by bank3 (@ProfessorXZ)
 
 ## TShock 4.3.20
 * Security improvement: The auth system is now automatically disabled if a superadmin exists in the database (@Enerdy).
