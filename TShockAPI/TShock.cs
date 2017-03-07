@@ -58,7 +58,7 @@ namespace TShockAPI
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "advcn-stable";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(2, 2, 0, 0);
+		public static readonly Version CNVersion = new Version(2, 3, 0, 0);
 
 		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
 		public static string SavePath = "tshock";
@@ -122,7 +122,7 @@ namespace TShockAPI
 		public static RestManager RestManager;
 		/// <summary>Utils - Static reference to the utilities class, which contains a variety of utility functions.</summary>
 		public static Utils Utils = Utils.Instance;
-		/// <summary>StatTracker - Static reference to the stat tracker, which is created immediately when declared.</summary>
+		/// <summary>StatTracker - Static reference to the stat tracker, which sends some server metrics every 5 minutes.</summary>
 		public static StatTracker StatTracker = new StatTracker();
 		/// <summary>UpdateManager - Static reference to the update checker, which checks for updates and notifies server admins of updates.</summary>
 		public static UpdateManager UpdateManager;
@@ -189,20 +189,22 @@ namespace TShockAPI
 			string logFilename;
 			string logPathSetupWarning;
 
-            OTAPI.Hooks.Net.Socket.Create = () =>
-            {
-                //Console.WriteLine($"Creating socket {nameof(LinuxTcpSocket)}");
-                return new LinuxTcpSocket();
-                //return new OTAPI.Sockets.PoolSocket();
-                //return new Terraria.Net.Sockets.TcpSocket();
-            };
-            OTAPI.Hooks.Player.Announce = (int playerId) =>
-            {
-                //TShock handles this
-                return OTAPI.HookResult.Cancel;
-            };
+			OTAPI.Hooks.Net.Socket.Create = () =>
+			{
+				//Console.WriteLine($"Creating socket {nameof(LinuxTcpSocket)}");
+				return new LinuxTcpSocket();
+				//return new OTAPI.Sockets.PoolSocket();
+				//return new Terraria.Net.Sockets.TcpSocket();
+			};
+			OTAPI.Hooks.Player.Announce = (int playerId) =>
+			{
+				//TShock handles this
+				return OTAPI.HookResult.Cancel;
+			};
 
-            TerrariaApi.Reporting.CrashReporter.HeapshotRequesting += CrashReporter_HeapshotRequesting;
+			Main.SettingsUnlock_WorldEvil = true;
+
+			TerrariaApi.Reporting.CrashReporter.HeapshotRequesting += CrashReporter_HeapshotRequesting;
 
 			try
 			{
@@ -772,12 +774,12 @@ namespace TShockAPI
 						}
 					case "--provider-token":
 						{
-							TShock.StatTracker.ProviderToken = parms[++i];
+							StatTracker.ProviderToken = parms[++i];
 							break;
 						}
 					case "--stats-optout":
 						{
-							TShock.StatTracker.OptOut = true;
+							StatTracker.OptOut = true;
 							break;
 						}
 					case "--no-restart":
@@ -899,7 +901,7 @@ namespace TShockAPI
 			}
 
 			UpdateManager = new UpdateManager();
-			StatTracker.Initialize();
+			StatTracker.Start();
 		}
 
 		/// <summary>ComputeMaxStyles - Computes the max styles...</summary>
@@ -1387,11 +1389,17 @@ namespace TShockAPI
 				}
 			}
 		}
-
+		
 		/// <summary>OnLeave - Called when a player leaves the server.</summary>
 		/// <param name="args">args - The LeaveEventArgs object.</param>
 		private void OnLeave(LeaveEventArgs args)
 		{
+			if (args.Who >= Players.Length || args.Who < 0)
+			{
+				//Something not right has happened
+				return;
+			}
+
 			var tsplr = Players[args.Who];
 			Players[args.Who] = null;
 

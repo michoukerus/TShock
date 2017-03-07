@@ -24,6 +24,8 @@ using HttpServer;
 using TShockAPI;
 using TShockAPI.DB;
 using Microsoft.Xna.Framework;
+using Terraria;
+using System.Security.Cryptography;
 
 namespace Rests
 {
@@ -39,6 +41,8 @@ namespace Rests
 
 		public Dictionary<string, TokenData> Tokens { get; protected set; }
 		public Dictionary<string, TokenData> AppTokens { get; protected set; }
+
+		private RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
 
 		public SecureRest(IPAddress ip, int port)
 			: base(ip, port)
@@ -111,7 +115,7 @@ namespace Rests
 			int tokens = 0;
 			if (tokenBucket.TryGetValue(context.RemoteEndPoint.Address.ToString(), out tokens))
 			{
-				if (tokens >= Math.Max(TShock.Config.RESTMaximumRequestsPerInterval, 5))
+				if (tokens >= TShock.Config.RESTMaximumRequestsPerInterval)
 				{
 					TShock.Log.ConsoleError("A REST login from {0} was blocked as it currently has {1} tokens", context.RemoteEndPoint.Address.ToString(), tokens);
 					tokenBucket[context.RemoteEndPoint.Address.ToString()] += 1; // Tokens over limit, increment by one and reject request
@@ -120,13 +124,11 @@ namespace Rests
 						Error = "Username or password may be incorrect or this account may not have sufficient privileges."
 					};
 				}
-				if (!TShock.Config.RESTLimitOnlyFailedLoginRequests)
-					tokenBucket[context.RemoteEndPoint.Address.ToString()] += 1; // Tokens under limit, increment by one and process request
+				tokenBucket[context.RemoteEndPoint.Address.ToString()] += 1; // Tokens under limit, increment by one and process request
 			}
 			else
 			{
-				if (!TShock.Config.RESTLimitOnlyFailedLoginRequests)
-					tokenBucket.Add(context.RemoteEndPoint.Address.ToString(), 1); // First time request, set to one and process request
+				tokenBucket.Add(context.RemoteEndPoint.Address.ToString(), 1); // First time request, set to one and process request
 			}
 
 			User userAccount = TShock.Users.GetUserByName(username);
@@ -151,11 +153,10 @@ namespace Rests
 			}
 
 			string tokenHash;
-			var rand = new Random();
 			var randbytes = new byte[32];
 			do
 			{
-				rand.NextBytes(randbytes);
+				_rng.GetBytes(randbytes);
 				tokenHash = randbytes.Aggregate("", (s, b) => s + b.ToString("X2"));
 			} while (Tokens.ContainsKey(tokenHash));
 
@@ -197,6 +198,13 @@ namespace Rests
 			{
 				return new RestObject("403")
 				{ Error = string.Format("Not authorized. User \"{0}\" has no access to use the specified API endpoint.", tokenData.Username) };
+			}
+
+			//Main.rand being null can cause issues in command execution.
+			//This should solve that
+			if (Main.rand == null)
+			{
+				Main.rand = new Terraria.Utilities.UnifiedRandom();
 			}
 
 			object result = secureCmd.Execute(verbs, parms, tokenData, request, context);

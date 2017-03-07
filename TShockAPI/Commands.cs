@@ -1882,7 +1882,7 @@ namespace TShockAPI
 			args.Player.SendInfoMessage("尝试检查更新...");
 			try
 			{
-				TShock.UpdateManager.UpdateCheck(null);
+				TShock.UpdateManager.UpdateCheckAsync(null);
 			}
 			catch (Exception)
 			{
