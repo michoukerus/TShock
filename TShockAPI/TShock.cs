@@ -1,6 +1,6 @@
 /*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2016 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ using TShockAPI.ServerSideCharacters;
 using Terraria.Utilities;
 using Microsoft.Xna.Framework;
 using TShockAPI.Sockets;
+using TShockAPI.CLI;
 
 namespace TShockAPI
 {
@@ -58,7 +59,7 @@ namespace TShockAPI
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
 		public static readonly string CNMode = "advcn-stable";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(2, 3, 0, 0);
+		public static readonly Version CNVersion = new Version(2, 4, 0, 0);
 
 		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
 		public static string SavePath = "tshock";
@@ -130,6 +131,10 @@ namespace TShockAPI
 		public static ILog Log;
 		/// <summary>instance - Static reference to the TerrariaPlugin instance.</summary>
 		public static TerrariaPlugin instance;
+		/// <summary>
+		/// Static reference to a <see cref="CommandLineParser"/> used for simple command-line parsing
+		/// </summary>
+		public static CommandLineParser CliParser { get; } = new CommandLineParser();
 		/// <summary>
 		/// Used for implementing REST Tokens prior to the REST system starting up.
 		/// </summary>
@@ -208,6 +213,7 @@ namespace TShockAPI
 
 			try
 			{
+				CliParser.Reset();
 				HandleCommandLine(Environment.GetCommandLineArgs());
 
 				if (!Directory.Exists(SavePath))
@@ -299,6 +305,7 @@ namespace TShockAPI
 				File.WriteAllText(Path.Combine(SavePath, "tshock.pid"),
 					Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
 
+				CliParser.Reset();
 				HandleCommandLinePostConfigLoad(Environment.GetCommandLineArgs());
 
 				Backups = new BackupManager(Path.Combine(SavePath, "backups"));
@@ -614,218 +621,202 @@ namespace TShockAPI
 		/// <param name="parms">parms - The array of arguments passed in through the command line.</param>
 		private void HandleCommandLine(string[] parms)
 		{
-			string path;
-			for (int i = 0; i < parms.Length; i++)
+			string path = null;
+
+			//Generic method for doing a path sanity check
+			Action<string> pathChecker = (p) => 
 			{
-				switch (parms[i].ToLower())
+				if (!string.IsNullOrWhiteSpace(p) && p.IndexOfAny(Path.GetInvalidPathChars()) == -1)
 				{
-					case "-configpath":
-						{
-							path = parms[++i];
-							if (path.IndexOfAny(Path.GetInvalidPathChars()) == -1)
-							{
-								SavePath = path;
-								ServerApi.LogWriter.PluginWriteLine(this, "配置文件路径: " + path, TraceLevel.Info);
-							}
-							break;
-						}
-					case "-worldpath":
-						{
-							path = parms[++i];
-							if (path.IndexOfAny(Path.GetInvalidPathChars()) == -1)
-							{
-								Main.WorldPath = path;
-								ServerApi.LogWriter.PluginWriteLine(this, "地图文件路径: " + path, TraceLevel.Info);
-							}
-							break;
-						}
-					case "-logpath":
-						{
-							path = parms[++i];
-							if (path.IndexOfAny(Path.GetInvalidPathChars()) == -1)
-							{
-								LogPath = path;
-								ServerApi.LogWriter.PluginWriteLine(this, "日志文件路径: " + path, TraceLevel.Info);
-							}
-							break;
-						}
-					case "-logformat":
-						{
-							LogFormat = parms[++i];
-							break;
-						}
-					case "-logclear":
-						{
-							bool.TryParse(parms[++i], out LogClear);
-							break;
-						}
-					case "-dump":
-						{
-							Utils.PrepareLangForDump();
-							Lang.setLang(true);
-							ConfigFile.DumpDescriptions();
-							Permissions.DumpDescriptions();
-							ServerSideConfig.DumpDescriptions();
-							RestManager.DumpDescriptions();
-							Utils.DumpBuffs("BuffList.txt");
-							Utils.DumpItems("Items-1_0.txt", -48, 235);
-							Utils.DumpItems("Items-1_1.txt", 235, 604);
-							Utils.DumpItems("Items-1_2.txt", 604, 2749);
-							Utils.DumpItems("Items-1_3.txt", 2749, Main.maxItemTypes);
-							Utils.DumpNPCs("NPCs.txt");
-							Utils.DumpProjectiles("Projectiles.txt");
-							Utils.DumpPrefixes("Prefixes.txt");
-							Environment.Exit(1);
-							break;
-						}
-					case "-config":
-						{
-							string filePath = parms[++i];
-							ServerApi.LogWriter.PluginWriteLine(this, $"加载指定的配置文件: {filePath}", TraceLevel.Verbose);
-							Main.instance.LoadDedConfig(filePath);
-							break;
-						}
-					case "-port":
-						{
-							int serverPort;
-							if (int.TryParse(parms[++i], out serverPort))
-							{
-								Netplay.ListenPort = serverPort;
-								ServerApi.LogWriter.PluginWriteLine(this, $"运行端口: {serverPort}.", TraceLevel.Verbose);
-							}
-							else
-							{
-								// The server should not start up if this argument is invalid.
-                                // Is "-ip" there should be replaced by "-port"??
-								throw new InvalidOperationException("命令行参数\"-port\"值无效.");
-							}
-
-							break;
-						}
-					case "-worldname":
-						{
-							string worldName = parms[++i];
-							Main.instance.SetWorldName(worldName);
-							ServerApi.LogWriter.PluginWriteLine(this, $"世界名被更改至: {worldName}", TraceLevel.Verbose);
-
-							break;
-						}
-					case "-autoshutdown":
-						{
-							Main.instance.EnableAutoShutdown();
-							break;
-						}
-					case "-autocreate":
-						{
-							string newOpt = parms[++i];
-							Main.instance.autoCreate(newOpt);
-							break;
-						}
-					case "-ip":
-						{
-							IPAddress ip;
-							if (IPAddress.TryParse(parms[++i], out ip))
-							{
-								Netplay.ServerIP = ip;
-								ServerApi.LogWriter.PluginWriteLine(this, $"监听IP: {ip}.", TraceLevel.Verbose);
-							}
-							else
-							{
-								// The server should not start up if this argument is invalid.
-								throw new InvalidOperationException("命令行参数\"-ip\"值无效.");
-							}
-
-							break;
-						}
-					case "-connperip":
-						{
-							int limit;
-							if (int.TryParse(parms[++i], out limit))
-							{
-								/* Todo - Requires an OTAPI modification
-								Netplay.MaxConnections = limit;
-								ServerApi.LogWriter.PluginWriteLine(this, string.Format(
-									"Connections per IP have been limited to {0} connections.", limit), TraceLevel.Verbose);*/
-								ServerApi.LogWriter.PluginWriteLine(this, "\"-connperip\" 选项在此TShock版本内不支持.", TraceLevel.Verbose);
-							}
-							else
-								ServerApi.LogWriter.PluginWriteLine(this,"命令行参数\"-connperip\"值无效.", TraceLevel.Warning);
-
-							break;
-						}
-					case "-killinactivesocket":
-						{
-							//							Netplay.killInactive = true;
-							ServerApi.LogWriter.PluginWriteLine(this, "命令行参数\"-killinactivesocket\"已经被取消, 无作用.", TraceLevel.Warning);
-							break;
-						}
-					case "-lang":
-						{
-							int langIndex;
-							if (int.TryParse(parms[++i], out langIndex))
-							{
-								Lang.lang = langIndex;
-								ServerApi.LogWriter.PluginWriteLine(this, $"运行时默认语言:{langIndex}.", TraceLevel.Verbose);
-							}
-							else
-								ServerApi.LogWriter.PluginWriteLine(this,"命令行参数\"-lang\"值无效.", TraceLevel.Warning);
-
-							break;
-						}
-					case "--provider-token":
-						{
-							StatTracker.ProviderToken = parms[++i];
-							break;
-						}
-					case "--stats-optout":
-						{
-							StatTracker.OptOut = true;
-							break;
-						}
-					case "--no-restart":
-						{
-							TShock.NoRestart = true;
-							break;
-						}
+					path = p;
 				}
-			}
+			};
+
+			//Prepare the parser with all the flags available
+			CliParser
+				.AddFlag("-configpath", pathChecker)
+					//The .After Action is run after the pathChecker Action
+					.After(() =>
+					{
+						SavePath = path ?? "tshock";
+						if (path != null)
+						{
+							ServerApi.LogWriter.PluginWriteLine(this, "Config path has been set to " + path, TraceLevel.Info);
+						}
+					})
+
+				.AddFlag("-worldpath", pathChecker)
+					.After(() =>
+					{
+						if (path != null)
+						{
+							Main.WorldPath = path;
+							ServerApi.LogWriter.PluginWriteLine(this, "World path has been set to " + path, TraceLevel.Info);
+						}
+					})
+
+				.AddFlag("-logpath", pathChecker)
+					.After(() =>
+					{
+						if (path != null)
+						{
+							LogPath = path;
+							ServerApi.LogWriter.PluginWriteLine(this, "Log path has been set to " + path, TraceLevel.Info);
+						}
+					})
+
+				.AddFlag("-logformat", (format) =>
+					{
+						if (!string.IsNullOrWhiteSpace(format)) { LogFormat = format; }
+					})
+
+				.AddFlag("-config", (cfg) =>
+					{
+						if (!string.IsNullOrWhiteSpace(cfg))
+						{
+							ServerApi.LogWriter.PluginWriteLine(this, string.Format("Loading dedicated config file: {0}", cfg), TraceLevel.Verbose);
+							Main.instance.LoadDedConfig(cfg);
+						}
+					})
+
+				.AddFlag("-port", (p) =>
+					{
+						int port;
+						if (int.TryParse(p, out port))
+						{
+							Netplay.ListenPort = port;
+							ServerApi.LogWriter.PluginWriteLine(this, string.Format("Listening on port {0}.", port), TraceLevel.Verbose);
+						}
+					})
+
+				.AddFlag("-worldname", (world) =>
+					{
+						if (!string.IsNullOrWhiteSpace(world))
+						{
+							Main.instance.SetWorldName(world);
+							ServerApi.LogWriter.PluginWriteLine(this, string.Format("World name will be overridden by: {0}", world), TraceLevel.Verbose);
+						}
+					})
+
+				.AddFlag("-ip", (ip) =>
+					{
+						IPAddress addr;
+						if (IPAddress.TryParse(ip, out addr))
+						{
+							Netplay.ServerIP = addr;
+							ServerApi.LogWriter.PluginWriteLine(this, string.Format("Listening on IP {0}.", addr), TraceLevel.Verbose);
+						}
+						else
+						{
+							// The server should not start up if this argument is invalid.
+							throw new InvalidOperationException("Invalid value given for command line argument \"-ip\".");
+						}
+					})
+
+				.AddFlag("-lang", (l) =>
+					{
+						int lang;
+						if (int.TryParse(l, out lang))
+						{
+							Lang.lang = lang;
+							ServerApi.LogWriter.PluginWriteLine(this, string.Format("Language index set to {0}.", lang), TraceLevel.Verbose);
+						}
+						else
+						{
+							ServerApi.LogWriter.PluginWriteLine(this, "Invalid value given for command line argument \"-lang\".", TraceLevel.Warning);
+						}
+					})
+
+				.AddFlag("-autocreate", (size) =>
+					{
+						if (!string.IsNullOrWhiteSpace(size))
+						{
+							Main.instance.autoCreate(size);
+						}
+					})
+
+				.AddFlag("--provider-token", (token) => StatTracker.ProviderToken = token)
+
+				//Flags without arguments
+				.AddFlag("-logclear", () => LogClear = true)
+				.AddFlag("-autoshutdown", () => Main.instance.EnableAutoShutdown())
+				.AddFlag("-dump", () => Utils.Dump())
+				.AddFlag("--stats-optout", () => StatTracker.OptOut = true)
+				.AddFlag("--no-restart", () => NoRestart = true);
+
+			CliParser.ParseFromSource(parms);
+			
+			/*"-connperip": Todo - Requires an OTAPI modification
+			{
+				int limit;
+				if (int.TryParse(parms[++i], out limit))
+				{
+					//Netplay.MaxConnections = limit;
+					//ServerApi.LogWriter.PluginWriteLine(this, string.Format(
+					//	"Connections per IP have been limited to {0} connections.", limit), TraceLevel.Verbose);
+					ServerApi.LogWriter.PluginWriteLine(this, "\"-connperip\" is not supported in this version of TShock.", TraceLevel.Verbose);
+				}
+				else
+					ServerApi.LogWriter.PluginWriteLine(this, "Invalid value given for command line argument \"-connperip\".", TraceLevel.Warning);
+			}*/
 		}
 
 		/// <summary>HandleCommandLinePostConfigLoad - Handles additional command line options after the config file is read.</summary>
 		/// <param name="parms">parms - The array of arguments passed in through the command line.</param>
 		public static void HandleCommandLinePostConfigLoad(string[] parms)
 		{
-			for (int i = 0; i < parms.Length; i++)
-			{
-				switch (parms[i].ToLower())
-				{
-					case "-port":
-						int port = Convert.ToInt32(parms[++i]);
-						Netplay.ListenPort = port;
-						Config.ServerPort = port;
-						OverridePort = true;
-						Log.ConsoleInfo("命令行参数指定了新运行端口 " + port);
-						break;
-					case "-rest-token":
-						string token = Convert.ToString(parms[++i]);
+			FlagSet portSet = new FlagSet("-port");
+			FlagSet playerSet = new FlagSet("-maxplayers", "-players");
+			FlagSet restTokenSet = new FlagSet("--rest-token", "-rest-token");
+			FlagSet restEnableSet = new FlagSet("--rest-enabled", "-rest-enabled");
+			FlagSet restPortSet = new FlagSet("--rest-port", "-rest-port");
+
+			CliParser
+				.AddFlags(portSet, (p) =>
+					{
+						int port;
+						if (int.TryParse(p, out port))
+						{
+							Netplay.ListenPort = port;
+							Config.ServerPort = port;
+							OverridePort = true;
+							Log.ConsoleInfo("Port overridden by startup argument. Set to " + port);
+						}
+					})
+				.AddFlags(restTokenSet, (token) =>
+					{
 						RESTStartupTokens.Add(token, new SecureRest.TokenData { Username = "null", UserGroupName = "superadmin" });
-						Console.WriteLine("命令行参数更改了REST密钥.");
-						break;
-					case "-rest-enabled":
-						Config.RestApiEnabled = Convert.ToBoolean(parms[++i]);
-						Console.WriteLine("命令行参数启用了REST Api.");
-						break;
-					case "-rest-port":
-						Config.RestApiPort = Convert.ToInt32(parms[++i]);
-						Console.WriteLine("命令行参数更改了REST监听端口.");
-						break;
-					case "-maxplayers":
-					case "-players":
-						Config.MaxSlots = Convert.ToInt32(parms[++i]);
-						Console.WriteLine("命令行参数更改了最大玩家数.");
-						break;
-				}
-			}
+						Console.WriteLine("Startup parameter overrode REST token.");
+					})
+				.AddFlags(restEnableSet, (e) =>
+					{
+						bool enabled;
+						if (bool.TryParse(e, out enabled))
+						{
+							Config.RestApiEnabled = enabled;
+							Console.WriteLine("Startup parameter overrode REST enable.");
+						}
+					})
+				.AddFlags(restPortSet, (p) =>
+				{
+					int restPort;
+					if (int.TryParse(p, out restPort))
+					{
+						Config.RestApiPort = restPort;
+						Console.WriteLine("Startup parameter overrode REST port.");
+					}
+				})
+				.AddFlags(playerSet, (p)=>
+					{
+						int slots;
+						if (int.TryParse(p, out slots))
+						{
+							Config.MaxSlots = slots;
+							Console.WriteLine("Startup parameter overrode maximum player slot configuration value.");
+						}
+					});
+
+			CliParser.ParseFromSource(parms);
 		}
 
 		/// <summary>AuthToken - The auth token used by the /auth system to grant temporary superadmin access to new admins.</summary>
@@ -1020,8 +1011,9 @@ namespace TShockAPI
 					{
 						if (player.TilePlaceThreshold >= Config.TilePlaceThreshold)
 						{
-							player.Disable("达到放置物块速率上限.", flags);
-							lock (player.TilesCreated) {
+							player.Disable("达到放置物块速率上限", flags);
+							lock (player.TilesCreated)
+							{
 								TSPlayer.Server.RevertTiles(player.TilesCreated);
 								player.TilesCreated.Clear();
 							}
@@ -1389,7 +1381,7 @@ namespace TShockAPI
 				}
 			}
 		}
-		
+
 		/// <summary>OnLeave - Called when a player leaves the server.</summary>
 		/// <param name="args">args - The LeaveEventArgs object.</param>
 		private void OnLeave(LeaveEventArgs args)

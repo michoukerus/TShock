@@ -1,6 +1,6 @@
 /*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2016 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -153,7 +153,14 @@ namespace TShockAPI
 															 out spawnTileY);
 				int npcid = NPC.NewNPC(spawnTileX * 16, spawnTileY * 16, type, 0);
 				// This is for special slimes
-				Main.npc[npcid].SetDefaults(name);
+				if (type == 1)
+				{
+					Main.npc[npcid].SetDefaults(name);
+				}
+				else
+				{
+					Main.npc[npcid].netDefaults(type);
+				}
 			}
 		}
 

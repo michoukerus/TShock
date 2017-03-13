@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2016 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -420,9 +420,9 @@ namespace TShockAPI
 			for (int i = -17; i < Main.maxNPCTypes; i++)
 			{
 				npc.netDefaults(i);
-				if (npc.name.ToLower() == nameLower)
+				if (npc.name.ToLower() == nameLower || npc.displayName.ToLower() == nameLower)
 					return new List<NPC> { npc };
-				if (npc.name.ToLower().StartsWith(nameLower))
+				if (npc.name.ToLower().StartsWith(nameLower) || npc.displayName.ToLower().StartsWith(nameLower))
 					found.Add((NPC)npc.Clone());
 			}
 			return found;
@@ -1164,6 +1164,32 @@ namespace TShockAPI
 			#endregion
 
 			return points;
+		}
+
+		/// <summary>
+		/// Dumps information and optionally exits afterwards
+		/// </summary>
+		/// <param name="exit"></param>
+		public void Dump(bool exit = true)
+		{
+			PrepareLangForDump();
+			Lang.setLang(true);
+			ConfigFile.DumpDescriptions();
+			Permissions.DumpDescriptions();
+			ServerSideCharacters.ServerSideConfig.DumpDescriptions();
+			RestManager.DumpDescriptions();
+			DumpBuffs("BuffList.txt");
+			DumpItems("Items-1_0.txt", -48, 235);
+			DumpItems("Items-1_1.txt", 235, 604);
+			DumpItems("Items-1_2.txt", 604, 2749);
+			DumpItems("Items-1_3.txt", 2749, Main.maxItemTypes);
+			DumpNPCs("NPCs.txt");
+			DumpProjectiles("Projectiles.txt");
+			DumpPrefixes("Prefixes.txt");
+			if (exit)
+			{
+				Environment.Exit(1);
+			}
 		}
 
 		internal void PrepareLangForDump()

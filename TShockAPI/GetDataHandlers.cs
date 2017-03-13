@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2016 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -2514,6 +2514,11 @@ namespace TShockAPI
 
 		private static bool HandlePlayerUpdate(GetDataHandlerArgs args)
 		{
+			if (args.Player == null || args.TPlayer == null || args.Data == null)
+			{
+				return false;
+			}
+
 			byte plr = args.Data.ReadInt8();
 			BitsByte control = args.Data.ReadInt8();
 			BitsByte pulley = args.Data.ReadInt8();
@@ -3808,6 +3813,9 @@ namespace TShockAPI
 				}*/
 
 				if (buff == 10 && TShock.Config.DisableInvisPvP && args.TPlayer.hostile)
+					buff = 0;
+
+				if (Netplay.Clients[args.TPlayer.whoAmI].State < 2 && (buff == 156 || buff == 47 || buff == 149))
 					buff = 0;
 
 				args.TPlayer.buffType[i] = buff;
