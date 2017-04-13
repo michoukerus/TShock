@@ -1879,16 +1879,7 @@ namespace TShockAPI
 
 		private static void CheckUpdates(CommandArgs args)
 		{
-			args.Player.SendInfoMessage("尝试检查更新...");
-			try
-			{
-				TShock.UpdateManager.UpdateCheckAsync(null);
-			}
-			catch (Exception)
-			{
-				//swallow the exception
-				return;
-			}
+			args.Player.SendInfoMessage("不支持检查更新...");
 		}
 
 		private static void ManageRest(CommandArgs args)

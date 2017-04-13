@@ -1,0 +1,39 @@
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+version: 0.0.{build}
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+image: Visual Studio 2017
+
+install:
+  - ps: wget https://download.microsoft.com/download/A/C/2/AC2C903B-E6E8-42C2-9FD7-BEBAC362A930/xnafx40_redist.msi -outfile xna.msi
+  - ps: ./xna.msi /passive
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+before_build:
+
+build_script:
+  - ps: ./scripts/create_release.ps1
+
+after_build:
+
+#---------------------------------#
+#       tests configuration       #
+#---------------------------------#
+
+test: off
+
+#---------------------------------#
+#      artifacts configuration    #
+#---------------------------------#
+
+artifacts:
+  - path: tshock_cn_release.zip
