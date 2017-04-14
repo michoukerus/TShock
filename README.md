@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://tshock.co/newlogo.png" alt="TShock 中文"><br />
-  <a href="https://travis-ci.org/NyxStudios/TShock"><img src="https://ci.appveyor.com/api/projects/status/cfpkv7rdscgwr1dd?svg=true" alt="编译状态"></a><br />
+  <a href="https://ci.appveyor.com/project/mistzzt/tshock/build/artifacts"><img src="https://ci.appveyor.com/api/projects/status/cfpkv7rdscgwr1dd?svg=true" alt="编译状态"></a><br />
   <hr />
 </p>
 
