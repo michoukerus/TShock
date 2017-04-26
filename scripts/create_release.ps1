@@ -63,20 +63,6 @@ function CopyReleaseFiles
     Copy-Item $release_bin $release_plugin_dir
 }
 
-function PatchOTAPI
-{
-    git clone --depth=1 -q --branch=master https://github.com/mst-mrh/Miyuu.git
-    Set-Location Miyuu
-    git submodule update --init --recursive
-    appveyor-retry nuget restore Miyuu.OTAPI.sln
-    msbuild Miyuu.OTAPI.sln /m /p:Configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-    Set-Location Debug
-    ./Miyuu.Patcher --in=$otapi_bin --out=OTAPI.dll
-    Copy-Item OTAPI.dll $otapi_bin
-
-    Set-Location $current_dir
-}
-
 mkdir -Path $release_plugin_dir
 
 git submodule update --init --recursive
@@ -88,7 +74,6 @@ CopyDependencies
 
 msbuild .\TShock.sln /p:Configuration=Release
 
-PatchOTAPI
 CopyReleaseFiles
 
 Add-Type -Assembly System.IO.Compression.FileSystem
