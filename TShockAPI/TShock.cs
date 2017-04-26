@@ -34,6 +34,7 @@ using Newtonsoft.Json;
 using Rests;
 using Terraria;
 using Terraria.ID;
+using Terraria.Localization;
 using TerrariaApi.Server;
 using TShockAPI.DB;
 using TShockAPI.Hooks;
@@ -42,6 +43,7 @@ using Terraria.Utilities;
 using Microsoft.Xna.Framework;
 using TShockAPI.Sockets;
 using TShockAPI.CLI;
+using TShockAPI.Localization;
 
 namespace TShockAPI
 {
@@ -49,7 +51,7 @@ namespace TShockAPI
 	/// This is the TShock main class. TShock is a plugin on the TerrariaServerAPI, so it extends the base TerrariaPlugin.
 	/// TShock also complies with the API versioning system, and defines its required API version here.
 	/// </summary>
-	[ApiVersion(2, 0)]
+	[ApiVersion(2, 1)]
 	public class TShock : TerrariaPlugin
 	{
 		/// <summary>VersionNum - The version number the TerrariaAPI will return back to the API. We just use the Assembly info.</summary>
@@ -356,6 +358,8 @@ namespace TShockAPI
 				GetDataHandlers.InitGetDataHandler();
 				Commands.InitCommands();
 
+				EnglishLanguage.Initialize();
+
 				if (Config.RestApiEnabled)
 					RestApi.Start();
 
@@ -620,7 +624,7 @@ namespace TShockAPI
 			string path = null;
 
 			//Generic method for doing a path sanity check
-			Action<string> pathChecker = (p) => 
+			Action<string> pathChecker = (p) =>
 			{
 				if (!string.IsNullOrWhiteSpace(p) && p.IndexOfAny(Path.GetInvalidPathChars()) == -1)
 				{
@@ -709,20 +713,6 @@ namespace TShockAPI
 						}
 					})
 
-				.AddFlag("-lang", (l) =>
-					{
-						int lang;
-						if (int.TryParse(l, out lang))
-						{
-							Lang.lang = lang;
-							ServerApi.LogWriter.PluginWriteLine(this, string.Format("Language index set to {0}.", lang), TraceLevel.Verbose);
-						}
-						else
-						{
-							ServerApi.LogWriter.PluginWriteLine(this, "Invalid value given for command line argument \"-lang\".", TraceLevel.Warning);
-						}
-					})
-
 				.AddFlag("-autocreate", (size) =>
 					{
 						if (!string.IsNullOrWhiteSpace(size))
@@ -741,7 +731,7 @@ namespace TShockAPI
 				.AddFlag("--no-restart", () => NoRestart = true);
 
 			CliParser.ParseFromSource(parms);
-			
+
 			/*"-connperip": Todo - Requires an OTAPI modification
 			{
 				int limit;
@@ -1093,10 +1083,10 @@ namespace TShockAPI
 						{
 							player.Disable(flags: flags);
 						}
-						else if (Itembans.ItemIsBanned(player.TPlayer.inventory[player.TPlayer.selectedItem].name, player))
+						else if (Itembans.ItemIsBanned(player.TPlayer.inventory[player.TPlayer.selectedItem].Name, player))
 						{
-							player.Disable($"持有禁用物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].name}", flags);
-							player.SendErrorMessage($"你不能选中被禁用的物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].name}");
+							player.Disable($"持有禁用物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}", flags);
+							player.SendErrorMessage($"你不能选中被禁用的物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}");
 						}
 					}
 					else if (!Main.ServerSideCharacter || (Main.ServerSideCharacter && player.IsLoggedIn))
@@ -1107,7 +1097,7 @@ namespace TShockAPI
 							if (!player.HasPermission(Permissions.ignorestackhackdetection) && (item.stack > item.maxStack || item.stack < 0) &&
 								item.type != 0)
 							{
-								check = $"你需要删除物品 {item.name}({item.stack}), 因为该物品数量超过堆叠上限 {item.maxStack}.";
+								check = $"你需要删除物品 {item.Name}({item.stack}), 因为该物品数量超过堆叠上限 {item.maxStack}.";
 								player.SendErrorMessage(check);
 								break;
 							}
@@ -1117,53 +1107,53 @@ namespace TShockAPI
 						// Please don't remove this for the time being; without it, players wearing banned equipment will only get debuffed once
 						foreach (Item item in player.TPlayer.armor)
 						{
-							if (Itembans.ItemIsBanned(item.name, player))
+							if (Itembans.ItemIsBanned(EnglishLanguage.GetItemNameById(item.type), player))
 							{
 								player.SetBuff(BuffID.Frozen, 330, true);
 								player.SetBuff(BuffID.Stoned, 330, true);
 								player.SetBuff(BuffID.Webbed, 330, true);
-								check = "卸去 装甲/饰品 " + item.name;
+								check = "移除装备/饰品：" + item.Name;
 
-								player.SendErrorMessage("你不能使用被禁用的装备. 请{0}", check);
+								player.SendErrorMessage("你不能使用被禁用的装备；请{0}", check);
 								break;
 							}
 						}
 						foreach (Item item in player.TPlayer.dye)
 						{
-							if (Itembans.ItemIsBanned(item.name, player))
+							if (Itembans.ItemIsBanned(EnglishLanguage.GetItemNameById(item.type), player))
 							{
 								player.SetBuff(BuffID.Frozen, 330, true);
 								player.SetBuff(BuffID.Stoned, 330, true);
 								player.SetBuff(BuffID.Webbed, 330, true);
-								check = "卸去 染料 " + item.name;
+								check = "移除染料：" + item.Name;
 
-								player.SendErrorMessage("你不能使用被禁止的染料. 请{0}", check);
+								player.SendErrorMessage("你不能使用被禁止的染料；请{0}", check);
 								break;
 							}
 						}
 						foreach (Item item in player.TPlayer.miscEquips)
 						{
-							if (Itembans.ItemIsBanned(item.name, player))
+							if (Itembans.ItemIsBanned(EnglishLanguage.GetItemNameById(item.type), player))
 							{
 								player.SetBuff(BuffID.Frozen, 330, true);
 								player.SetBuff(BuffID.Stoned, 330, true);
 								player.SetBuff(BuffID.Webbed, 330, true);
-								check = "卸去 " + item.name;
+								check = "移除：" + item.name;
 
-								player.SendErrorMessage("你不能使用被禁止的装备. 请{0}", check);
+								player.SendErrorMessage("你不能使用被禁止的装备；请{0}", check);
 								break;
 							}
 						}
 						foreach (Item item in player.TPlayer.miscDyes)
 						{
-							if (Itembans.ItemIsBanned(item.name, player))
+							if (Itembans.ItemIsBanned(EnglishLanguage.GetItemNameById(item.type), player))
 							{
 								player.SetBuff(BuffID.Frozen, 330, true);
 								player.SetBuff(BuffID.Stoned, 330, true);
 								player.SetBuff(BuffID.Webbed, 330, true);
-								check = "卸去 染料 " + item.name;
+								check = "移除杂项染料：" + item.Name;
 
-								player.SendErrorMessage("你不能使用被禁止的装备. 请{0}", check);
+								player.SendErrorMessage("你不能使用被禁止的装备；请{0}", check);
 								break;
 							}
 						}
@@ -1173,10 +1163,10 @@ namespace TShockAPI
 						{
 							player.Disable(flags: flags);
 						}
-						else if (Itembans.ItemIsBanned(player.TPlayer.inventory[player.TPlayer.selectedItem].name, player))
+						else if (Itembans.ItemIsBanned(player.TPlayer.inventory[player.TPlayer.selectedItem].Name, player))
 						{
-							player.Disable($"持有被禁用的物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].name}", flags);
-							player.SendErrorMessage($"你选中了被禁止的物品. 请取消选中: {player.TPlayer.inventory[player.TPlayer.selectedItem].name}");
+							player.Disable($"持有被禁用的物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}", flags);
+							player.SendErrorMessage($"你选中了被禁止的物品. 请取消选中: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}");
 						}
 					}
 
@@ -1258,7 +1248,7 @@ namespace TShockAPI
 		{
 			if (ShuttingDown)
 			{
-				NetMessage.SendData((int)PacketTypes.Disconnect, args.Who, -1, "服务器正在关闭...");
+				NetMessage.SendData((int)PacketTypes.Disconnect, args.Who, -1, NetworkText.FromLiteral("服务器正在关闭…"));
 				args.Handled = true;
 				return;
 			}
@@ -1447,17 +1437,38 @@ namespace TShockAPI
 				return;
 			}
 
-			if ((args.Text.StartsWith(Config.CommandSpecifier) || args.Text.StartsWith(Config.CommandSilentSpecifier))
-				&& !string.IsNullOrWhiteSpace(args.Text.Substring(1)))
+			string text = args.Text;
+
+			// Terraria now has chat commands on the client side.
+			// These commands remove the commands prefix (e.g. /me /playing) and send the command id instead
+			// In order for us to keep legacy code we must reverse this and get the prefix using the command id
+			foreach (var item in Terraria.UI.Chat.ChatManager.Commands._localizedCommands)
+			{
+				if (item.Value._name == args.CommandId._name)
+				{
+					if (!String.IsNullOrEmpty(text))
+					{
+						text = item.Key.Value + ' ' + text;
+					}
+					else
+					{
+						text = item.Key.Value;
+					}
+					break;
+				}
+			}
+
+			if ((text.StartsWith(Config.CommandSpecifier) || text.StartsWith(Config.CommandSilentSpecifier))
+				&& !string.IsNullOrWhiteSpace(text.Substring(1)))
 			{
 				try
 				{
 					args.Handled = true;
-					if (!Commands.HandleCommand(tsplr, args.Text))
+					if (!Commands.HandleCommand(tsplr, text))
 					{
 						// This is required in case anyone makes HandleCommand return false again
 						tsplr.SendErrorMessage("无法识别指令. 请联系管理员以寻求帮助.");
-						Log.ConsoleError("无法识别指令文本 '{0}' (玩家: {1}).", args.Text, tsplr.Name);
+						Log.ConsoleError("无法识别指令文本 '{0}' (玩家: {1}).", text, tsplr.Name);
 					}
 				}
 				catch (Exception ex)
@@ -1479,7 +1490,7 @@ namespace TShockAPI
 				}
 				else if (!TShock.Config.EnableChatAboveHeads)
 				{
-					var text = String.Format(Config.ChatFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix,
+					text = String.Format(Config.ChatFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix,
 											 args.Text);
 					Hooks.PlayerHooks.OnPlayerChat(tsplr, args.Text, ref text);
 					Utils.Broadcast(text, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
@@ -1490,17 +1501,21 @@ namespace TShockAPI
 					Player ply = Main.player[args.Who];
 					string name = ply.name;
 					ply.name = String.Format(Config.ChatAboveHeadsFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix);
-					NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, ply.name, args.Who, 0, 0, 0, 0);
+					NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, NetworkText.FromLiteral(ply.name), args.Who, 0, 0, 0, 0);
 					ply.name = name;
-					var text = args.Text;
 					Hooks.PlayerHooks.OnPlayerChat(tsplr, args.Text, ref text);
-					NetMessage.SendData((int)PacketTypes.ChatText, -1, args.Who, text, args.Who, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
-					NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, name, args.Who, 0, 0, 0, 0);
+
+					Terraria.Net.NetPacket packet = Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage(
+						NetworkText.FromLiteral(text), new Color(tsplr.Group.R, tsplr.Group.G, tsplr.Group.B), (byte)args.Who
+					);
+					Terraria.Net.NetManager.Instance.Broadcast(packet);
+
+					NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, NetworkText.FromLiteral(name), args.Who, 0, 0, 0, 0);
 
 					string msg =
 					    $"<{String.Format(Config.ChatAboveHeadsFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix)}> {text}";
 
-					tsplr.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
+					//tsplr.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
 
 					TSPlayer.Server.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
 					Log.Info("消息: {0}", msg);
@@ -1987,8 +2002,8 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-							    $"你背包里有物品超过数量上限({inventory[i].stack}/{item.maxStack}). 丢掉 {item.name}({inventory[i].stack}) 然后重新加入游戏.",
-                                Color.Cyan);
+								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
+								Color.Cyan);
 						}
 					}
 				}
@@ -2006,7 +2021,7 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-								$"你有超过数量上限的装备({armor[index].stack}/{item.maxStack}). 丢掉 {armor[index].name}({armor[index].stack}) 然后重新加入游戏.",
+								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该装备后，重新加入服务器。",
 								Color.Cyan);
 						}
 					}
@@ -2025,8 +2040,8 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-                                $"你染料栏里有染料超过数量上限({dye[index].stack}/{item.maxStack}). 丢掉 {dye[index].name}({dye[index].stack}) 然后重新加入游戏.",
-                                Color.Cyan);
+								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该染料后，重新加入服务器。",
+								Color.Cyan);
 						}
 					}
 				}
@@ -2044,8 +2059,8 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-                                $"你装备栏里有物品超过数量上限({miscEquips[index].stack}/{item.maxStack}). 丢掉 {miscEquips[index].name}({miscEquips[index].stack}) 然后重新加入游戏.",
-                                Color.Cyan);
+								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
+								Color.Cyan);
 						}
 					}
 				}
@@ -2063,8 +2078,8 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-                                $"你装备栏里有染料超过数量上限({miscDyes[index].stack}/{item.maxStack}). 丢掉 {miscDyes[index].name}({miscDyes[index].stack}) 然后重新加入游戏.",
-                                Color.Cyan);
+								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该染料后，重新加入服务器。",
+								Color.Cyan);
 						}
 					}
 				}
@@ -2083,8 +2098,8 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-                                $"你的猪罐里有物品超过数量上限({piggy[index].stack}/{item.maxStack}). 丢掉 {piggy[index].name}({piggy[index].stack}) 然后重新加入游戏.",
-                                Color.Cyan);
+								$"小猪储蓄罐内有{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
+								Color.Cyan);
 						}
 					}
 				}
@@ -2103,8 +2118,8 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-                                $"你保险箱有物品超过数量上限({safe[index].stack}/{item.maxStack}). 丢掉 {safe[index].name}({safe[index].stack}) 然后重新加入游戏.",
-                                Color.Cyan);
+								$"保险箱内有{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
+								Color.Cyan);
 						}
 					}
 				}
@@ -2122,7 +2137,7 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-								$"你的垃圾箱物品超过数量上限({trash.stack}/{item.maxStack}). 丢掉 {trash.name}({trash.stack}) 然后重新加入游戏.",
+								$"垃圾箱物品{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
 								Color.Cyan);
 						}
 					}
@@ -2142,7 +2157,7 @@ namespace TShockAPI
 						{
 							check = true;
 							player.SendMessage(
-								String.Format("你的守卫者熔炉内物品超过数量上限. 请丢掉 {0} ({1}) 后再加入游戏.", item.name, forge[index].stack),
+								$"守卫者熔炉内有{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
 								Color.Cyan);
 						}
 					}

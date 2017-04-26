@@ -55,7 +55,7 @@ namespace TShockAPI.DB
 						Permissions.cantalkinthird, Permissions.canchat));
 
 				AddDefaultGroup("default", "guest",
-					string.Join(",", Permissions.warp, Permissions.canchangepassword));
+					string.Join(",", Permissions.warp, Permissions.canchangepassword, Permissions.canlogout));
 
 				AddDefaultGroup("newadmin", "default",
 					string.Join(",", Permissions.kick, Permissions.editspawn, Permissions.reservedslot));
@@ -228,7 +228,7 @@ namespace TShockAPI.DB
 			var group = TShock.Utils.GetGroup(name);
 			var oldperms = group.Permissions; // Store old permissions in case of error
 			permissions.ForEach(p => group.AddPermission(p));
- 
+
 			if (database.Query("UPDATE GroupList SET Commands=@0 WHERE GroupName=@1", group.Permissions, name) == 1)
 				return "成功修改组 " + name + " .";
 
@@ -247,10 +247,10 @@ namespace TShockAPI.DB
 			permissions.ForEach(p => group.RemovePermission(p));
 
 			if (database.Query("UPDATE GroupList SET Commands=@0 WHERE GroupName=@1", group.Permissions, name) == 1)
-                return "成功修改组 " + name + " .";
+				return "修改组" + name + "权限配置完毕。";
 
-            // Restore old permissions so DB and internal object are in a consistent state
-            group.Permissions = oldperms;
+			// Restore old permissions so DB and internal object are in a consistent state
+			group.Permissions = oldperms;
 			return "";
 		}
 
@@ -267,7 +267,7 @@ namespace TShockAPI.DB
 						string groupName = reader.Get<string>("GroupName");
 						if (groupName == "superadmin")
 						{
-							TShock.Log.ConsoleInfo("警告: 组 \"superadmin\" 出现在数据库列表中, 但该组为系统预留组, 不应被添加.");
+							TShock.Log.ConsoleInfo("警告：用户组\"superadmin\"在数据库列表中；但该组为系统预留组，故配置没有加载。");
 							continue;
 						}
 
@@ -319,7 +319,7 @@ namespace TShockAPI.DB
 						if (group.Parent == null)
 						{
 							TShock.Log.ConsoleError(
-								"错误: 组 {0} 引用了不存在的父组 {1} , 系统将忽略该错误设定.", 
+								"警告：用户组\"{0}\"引用了不存在的父组\"{1}\"，该无效配置已被删除。",
 								group.Name, parentGroupName);
 						}
 						else
@@ -391,4 +391,4 @@ namespace TShockAPI.DB
 		{
 		}
 	}
-} 
+}

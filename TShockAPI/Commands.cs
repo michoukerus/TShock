@@ -27,12 +27,14 @@ using System.Text;
 using System.Threading;
 using Terraria;
 using Terraria.ID;
+using Terraria.Localization;
 using TShockAPI.DB;
 using TerrariaApi.Server;
 using TShockAPI.Hooks;
 using Terraria.GameContent.Events;
 using Microsoft.Xna.Framework;
 using OTAPI.Tile;
+using TShockAPI.Localization;
 
 namespace TShockAPI
 {
@@ -2149,92 +2151,108 @@ namespace TShockAPI
 			{
 				case "*":
 				case "all":
+				case "所有":
 					int[] npcIds = { 4, 13, 35, 50, 125, 126, 127, 134, 222, 245, 262, 266, 370, 398 };
 					TSPlayer.Server.SetTime(false, 0.0);
 					foreach (int i in npcIds)
 					{
 						npc.SetDefaults(i);
-						TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+						TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					}
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 次全部BOSS.", args.Player.Name, amount);
 					return;
 				case "brain":
 				case "brain of cthulhu":
+				case "克苏鲁之脑"
 					npc.SetDefaults(266);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 克苏鲁之脑.", args.Player.Name, amount);
 					return;
 				case "destroyer":
+				case "机械破坏者":
 					npc.SetDefaults(134);
 					TSPlayer.Server.SetTime(false, 0.0);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 机械破坏者.", args.Player.Name, amount);
 					return;
 				case "duke":
 				case "duke fishron":
 				case "fishron":
+				case "猪鲨":
+				case "猪鲨公爵":
 					npc.SetDefaults(370);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 猪鲨公爵.", args.Player.Name, amount);
 					return;
 				case "eater":
 				case "eater of worlds":
+				case "世界吞噬者":
 					npc.SetDefaults(13);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 世界吞噬者.", args.Player.Name, amount);
 					return;
 				case "eye":
 				case "eye of cthulhu":
+				case "克苏鲁之眼":
 					npc.SetDefaults(4);
 					TSPlayer.Server.SetTime(false, 0.0);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 克苏鲁之眼.", args.Player.Name, amount);
 					return;
 				case "golem":
+				case "石巨人":
 					npc.SetDefaults(245);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 石巨人.", args.Player.Name, amount);
 					return;
 				case "king":
 				case "king slime":
+				case "史莱姆国王":
 					npc.SetDefaults(50);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 史莱姆王.", args.Player.Name, amount);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 史莱姆国王.", args.Player.Name, amount);
 					return;
 				case "plantera":
+				case "世纪之花":
 					npc.SetDefaults(262);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 世纪之花.", args.Player.Name, amount);
 					return;
 				case "prime":
 				case "skeletron prime":
+				case "机械骷髅王":
 					npc.SetDefaults(127);
 					TSPlayer.Server.SetTime(false, 0.0);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 机械骷髅王.", args.Player.Name, amount);
 					return;
 				case "queen":
 				case "queen bee":
+				case "蜂后":
 					npc.SetDefaults(222);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 蜂后.", args.Player.Name, amount);
 					return;
 				case "skeletron":
+				case "骷髅":
 					npc.SetDefaults(35);
 					TSPlayer.Server.SetTime(false, 0.0);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
-					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 骷髅王.", args.Player.Name, amount);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 骷髅.", args.Player.Name, amount);
 					return;
 				case "twins":
+				case "双子":
+				case "双子魔眼":
 					TSPlayer.Server.SetTime(false, 0.0);
 					npc.SetDefaults(125);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					npc.SetDefaults(126);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 双子眼球.", args.Player.Name, amount);
 					return;
 				case "wof":
 				case "wall of flesh":
+				case "肉山":
 					if (Main.wof >= 0)
 					{
 						args.Player.SendErrorMessage("已经存在肉山!");
@@ -2250,8 +2268,11 @@ namespace TShockAPI
 					return;
 				case "moon":
 				case "moon lord":
+				case "月之领主":
+				case "月主":
+				case "月总":
 					npc.SetDefaults(398);
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 月主.", args.Player.Name, amount);
 					return;
 				default:
@@ -2289,21 +2310,21 @@ namespace TShockAPI
 			}
 			else if (npcs.Count > 1)
 			{
-				TShock.Utils.SendMultipleMatchError(args.Player, npcs.Select(n => n.name));
+				TShock.Utils.SendMultipleMatchError(args.Player, npcs.Select(n => n.FullName));
 			}
 			else
 			{
 				var npc = npcs[0];
 				if (npc.type >= 1 && npc.type < Main.maxNPCTypes && npc.type != 113)
 				{
-					TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY, 50, 20);
+					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY, 50, 20);
 					if (args.Silent)
 					{
-						args.Player.SendSuccessMessage("成功生成 {1} 只 {0}.", npc.name, amount);
+						args.Player.SendSuccessMessage("生成了{1}只{0}。", npc.FullName, amount);
 					}
 					else
 					{
-						TSPlayer.All.SendSuccessMessage("{0} 生成了 {2} 只 {1}.", args.Player.Name, npc.name, amount);
+						TSPlayer.All.SendSuccessMessage("{0}生成了{2}只{1}。", args.Player.Name, npc.FullName, amount);
 					}
 				}
 				else if (npc.type == 113)
@@ -2531,18 +2552,22 @@ namespace TShockAPI
 			var matches = new List<NPC>();
 			foreach (var npc in Main.npc.Where(npc => npc.active))
 			{
-				if (string.Equals(npc.name, npcStr, StringComparison.CurrentCultureIgnoreCase))
+				var englishName = EnglishLanguage.GetNpcNameById(npc.netID);
+
+				if (string.Equals(npc.FullName, npcStr, StringComparison.InvariantCultureIgnoreCase) ||
+				    string.Equals(englishName, npcStr, StringComparison.InvariantCultureIgnoreCase))
 				{
 					matches = new List<NPC> { npc };
 					break;
 				}
-				if (npc.name.ToLower().StartsWith(npcStr.ToLower()))
+				if (npc.FullName.ToLowerInvariant().StartsWith(npcStr.ToLowerInvariant()) ||
+				    englishName?.StartsWith(npcStr, StringComparison.InvariantCultureIgnoreCase) == true)
 					matches.Add(npc);
 			}
 
 			if (matches.Count > 1)
 			{
-				TShock.Utils.SendMultipleMatchError(args.Player, matches.Select(n => n.name));
+				TShock.Utils.SendMultipleMatchError(args.Player, matches.Select(n => n.FullName));
 				return;
 			}
 			if (matches.Count == 0)
@@ -2553,7 +2578,7 @@ namespace TShockAPI
 
 			var target = matches[0];
 			args.Player.Teleport(target.position.X, target.position.Y);
-			args.Player.SendSuccessMessage("传送至NPC {0} 的位置.", target.name);
+			args.Player.SendSuccessMessage("传送至{0}。", target.FullName);
 		}
 
 		private static void GetPos(CommandArgs args)
@@ -3200,12 +3225,12 @@ namespace TShockAPI
 						}
 						else if (items.Count > 1)
 						{
-							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.name));
+							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.Name));
 						}
 						else
 						{
-							TShock.Itembans.AddNewBan(items[0].name);
-							args.Player.SendSuccessMessage("成功禁止物品 " + items[0].name + " 的使用.");
+							TShock.Itembans.AddNewBan(EnglishLanguage.GetItemNameById(items[0].type));
+							args.Player.SendSuccessMessage("成功禁止物品 " + items[0].Name + " 的使用。);
 						}
 					}
 					#endregion
@@ -3226,7 +3251,7 @@ namespace TShockAPI
 						}
 						else if (items.Count > 1)
 						{
-							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.name));
+							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.Name));
 						}
 						else
 						{
@@ -3236,20 +3261,20 @@ namespace TShockAPI
 								return;
 							}
 
-							ItemBan ban = TShock.Itembans.GetItemBanByName(items[0].name);
+							ItemBan ban = TShock.Itembans.GetItemBanByName(EnglishLanguage.GetItemNameById(items[0].type));
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("{0} 没有被禁止.", items[0].name);
+								args.Player.SendErrorMessage("{0} 没有被禁止。", items[0].name);
 								return;
 							}
 							if (!ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
-								TShock.Itembans.AllowGroup(items[0].name, args.Parameters[2]);
-								args.Player.SendSuccessMessage("禁止 {0} 使用物品 {1} 完毕.", args.Parameters[2], items[0].name);
+								TShock.Itembans.AllowGroup(EnglishLanguage.GetItemNameById(items[0].type), args.Parameters[2]);
+								args.Player.SendSuccessMessage("禁止 {0} 使用物品 {1} 完毕。", args.Parameters[2], items[0].Name);
 							}
 							else
 							{
-								args.Player.SendWarningMessage("{0} 已经拥有使用物品 {1} 的权限.", args.Parameters[2], items[0].name);
+								args.Player.SendWarningMessage("{0} 已经拥有使用物品 {1} 的权限。", args.Parameters[2], items[0].Name);
 							}
 						}
 					}
@@ -3271,12 +3296,12 @@ namespace TShockAPI
 						}
 						else if (items.Count > 1)
 						{
-							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.name));
+							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.Name));
 						}
 						else
 						{
-							TShock.Itembans.RemoveBan(items[0].name);
-							args.Player.SendSuccessMessage("解除禁用物品 " + items[0].name + " 完毕.");
+							TShock.Itembans.RemoveBan(EnglishLanguage.GetItemNameById(items[0].type));
+							args.Player.SendSuccessMessage("解禁物品" + items[0].Name + "。");
 						}
 					}
 					#endregion
@@ -3297,7 +3322,7 @@ namespace TShockAPI
 						}
 						else if (items.Count > 1)
 						{
-							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.name));
+							TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.Name));
 						}
 						else
 						{
@@ -3307,20 +3332,20 @@ namespace TShockAPI
 								return;
 							}
 
-							ItemBan ban = TShock.Itembans.GetItemBanByName(items[0].name);
+							ItemBan ban = TShock.Itembans.GetItemBanByName(EnglishLanguage.GetItemNameById(items[0].type));
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("{0} 没有被禁止.", items[0].name);
+								args.Player.SendErrorMessage("{0}没有被禁止。", items[0].Name);
 								return;
 							}
 							if (ban.AllowedGroups.Contains(args.Parameters[2]))
 							{
-								TShock.Itembans.RemoveGroup(items[0].name, args.Parameters[2]);
-								args.Player.SendSuccessMessage("禁止组 {0} 使用物品 {1} 完毕.", args.Parameters[2], items[0].name);
+								TShock.Itembans.RemoveGroup(EnglishLanguage.GetItemNameById(items[0].type), args.Parameters[2]);
+								args.Player.SendSuccessMessage("{0}组已经被禁止使用物品{1}。", args.Parameters[2], items[0].Name);
 							}
 							else
 							{
-								args.Player.SendWarningMessage("{0} 没有使用物品 {1} 的权限.", args.Parameters[2], items[0].name);
+								args.Player.SendWarningMessage("{0}已经被允许使用{1}。", args.Parameters[2], items[0].Name);
 							}
 						}
 					}
@@ -5189,7 +5214,7 @@ namespace TShockAPI
 				}
 				else if (npcs.Count > 1)
 				{
-					TShock.Utils.SendMultipleMatchError(args.Player, npcs.Select(n => n.name));
+					TShock.Utils.SendMultipleMatchError(args.Player, npcs.Select(n => n.FullName));
 					return;
 				}
 				else
@@ -5244,7 +5269,7 @@ namespace TShockAPI
 			}
 			else if (matchedItems.Count > 1)
 			{
-				TShock.Utils.SendMultipleMatchError(args.Player, matchedItems.Select(i => i.name));
+				TShock.Utils.SendMultipleMatchError(args.Player, matchedItems.Select(i => i.Name));
 				return;
 			}
 			else
@@ -5293,7 +5318,7 @@ namespace TShockAPI
 				if (itemAmount == 0 || itemAmount > item.maxStack)
 					itemAmount = item.maxStack;
 
-				if (args.Player.GiveItemCheck(item.type, item.name, item.width, item.height, itemAmount, prefixId))
+				if (args.Player.GiveItemCheck(item.type, EnglishLanguage.GetItemNameById(item.type), item.width, item.height, itemAmount, prefixId))
 				{
 					item.prefix = (byte)prefixId;
 					args.Player.SendSuccessMessage("成功生成 {0} 个 {1}.", itemAmount, item.AffixName());
@@ -5327,7 +5352,7 @@ namespace TShockAPI
 				}
 				else if (npcs.Count > 1)
 				{
-					TShock.Utils.SendMultipleMatchError(args.Player, npcs.Select(n => n.name));
+					TShock.Utils.SendMultipleMatchError(args.Player, npcs.Select(n => n.FullName));
 					return;
 				}
 				else if (args.Parameters[1].Length > 200)
@@ -5345,8 +5370,8 @@ namespace TShockAPI
 			{
 				if (Main.npc[i].active && ((npcId == 0 && !Main.npc[i].townNPC) || (Main.npc[i].netID == npcId && Main.npc[i].townNPC)))
 				{
-					Main.npc[i].displayName = args.Parameters[1];
-					NetMessage.SendData(56, -1, -1, args.Parameters[1], i, 0f, 0f, 0f, 0);
+					Main.npc[i].GivenName = args.Parameters[1];
+					NetMessage.SendData(56, -1, -1, NetworkText.FromLiteral(args.Parameters[1]), i, 0f, 0f, 0f, 0);
 					done++;
 				}
 			}
@@ -5392,7 +5417,7 @@ namespace TShockAPI
 			}
 			else if (items.Count > 1)
 			{
-				TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.name));
+				TShock.Utils.SendMultipleMatchError(args.Player, items.Select(i => i.Name));
 			}
 			else
 			{
@@ -5432,10 +5457,10 @@ namespace TShockAPI
 						{
 							if (itemAmount == 0 || itemAmount > item.maxStack)
 								itemAmount = item.maxStack;
-							if (plr.GiveItemCheck(item.type, item.name, item.width, item.height, itemAmount, prefix))
+							if (plr.GiveItemCheck(item.type, EnglishLanguage.GetItemNameById(item.type), item.width, item.height, itemAmount, prefix))
 							{
-								args.Player.SendSuccessMessage(string.Format("成功给 {0} 生成了 {1} 个 {2}.", plr.Name, itemAmount, item.name));
-								plr.SendSuccessMessage(string.Format("{0} 给你了 {1} 个 {2}.", args.Player.Name, itemAmount, item.name));
+								args.Player.SendSuccessMessage(string.Format("成功给 {0} 生成了 {1} 个 {2}。", plr.Name, itemAmount, item.Name));
+								plr.SendSuccessMessage(string.Format("{0} 给你了 {1} 个 {2}。", args.Player.Name, itemAmount, item.Name));
 							}
 							else
 							{
@@ -5519,7 +5544,7 @@ namespace TShockAPI
 				}
 				else if (found.Count > 1)
 				{
-					TShock.Utils.SendMultipleMatchError(args.Player, found.Select(f => Main.buffName[f]));
+					TShock.Utils.SendMultipleMatchError(args.Player, found.Select(f => Lang.GetBuffName(f)));
 					return;
 				}
 				id = found[0];
@@ -5570,7 +5595,7 @@ namespace TShockAPI
 					}
 					else if (found.Count > 1)
 					{
-						TShock.Utils.SendMultipleMatchError(args.Player, found.Select(b => Main.buffName[b]));
+						TShock.Utils.SendMultipleMatchError(args.Player, found.Select(b => Lang.GetBuffName(b)));
 						return;
 					}
 					id = found[0];

@@ -707,6 +707,8 @@ namespace TShockAPI
 			return new RestObject() {
 				{"name", null == ban.Name ? "" : ban.Name},
 				{"ip", null == ban.IP ? "" : ban.IP},
+				{"banning_user", null == ban.BanningUser ? "" : ban.BanningUser},
+				{"date", null == ban.BanDateTime ? "" : ban.BanDateTime.Value.ToString()},
 				{"reason", null == ban.Reason ? "" : ban.Reason},
 			};
 		}
@@ -725,6 +727,8 @@ namespace TShockAPI
 					{
 						{"name", null == ban.Name ? "" : ban.Name},
 						{"ip", null == ban.IP ? "" : ban.IP},
+            					{"banning_user", null == ban.BanningUser ? "" : ban.BanningUser},
+						{"date", null == ban.BanDateTime ? "" : ban.BanDateTime.Value.ToString()},
 						{"reason", null == ban.Reason ? "" : ban.Reason},
 					}
 				);
@@ -736,7 +740,7 @@ namespace TShockAPI
 		#endregion
 
 		#region Rest World Methods
-		
+
 		[Route("/v2/world/autosave/state/{state}")]
 		[Permission(RestPermissions.restcfg)]
 		[Verb("state", "The status for autosave.", typeof(bool))]
@@ -937,9 +941,9 @@ namespace TShockAPI
 				{"registered", player.User?.Registered},
 				{"muted", player.mute },
 				{"position", player.TileX + "," + player.TileY},
-				{"inventory", string.Join(", ", inventory.Select(p => (p.name + ":" + p.stack)))},
+				{"inventory", string.Join(", ", inventory.Select(p => (p.Name + ":" + p.stack)))},
 				{"armor", string.Join(", ", equipment.Select(p => (p.netID + ":" + p.prefix)))},
-				{"dyes", string.Join(", ", dyes.Select(p => (p.name)))},
+				{"dyes", string.Join(", ", dyes.Select(p => (p.Name)))},
 				{"buffs", string.Join(", ", player.TPlayer.buffType)}
 			};
 		}

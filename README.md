@@ -39,9 +39,8 @@ https://tshock.readme.io/docs/getting-started-1
 ## 社区/支持
 
 * [英文官网/论坛](https://tshock.co/xf/)
-* [对readme.io上的文档作贡献](https://tshock.readme.io/)
-
-提交PR前请参阅Contributing文件.
+* [协助完善官方文档](https://tshock.readme.io/)
+* [加入Discord聊天](https://discord.gg/XUJdH58)
 
 ## 下载途径
 
