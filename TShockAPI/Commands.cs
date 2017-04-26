@@ -2163,7 +2163,7 @@ namespace TShockAPI
 					return;
 				case "brain":
 				case "brain of cthulhu":
-				case "克苏鲁之脑"
+				case "克苏鲁之脑":
 					npc.SetDefaults(266);
 					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY);
 					TSPlayer.All.SendSuccessMessage("{0} 生成了 {1} 只 克苏鲁之脑.", args.Player.Name, amount);
@@ -3230,7 +3230,7 @@ namespace TShockAPI
 						else
 						{
 							TShock.Itembans.AddNewBan(EnglishLanguage.GetItemNameById(items[0].type));
-							args.Player.SendSuccessMessage("成功禁止物品 " + items[0].Name + " 的使用。);
+							args.Player.SendSuccessMessage("成功禁止物品 " + items[0].Name + " 的使用。");
 						}
 					}
 					#endregion
@@ -3264,7 +3264,7 @@ namespace TShockAPI
 							ItemBan ban = TShock.Itembans.GetItemBanByName(EnglishLanguage.GetItemNameById(items[0].type));
 							if (ban == null)
 							{
-								args.Player.SendErrorMessage("{0} 没有被禁止。", items[0].name);
+								args.Player.SendErrorMessage("{0} 没有被禁止。", items[0].Name);
 								return;
 							}
 							if (!ban.AllowedGroups.Contains(args.Parameters[2]))
@@ -4698,7 +4698,7 @@ namespace TShockAPI
 		private static void GetVersion(CommandArgs args)
 		{
 			args.Player.SendInfoMessage("TShock运行版本: {0} ({1}).", TShock.VersionNum, TShock.VersionCodename);
-            args.Player.SendInfoMessage("TShock汉化版本: {0} ({1}).", TShock.CNVersion, TShock.CNMode);
+            args.Player.SendInfoMessage("TShock汉化版本: {0} ({1}).", TShock.CnVersion, TShock.CnMode);
         }
 
 		private static void ListConnectedPlayers(CommandArgs args)

@@ -59,9 +59,9 @@ namespace TShockAPI
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
 		public static readonly string VersionCodename = "Mintaka";
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
-		public static readonly string CNMode = "advcn-stable";
+		public static readonly string CnMode = "开发版";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CNVersion = new Version(2, 4, 0, 0);
+		public static readonly Version CnVersion = new Version(2, 5, 0, 0);
 
 		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
 		public static string SavePath = "tshock";
@@ -328,7 +328,7 @@ namespace TShockAPI
 					Geo = new GeoIPCountry(geoippath);
 
 				Log.ConsoleInfo("TShock运行版本: {0} ({1}).", Version, VersionCodename);
-			    Log.ConsoleInfo("TShock汉化版本: {0} ({1}).", CNVersion, CNMode);
+			    Log.ConsoleInfo("TShock汉化版本: {0} ({1}).", CnVersion, CnMode);
 
 				ServerApi.Hooks.GamePostInitialize.Register(this, OnPostInit);
 				ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
@@ -1138,7 +1138,7 @@ namespace TShockAPI
 								player.SetBuff(BuffID.Frozen, 330, true);
 								player.SetBuff(BuffID.Stoned, 330, true);
 								player.SetBuff(BuffID.Webbed, 330, true);
-								check = "移除：" + item.name;
+								check = "移除：" + item.Name;
 
 								player.SendErrorMessage("你不能使用被禁止的装备；请{0}", check);
 								break;
@@ -1198,7 +1198,7 @@ namespace TShockAPI
 					!string.IsNullOrWhiteSpace(Config.ServerName) ? Config.ServerName + " - " : "",
 					empty ? 0 : Utils.ActivePlayers(),
 					Config.MaxSlots, Main.worldName, Netplay.ServerIP.ToString(), Netplay.ListenPort, Version,
-					CNMode, CNVersion);
+					CnMode, CnVersion);
 		}
 
 		/// <summary>OnHardUpdate - Fired when a hardmode tile update event happens.</summary>
