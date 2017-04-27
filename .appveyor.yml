@@ -11,8 +11,6 @@ version: 0.0.{build}
 image: Visual Studio 2017
 
 install:
-  - ps: wget https://download.microsoft.com/download/A/C/2/AC2C903B-E6E8-42C2-9FD7-BEBAC362A930/xnafx40_redist.msi -outfile xna.msi
-  - ps: ./xna.msi /passive
 
 #---------------------------------#
 #       build configuration       #
