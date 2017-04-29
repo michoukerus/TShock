@@ -8,8 +8,6 @@
 
 代码来自[NyxStudio的Repository][ents]；若有中文文本问题请提交Issue或发送PR以帮助修复。
 
-提交PR时请先阅读[CONTRIBUTING.md](https://github.com/mistzzt/TShock/blob/adv-cn_dev/CONTRIBUTING.md)并按照指明规范编写代码。
-
 *注: 因为早期疏忽, 本汉化分支下有一些代码使用了空格而不是TAB. 后续会修复此问题.*
 
 ## 什么是 TShock
@@ -40,7 +38,13 @@ https://tshock.readme.io/docs/getting-started-1
 * [协助完善官方文档](https://tshock.readme.io/)
 * [加入Discord聊天](https://discord.gg/XUJdH58)
 
-## 下载途径
+### Code of Conduct
+
+> By participating in the TShock for Terraria community, all members will adhere to maintaining decorum with respect to all humans, in and out of the community. Members will not engage in discussion that inappropriately disparages or marginalizes any group of people or any individual. Members will not attempt to further or advance an agenda to the point of being overbearing or close minded (such as through spreading FUD). Members will not abuse services provided to them and will follow the guidance of community leaders on a situational basis about what abuse consists of. Members will adhere to United States and international law. If members notice a violation of this code of conduct, they will not engage but will instead contact the leadership team on either the forums or Discord.
+
+> Do not attempt to circumvent or bypass the code of conduct by using clever logic or reasoning (e.g. insulting Facepunch members, because they weren't directly mentioned here).
+
+提交PR时请先阅读[CONTRIBUTING.md](https://github.com/mistzzt/TShock/blob/adv-cn_dev/CONTRIBUTING.md)并按照指明规范编写代码。
 
 ### 中文版本
 * [Github Releases](https://github.com/mistzzt/TShock/releases)
