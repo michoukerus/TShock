@@ -33,10 +33,7 @@ function RunBootstrapper
 {
     foreach ($config in "Debug", "Release")
     {
-        msbuild ./TerrariaServerAPI/TShock.Modifications.Bootstrapper/TShock.Modifications.Bootstrapper.csproj "/p:Configuration=$config"
-        msbuild ./TerrariaServerAPI/TShock.Modifications.ClientUUID/TShock.Modifications.ClientUUID.csproj "/p:Configuration=$config"
-        msbuild ./TerrariaServerAPI/TShock.Modifications.Explosives/TShock.Modifications.Explosives.csproj "/p:Configuration=$config"
-        msbuild ./TerrariaServerAPI/TShock.Modifications.SSC/TShock.Modifications.SSC.csproj "/p:Configuration=$config"
+        msbuild ./TerrariaServerAPI/TShock.4.OTAPI.sln "/p:Configuration=$config"
 
         Set-Location "./TerrariaServerAPI/TShock.Modifications.Bootstrapper/bin/$config/"
         ./TShock.Modifications.Bootstrapper --in=OTAPI.dll --mod="../../../TShock.Modifications.**/bin/$config/TShock.Modifications.*.dll" --o=Output/OTAPI.dll
