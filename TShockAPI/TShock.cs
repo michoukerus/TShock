@@ -59,9 +59,9 @@ namespace TShockAPI
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
 		public static readonly string VersionCodename = "Mintaka";
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
-		public static readonly string CnMode = "开发版";
+		public static readonly string CnMode = "稳定版";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CnVersion = new Version(2, 5, 0, 0);
+		public static readonly Version CnVersion = new Version(2, 6, 0, 0);
 
 		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
 		public static string SavePath = "tshock";
@@ -1083,7 +1083,7 @@ namespace TShockAPI
 						{
 							player.Disable(flags: flags);
 						}
-						else if (Itembans.ItemIsBanned(player.TPlayer.inventory[player.TPlayer.selectedItem].Name, player))
+						else if (Itembans.ItemIsBanned(EnglishLanguage.GetItemNameById(player.TPlayer.inventory[player.TPlayer.selectedItem].netID), player))
 						{
 							player.Disable($"持有禁用物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}", flags);
 							player.SendErrorMessage($"你不能选中被禁用的物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}");
@@ -1163,7 +1163,7 @@ namespace TShockAPI
 						{
 							player.Disable(flags: flags);
 						}
-						else if (Itembans.ItemIsBanned(player.TPlayer.inventory[player.TPlayer.selectedItem].Name, player))
+						else if (Itembans.ItemIsBanned(EnglishLanguage.GetItemNameById(player.TPlayer.inventory[player.TPlayer.selectedItem].netID), player))
 						{
 							player.Disable($"持有被禁用的物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}", flags);
 							player.SendErrorMessage($"你选中了被禁止的物品. 请取消选中: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}");
@@ -1501,22 +1501,31 @@ namespace TShockAPI
 					Player ply = Main.player[args.Who];
 					string name = ply.name;
 					ply.name = String.Format(Config.ChatAboveHeadsFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix);
+					//Update the player's name to format text nicely. This needs to be done because Terraria automatically formats messages against our will
 					NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, NetworkText.FromLiteral(ply.name), args.Who, 0, 0, 0, 0);
-					ply.name = name;
-					Hooks.PlayerHooks.OnPlayerChat(tsplr, args.Text, ref text);
 
+					//Give that poor player their name back :'c
+					ply.name = name;
+					PlayerHooks.OnPlayerChat(tsplr, args.Text, ref text);
+
+					//This netpacket is used to send chat text from the server to clients, in this case on behalf of a client
 					Terraria.Net.NetPacket packet = Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage(
 						NetworkText.FromLiteral(text), new Color(tsplr.Group.R, tsplr.Group.G, tsplr.Group.B), (byte)args.Who
 					);
-					Terraria.Net.NetManager.Instance.Broadcast(packet);
+					//Broadcast to everyone except the player who sent the message.
+					//This is so that we can send them the same nicely formatted message that everyone else gets
+					Terraria.Net.NetManager.Instance.Broadcast(packet, args.Who);
 
+					//Reset their name
 					NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, NetworkText.FromLiteral(name), args.Who, 0, 0, 0, 0);
 
-					string msg =
-					    $"<{String.Format(Config.ChatAboveHeadsFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix)}> {text}";
+					string msg = String.Format("<{0}> {1}",
+						String.Format(Config.ChatAboveHeadsFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix),
+						text
+					);
 
-					//tsplr.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
-
+					//Send the original sender their nicely formatted message, and do all the loggy things
+					tsplr.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
 					TSPlayer.Server.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
 					Log.Info("消息: {0}", msg);
 					args.Handled = true;

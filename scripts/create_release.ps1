@@ -15,7 +15,8 @@ $http_bin_name = "HttpServer.dll"
 $tshock_bin_name = "TShockAPI.dll"
 $bcrypt_bin_name = "BCrypt.Net.dll"
 $geoip_db_name = "GeoIP.dat"
-$start_script_name = "StartServer.cmd"
+$start_cmd_script_name = "StartServer.cmd"
+$start_sh_script_name = "StartServer.sh"
 
 $tsapi_release_bin = JoinPath "TerrariaServerAPI" "TerrariaServerAPI" "bin" "Release" $tsapi_bin_name
 $otapi_bin = JoinPath "TerrariaServerAPI" "TerrariaServerAPI" "bin" "Release" $otapi_bin_name
@@ -27,7 +28,8 @@ $json_bin = JoinPath "packages" "Newtonsoft.Json.9.0.1" "lib" "net45" $json_bin_
 $bcrypt_bin = JoinPath "packages" "BCrypt.Net.0.1.0" "lib" "net35" $bcrypt_bin_name
 $geoip_db = JoinPath "prebuilts" $geoip_db_name
 $release_bin = JoinPath "TShockAPI" "bin" "Release" $tshock_bin_name
-$start_script_bin = JoinPath "scripts" $start_script_name
+$start_cmd_script_bin = JoinPath "scripts" $start_cmd_script_name
+$start_sh_script_bin = JoinPath "scripts" $start_sh_script_name
 
 function RunBootstrapper
 {
@@ -49,7 +51,8 @@ function CopyDependencies
     Copy-Item $sqlite_dep $release_dir
     Copy-Item $geoip_db $release_dir
 
-    Copy-Item $start_script_bin $release_dir
+    Copy-Item $start_cmd_script_bin $release_dir
+    Copy-Item $start_sh_script_bin $release_dir
 
     Copy-Item $bcrypt_bin $release_plugin_dir
     Copy-Item $mysql_bin $release_plugin_dir

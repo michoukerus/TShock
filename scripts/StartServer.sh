@@ -1,0 +1,1 @@
+mono TerrariaServer.exe -language zh-Hans

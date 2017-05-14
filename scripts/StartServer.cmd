@@ -1,4 +1,4 @@
 @echo off
 cls
 title Starting TShock...
-TerrariaServer.exe -lang 7
+TerrariaServer.exe -language zh-Hans
