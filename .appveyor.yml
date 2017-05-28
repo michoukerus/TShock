@@ -34,4 +34,4 @@ test: off
 #---------------------------------#
 
 artifacts:
-  - path: tshock_cn_release.zip
+  - path: tshock_cn_*.zip

@@ -4,6 +4,7 @@ function JoinPath { return [System.IO.Path]::Combine($current_dir, $args[0], $ar
 $release_dir = JoinPath "releases"
 $release_plugin_dir = JoinPath  "releases" "ServerPlugins"
 $release_zip = JoinPath "tshock_cn_release.zip"
+$debug_zip = JoinPath "tshock_cn_debug.zip"
 
 $tsapi_bin_name = "TerrariaServer.exe"
 $otapi_bin_name = "OTAPI.dll"
@@ -13,12 +14,14 @@ $sqlite_bin_name = "Mono.Data.Sqlite.dll"
 $json_bin_name = "Newtonsoft.Json.dll"
 $http_bin_name = "HttpServer.dll"
 $tshock_bin_name = "TShockAPI.dll"
+$tshock_symbols = "TShockAPI.pdb"
 $bcrypt_bin_name = "BCrypt.Net.dll"
 $geoip_db_name = "GeoIP.dat"
 $start_cmd_script_name = "StartServer.cmd"
 $start_sh_script_name = "StartServer.sh"
 
 $tsapi_release_bin = JoinPath "TerrariaServerAPI" "TerrariaServerAPI" "bin" "Release" $tsapi_bin_name
+$tsapi_debug_bin = JoinPath "TerrariaServerAPI" "TerrariaServerAPI" "bin" "Debug" $tsapi_bin_name
 $otapi_bin = JoinPath "TerrariaServerAPI" "TerrariaServerAPI" "bin" "Release" $otapi_bin_name
 $mysql_bin = JoinPath "packages" "MySql.Data.6.9.8" "lib" "net45" $mysql_bin_name
 $sqlite_dep = JoinPath "prebuilts" $sqlite_dep_name
@@ -30,6 +33,8 @@ $geoip_db = JoinPath "prebuilts" $geoip_db_name
 $release_bin = JoinPath "TShockAPI" "bin" "Release" $tshock_bin_name
 $start_cmd_script_bin = JoinPath "scripts" $start_cmd_script_name
 $start_sh_script_bin = JoinPath "scripts" $start_sh_script_name
+
+$debug_folder = JoinPath "TShockAPI" "bin" "Debug"
 
 function RunBootstrapper
 {
@@ -67,6 +72,14 @@ function CopyReleaseFiles
     Copy-Item $release_bin $release_plugin_dir
 }
 
+function CopyDebugFiles
+{
+    Copy-Item -Path (JoinPath $debug_folder $tshock_bin_name) -Destination $release_plugin_dir
+    Copy-Item -Path (JoinPath $debug_folder $tshock_symbols) -Destination $release_plugin_dir
+
+    Copy-Item -Path $tsapi_debug_bin -Destination $release_dir
+}
+
 mkdir -Path $release_plugin_dir
 
 git submodule update --init --recursive
@@ -77,9 +90,13 @@ RunBootstrapper
 CopyDependencies
 
 msbuild .\TShock.sln /p:Configuration=Release
-
 CopyReleaseFiles
 
 Add-Type -Assembly System.IO.Compression.FileSystem
 $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
 [System.IO.Compression.ZipFile]::CreateFromDirectory($release_dir, $release_zip, $compressionLevel, $false)
+
+msbuild .\TShock.sln /p:Configuration=Debug
+CopyDebugFiles
+
+[System.IO.Compression.ZipFile]::CreateFromDirectory($release_dir, $debug_zip, $compressionLevel, $false)
