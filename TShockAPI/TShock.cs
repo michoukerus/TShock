@@ -59,9 +59,9 @@ namespace TShockAPI
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
 		public static readonly string VersionCodename = "Mintaka";
 		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
-		public static readonly string CnMode = "稳定版";
+		public static readonly string CnMode = "开发版";
 		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CnVersion = new Version(2, 6, 0, 0);
+		public static readonly Version CnVersion = new Version(2, 6, 1, 0);
 
 		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
 		public static string SavePath = "tshock";
@@ -330,6 +330,12 @@ namespace TShockAPI
 				Log.ConsoleInfo("TShock运行版本: {0} ({1}).", Version, VersionCodename);
 			    Log.ConsoleInfo("TShock汉化版本: {0} ({1}).", CnVersion, CnMode);
 
+				var systemRam = StatTracker.GetFreeSystemRam(ServerApi.RunningMono);
+				if (systemRam > -1 && systemRam < 2048)
+				{
+					Log.ConsoleError("This machine has less than 2 gigabytes of RAM free. Be advised that it might not be enough to run TShock.");
+				}
+
 				ServerApi.Hooks.GamePostInitialize.Register(this, OnPostInit);
 				ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
 				ServerApi.Hooks.GameHardmodeTileUpdate.Register(this, OnHardUpdate);
@@ -350,6 +356,7 @@ namespace TShockAPI
 				ServerApi.Hooks.WorldHalloweenCheck.Register(this, OnHalloweenCheck);
 				ServerApi.Hooks.NetNameCollision.Register(this, NetHooks_NameCollision);
 				ServerApi.Hooks.ItemForceIntoChest.Register(this, OnItemForceIntoChest);
+				ServerApi.Hooks.WorldGrassSpread.Register(this, OnWorldGrassSpread);
 				Hooks.PlayerHooks.PlayerPreLogin += OnPlayerPreLogin;
 				Hooks.PlayerHooks.PlayerPostLogin += OnPlayerLogin;
 				Hooks.AccountHooks.AccountDelete += OnAccountDelete;
@@ -420,6 +427,7 @@ namespace TShockAPI
 				ServerApi.Hooks.WorldHalloweenCheck.Deregister(this, OnHalloweenCheck);
 				ServerApi.Hooks.NetNameCollision.Deregister(this, NetHooks_NameCollision);
 				ServerApi.Hooks.ItemForceIntoChest.Deregister(this, OnItemForceIntoChest);
+				ServerApi.Hooks.WorldGrassSpread.Deregister(this, OnWorldGrassSpread);
 				TShockAPI.Hooks.PlayerHooks.PlayerPostLogin -= OnPlayerLogin;
 
 				if (File.Exists(Path.Combine(SavePath, "tshock.pid")))
@@ -1208,24 +1216,50 @@ namespace TShockAPI
 			if (args.Handled)
 				return;
 
-			if (!Config.AllowCrimsonCreep && (args.Type == TileID.Dirt || args.Type == TileID.FleshWeeds
-				|| TileID.Sets.Crimson[args.Type]))
+			if (!OnCreep(args.Type))
 			{
 				args.Handled = true;
+			}
+		}
+
+		/// <summary>OnWorldGrassSpread - Fired when grass is attempting to spread.</summary>
+		/// <param name="args">args - The GrassSpreadEventArgs object.</param>
+		private void OnWorldGrassSpread(GrassSpreadEventArgs args)
+		{
+			if (args.Handled)
 				return;
+
+			if(!OnCreep(args.Grass))
+			{
+				args.Handled = true;
+			}
+		}
+
+		/// <summary>
+		/// Checks if the tile type is allowed to creep
+		/// </summary>
+		/// <param name="tileType">Tile id</param>
+		/// <returns>True if allowed, otherwise false</returns>
+		private bool OnCreep(int tileType)
+		{
+			if (!Config.AllowCrimsonCreep && (tileType == TileID.Dirt || tileType == TileID.FleshWeeds
+				|| TileID.Sets.Crimson[tileType]))
+			{
+				return false;
 			}
 
-			if (!Config.AllowCorruptionCreep && (args.Type == TileID.Dirt || args.Type == TileID.CorruptThorns
-				|| TileID.Sets.Corrupt[args.Type]))
+			if (!Config.AllowCorruptionCreep && (tileType == TileID.Dirt || tileType == TileID.CorruptThorns
+				|| TileID.Sets.Corrupt[tileType]))
 			{
-				args.Handled = true;
-				return;
+				return false;
 			}
 
-			if (!Config.AllowHallowCreep && (TileID.Sets.Hallow[args.Type]))
+			if (!Config.AllowHallowCreep && (TileID.Sets.Hallow[tileType]))
 			{
-				args.Handled = true;
+				return false;
 			}
+
+			return true;
 		}
 
 		/// <summary>OnStatueSpawn - Fired when a statue spawns.</summary>
@@ -1376,9 +1410,14 @@ namespace TShockAPI
 			}
 
 			var tsplr = Players[args.Who];
+			if (tsplr == null)
+			{
+				return;
+			}
+
 			Players[args.Who] = null;
 
-			if (tsplr != null && tsplr.ReceivedInfo)
+			if (tsplr.ReceivedInfo)
 			{
 				if (!tsplr.SilentKickInProgress && tsplr.State >= 3)
 					Utils.Broadcast(tsplr.Name + " 离开游戏.", Color.Yellow);
@@ -1402,7 +1441,7 @@ namespace TShockAPI
 			}
 
 			// Fire the OnPlayerLogout hook too, if the player was logged in and they have a TSPlayer object.
-			if (tsplr != null && tsplr.IsLoggedIn)
+			if (tsplr.IsLoggedIn)
 			{
 				Hooks.PlayerHooks.OnPlayerLogout(tsplr);
 			}
@@ -2203,9 +2242,9 @@ namespace TShockAPI
 				Netplay.ListenPort = file.ServerPort;
 			}
 
-			if (file.MaxSlots > 235)
-				file.MaxSlots = 235;
-			Main.maxNetPlayers = file.MaxSlots + 20;
+			if (file.MaxSlots > Main.maxPlayers - file.ReservedSlots)
+				file.MaxSlots = Main.maxPlayers - file.ReservedSlots;
+			Main.maxNetPlayers = file.MaxSlots + file.ReservedSlots;
 
 			Netplay.ServerPassword = "";
 			if (!string.IsNullOrEmpty(_cliPassword))

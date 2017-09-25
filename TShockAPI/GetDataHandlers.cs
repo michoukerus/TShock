@@ -895,14 +895,14 @@ namespace TShockAPI
 			/// <summary>
 			/// Time the buff lasts
 			/// </summary>
-			public short Time { get; set; }
+			public int Time { get; set; }
 		}
 		/// <summary>
 		/// PlayerBuff - Called when a player is buffed
 		/// </summary>
 		public static HandlerList<PlayerBuffEventArgs> PlayerBuff;
 
-		private static bool OnPlayerBuff(byte id, byte type, short time)
+		private static bool OnPlayerBuff(byte id, byte type, int time)
 		{
 			if (PlayerBuff == null)
 				return false;
@@ -911,7 +911,7 @@ namespace TShockAPI
 			{
 				ID = id,
 				Type = type,
-				Time = time,
+				Time = time
 			};
 			PlayerBuff.Invoke(null, args);
 			return args.Handled;
@@ -1909,7 +1909,10 @@ namespace TShockAPI
 			KillWire2,
 			PlaceWire3,
 			KillWire3,
-			SlopeTile
+			SlopeTile,
+			FrameTrack,
+			PlaceWire4,
+			KillWire4
 		}
 		public enum EditType
 		{
@@ -2342,6 +2345,15 @@ namespace TShockAPI
 				return true;
 
 			if (TShock.CheckIgnores(args.Player))
+			{
+				args.Player.SendTileSquare(x, y, 4);
+				return true;
+			}
+
+			// This is neccessary to check in order to prevent special tiles such as 
+			// queen bee larva, paintings etc that use this packet from being placed 
+			// without selecting the right item.
+			if (type != args.TPlayer.inventory[args.TPlayer.selectedItem].createTile)
 			{
 				args.Player.SendTileSquare(x, y, 4);
 				return true;
@@ -3413,7 +3425,7 @@ namespace TShockAPI
 		{
 			var id = args.Data.ReadInt8();
 			var type = args.Data.ReadInt8();
-			var time = args.Data.ReadInt16();
+			var time = args.Data.ReadInt32();
 
 			if (OnPlayerBuff(id, type, time))
 				return true;

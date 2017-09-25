@@ -2317,7 +2317,7 @@ namespace TShockAPI
 				var npc = npcs[0];
 				if (npc.type >= 1 && npc.type < Main.maxNPCTypes && npc.type != 113)
 				{
-					TSPlayer.Server.SpawnNPC(npc.type, npc.FullName, amount, args.Player.TileX, args.Player.TileY, 50, 20);
+					TSPlayer.Server.SpawnNPC(npc.netID, npc.FullName, amount, args.Player.TileX, args.Player.TileY, 50, 20);
 					if (args.Silent)
 					{
 						args.Player.SendSuccessMessage("生成了{1}只{0}。", npc.FullName, amount);
@@ -5318,7 +5318,7 @@ namespace TShockAPI
 				if (itemAmount == 0 || itemAmount > item.maxStack)
 					itemAmount = item.maxStack;
 
-				if (args.Player.GiveItemCheck(item.type, EnglishLanguage.GetItemNameById(item.type), item.width, item.height, itemAmount, prefixId))
+				if (args.Player.GiveItemCheck(item.type, EnglishLanguage.GetItemNameById(item.type), itemAmount, prefixId))
 				{
 					item.prefix = (byte)prefixId;
 					args.Player.SendSuccessMessage("成功生成 {0} 个 {1}.", itemAmount, item.AffixName());
@@ -5457,7 +5457,7 @@ namespace TShockAPI
 						{
 							if (itemAmount == 0 || itemAmount > item.maxStack)
 								itemAmount = item.maxStack;
-							if (plr.GiveItemCheck(item.type, EnglishLanguage.GetItemNameById(item.type), item.width, item.height, itemAmount, prefix))
+							if (plr.GiveItemCheck(item.type, EnglishLanguage.GetItemNameById(item.type), itemAmount, prefix))
 							{
 								args.Player.SendSuccessMessage(string.Format("成功给 {0} 生成了 {1} 个 {2}。", plr.Name, itemAmount, item.Name));
 								plr.SendSuccessMessage(string.Format("{0} 给你了 {1} 个 {2}。", args.Player.Name, itemAmount, item.Name));
