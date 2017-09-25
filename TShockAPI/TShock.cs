@@ -125,6 +125,8 @@ namespace TShockAPI
 		public static RestManager RestManager;
 		/// <summary>Utils - Static reference to the utilities class, which contains a variety of utility functions.</summary>
 		public static Utils Utils = Utils.Instance;
+		/// <summary>StatTracker - Static reference to the stat tracker, which sends some server metrics every 5 minutes.</summary>
+		public static StatTracker StatTracker = new StatTracker();
 		/// <summary>Log - Static reference to the log system, which outputs to either SQL or a text file, depending on user config.</summary>
 		public static ILog Log;
 		/// <summary>instance - Static reference to the TerrariaPlugin instance.</summary>
