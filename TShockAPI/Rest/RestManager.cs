@@ -206,7 +206,6 @@ namespace TShockAPI
 			Rest.RegisterRedirect("/server/broadcast", "/v2/server/broadcast");
 			Rest.RegisterRedirect("/server/reload", "/v2/server/reload");
 			Rest.RegisterRedirect("/server/off", "/v2/server/off");
-			Rest.RegisterRedirect("/server/restart", "/v3/server/restart");
 			Rest.RegisterRedirect("/server/rawcmd", "/v3/server/rawcmd");
 
 			//user commands
@@ -248,7 +247,6 @@ namespace TShockAPI
 			Rest.Register(new SecureRestCommand("/v2/server/broadcast", ServerBroadcast));
 			Rest.Register(new SecureRestCommand("/v3/server/reload", ServerReload, RestPermissions.restcfg));
 			Rest.Register(new SecureRestCommand("/v2/server/off", ServerOff, RestPermissions.restmaintenance));
-			Rest.Register(new SecureRestCommand("/v3/server/restart", ServerRestart, RestPermissions.restmaintenance));
 			Rest.Register(new SecureRestCommand("/v3/server/rawcmd", ServerCommandV3, RestPermissions.restrawcommand));
 			Rest.Register(new SecureRestCommand("/tokentest", ServerTokenTest));
 
@@ -334,25 +332,6 @@ namespace TShockAPI
 			TShock.Utils.StopServer(!GetBool(args.Parameters["nosave"], false), reason);
 
 			return RestResponse("服务器关闭.");
-		}
-
-		[Description("重启服务器.")]
-		[Route("/v3/server/restart")]
-		[Permission(RestPermissions.restmaintenance)]
-		[Noun("confirm", true,"bool值--再次确认是否重启服务器.", typeof(bool))]
-		[Noun("message", false, "通知消息.", typeof(String))]
-		[Noun("nosave", false,"是否不保存地图并保存.", typeof(bool))]
-		[Token]
-		private object ServerRestart(RestRequestArgs args)
-		{
-			if (!GetBool(args.Parameters["confirm"], false))
-				return RestInvalidParam("confirm");
-
-			// Inform players the server is shutting down
-			var reason = string.IsNullOrWhiteSpace(args.Parameters["message"]) ? "Server is restarting" : args.Parameters["message"];
-			TShock.Utils.RestartServer(!GetBool(args.Parameters["nosave"], false), reason);
-
-			return RestResponse("The server is shutting down and will attempt to restart");
 		}
 
 		[Description("Reload config files for the server.")]
@@ -483,7 +462,7 @@ namespace TShockAPI
 		[Token]
 		private object UserActiveListV2(RestRequestArgs args)
 		{
-			return new RestObject() { { "activeusers", string.Join("\t", TShock.Players.Where(p => null != p && null != p.User && p.Active).Select(p => p.User.Name)) } };
+			return new RestObject() { { "activeusers", string.Join("\t", TShock.Players.Where(p => null != p && null != p.Account && p.Active).Select(p => p.Account.Name)) } };
 		}
 
 		[Description("Lists all user accounts in the TShock database.")]
@@ -492,7 +471,7 @@ namespace TShockAPI
 		[Token]
 		private object UserListV2(RestRequestArgs args)
 		{
-			return new RestObject() { { "users", TShock.Users.GetUsers().Select(p => new Dictionary<string,object>(){
+			return new RestObject() { { "users", TShock.UserAccounts.GetUserAccounts().Select(p => new Dictionary<string,object>(){
 				{"name", p.Name},
 				{"id", p.ID},
 				{"group", p.Group},
@@ -521,11 +500,11 @@ namespace TShockAPI
 				return RestMissingParam("password");
 
 			// NOTE: ip can be blank
-			User user = new User(username, "", "", group, "", "", "");
+			UserAccount account = new UserAccount(username, "", "", group, "", "", "");
 			try
 			{
-				user.CreateBCryptHash(password);
-				TShock.Users.AddUser(user);
+				account.CreateBCryptHash(password);
+				TShock.UserAccounts.AddUserAccount(account);
 			}
 			catch (Exception e)
 			{
@@ -554,13 +533,13 @@ namespace TShockAPI
 			if (string.IsNullOrWhiteSpace(group) && string.IsNullOrWhiteSpace(password))
 				return RestMissingParam("group", "password");
 
-			User user = (User)ret;
+			UserAccount account = (UserAccount)ret;
 			var response = new RestObject();
 			if (!string.IsNullOrWhiteSpace(password))
 			{
 				try
 				{
-					TShock.Users.SetUserPassword(user, password);
+					TShock.UserAccounts.SetUserAccountPassword(account, password);
 					response.Add("password-response", "Password updated successfully");
 				}
 				catch (Exception e)
@@ -573,7 +552,7 @@ namespace TShockAPI
 			{
 				try
 				{
-					TShock.Users.SetUserGroup(user, group);
+					TShock.UserAccounts.SetUserGroup(account, group);
 					response.Add("group-response", "Group updated successfully");
 				}
 				catch (Exception e)
@@ -599,7 +578,7 @@ namespace TShockAPI
 
 			try
 			{
-				TShock.Users.RemoveUser((User)ret);
+				TShock.UserAccounts.RemoveUserAccount((UserAccount)ret);
 			}
 			catch (Exception e)
 			{
@@ -621,8 +600,8 @@ namespace TShockAPI
 			if (ret is RestObject)
 				return ret;
 
-			User user = (User)ret;
-			return new RestObject() { { "group", user.Group }, { "id", user.ID.ToString() }, { "name", user.Name } };
+			UserAccount account = (UserAccount)ret;
+			return new RestObject() { { "group", account.Group }, { "id", account.ID.ToString() }, { "name", account.Name } };
 		}
 
 		#endregion
@@ -646,7 +625,7 @@ namespace TShockAPI
 
 			try
 			{
-				TShock.Bans.AddBan(ip, name, "", args.Parameters["reason"], true, args.TokenData.Username);
+				TShock.Bans.AddBan2(ip, name, "", "", args.Parameters["reason"], true, args.TokenData.Username);
 			}
 			catch (Exception e)
 			{
@@ -939,10 +918,10 @@ namespace TShockAPI
 			return new RestObject()
 			{
 				{"nickname", player.Name},
-				{"username", player.User?.Name},
+				{"username", player.Account?.Name},
 				{"ip", player.IP},
 				{"group", player.Group.Name},
-				{"registered", player.User?.Registered},
+				{"registered", player.Account?.Registered},
 				{"muted", player.mute },
 				{"position", player.TileX + "," + player.TileY},
 				{"inventory", string.Join(", ", inventory.Select(p => (p.Name + ":" + p.stack)))},
@@ -980,10 +959,10 @@ namespace TShockAPI
 			return new RestObject
 			{
 				{"nickname", player.Name},
-				{"username", player.User?.Name},
+				{"username", player.Account?.Name},
 				{"ip", player.IP},
 				{"group", player.Group.Name},
-				{"registered", player.User?.Registered},
+				{"registered", player.Account?.Registered},
 				{"muted", player.mute },
 				{"position", player.TileX + "," + player.TileY},
 				{"items", items},
@@ -1023,7 +1002,7 @@ namespace TShockAPI
 
 			TSPlayer player = (TSPlayer)ret;
 			var reason = null == args.Parameters["reason"] ? "Banned via web" : args.Parameters["reason"];
-			TShock.Bans.AddBan(player.IP, player.Name, "", reason);
+			TShock.Bans.AddBan2(player.IP, player.Name, "", "", reason);
 			TShock.Utils.ForceKick(player, reason, false, true);
 			return RestResponse("Player " + player.Name + " was banned");
 		}
@@ -1284,7 +1263,7 @@ namespace TShockAPI
 			if (string.IsNullOrWhiteSpace(name))
 				return RestMissingParam("user");
 
-			User user;
+			UserAccount account;
 			string type = parameters["type"];
 			try
 			{
@@ -1293,10 +1272,10 @@ namespace TShockAPI
 					case null:
 					case "name":
 						type = "name";
-						user = TShock.Users.GetUserByName(name);
+						account = TShock.UserAccounts.GetUserAccountByName(name);
 						break;
 					case "id":
-						user = TShock.Users.GetUserByID(Convert.ToInt32(name));
+						account = TShock.UserAccounts.GetUserAccountByID(Convert.ToInt32(name));
 						break;
 					default:
 						return RestError("Invalid Type: '" + type + "'");
@@ -1307,10 +1286,10 @@ namespace TShockAPI
 				return RestError(e.Message);
 			}
 
-			if (null == user)
+			if (null == account)
 				return RestError(String.Format("User {0} '{1}' doesn't exist", type, name));
 
-			return user;
+			return account;
 		}
 
 		private object BanFind(IParameterCollection parameters)
@@ -1360,7 +1339,7 @@ namespace TShockAPI
 			var player = new Dictionary<string, object>
 				{
 					{"nickname", tsPlayer.Name},
-					{"username", tsPlayer.User == null ? "" : tsPlayer.User.Name},
+					{"username", tsPlayer.Account == null ? "" : tsPlayer.Account.Name},
 					{"group", tsPlayer.Group.Name},
 					{"active", tsPlayer.Active},
 					{"state", tsPlayer.State},

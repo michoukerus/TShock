@@ -218,10 +218,10 @@ namespace TShockAPI
 		public Vector2 LastNetPosition = Vector2.Zero;
 
 		/// <summary>
-		/// User object associated with the player.
+		/// UserAccount object associated with the player.
 		/// Set when the player logs in.
 		/// </summary>
-		public User User { get; set; }
+		public UserAccount Account { get; set; }
 
 		/// <summary>
 		/// Whether the player performed a valid login attempt (i.e. entered valid user name and password) but is still blocked
@@ -277,13 +277,246 @@ namespace TShockAPI
 
 		private string CacheIP;
 
-		public string IgnoreActionsForInventory = "none";
+		/// <summary>Determines if the player is disabled by the SSC subsystem for not being logged in.</summary>
+		public bool IsDisabledForSSC = false;
 
-		public string IgnoreActionsForCheating = "none";
+		/// <summary>Determines if the player is disabled by Bouncer for having hacked item stacks.</summary>
+		public bool IsDisabledForStackDetection = false;
 
-		public string IgnoreActionsForDisabledArmor = "none";
+		/// <summary>Determines if the player is disabled by the item bans system for having banned wearables on the server.</summary>
+		public bool IsDisabledForBannedWearable = false;
 
-		public bool IgnoreActionsForClearingTrashCan;
+		/// <summary>Determines if the player is disabled for not clearing their trash. A re-login is the only way to reset this.</summary>
+		public bool IsDisabledPendingTrashRemoval;
+
+		/// <summary>Checks to see if active throttling is happening on events by Bouncer. Rejects repeated events by malicious clients in a short window.</summary>
+		/// <returns>If the player is currently being throttled by Bouncer, or not.</returns>
+		public bool IsBouncerThrottled()
+		{
+			return (DateTime.UtcNow - LastThreat).TotalMilliseconds < 5000;
+		}
+
+		/// <summary>Easy check if a player has any of IsDisabledForSSC, IsDisabledForStackDetection, IsDisabledForBannedWearable, or IsDisabledPendingTrashRemoval set. Or if they're not logged in and a login is required.</summary>
+		/// <returns>If any of the checks that warrant disabling are set on this player. If true, Disable() is repeatedly called on them.</returns>
+		public bool IsBeingDisabled()
+		{
+			return IsDisabledForSSC
+			|| IsDisabledForStackDetection
+			|| IsDisabledForBannedWearable
+			|| IsDisabledPendingTrashRemoval
+			|| !IsLoggedIn && TShock.Config.RequireLogin;
+		}
+
+		/// <summary>Checks to see if a player has hacked item stacks in their inventory, and messages them as it checks.</summary>
+		/// <param name="shouldWarnPlayer">If the check should send a message to the player with the results of the check.</param>
+		/// <returns>True if any stacks don't conform.</returns>
+		public bool HasHackedItemStacks(bool shouldWarnPlayer = false)
+		{
+			// todo: translation
+
+			// Iterates through each inventory location a player has.
+			// This section is sub divided into number ranges for what each range of slots corresponds to.
+			bool check = false;
+
+			Item[] inventory = TPlayer.inventory;
+			Item[] armor = TPlayer.armor;
+			Item[] dye = TPlayer.dye;
+			Item[] miscEquips = TPlayer.miscEquips;
+			Item[] miscDyes = TPlayer.miscDyes;
+			Item[] piggy = TPlayer.bank.item;
+			Item[] safe = TPlayer.bank2.item;
+			Item[] forge = TPlayer.bank3.item;
+			Item trash = TPlayer.trashItem;
+			for (int i = 0; i < NetItem.MaxInventory; i++)
+			{
+				if (i < NetItem.InventoryIndex.Item2)
+				{
+					// From above: this is slots 0-58 in the inventory.
+					// 0-58
+					Item item = new Item();
+					if (inventory[i] != null && inventory[i].netID != 0)
+					{
+						item.netDefaults(inventory[i].netID);
+						item.Prefix(inventory[i].prefix);
+						item.AffixName();
+						if (inventory[i].stack > item.maxStack || inventory[i].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove item {0} ({1}) and then rejoin.", item.Name, inventory[i].stack);
+							}
+						}
+					}
+				}
+				else if (i < NetItem.ArmorIndex.Item2)
+				{
+					// 59-78
+					var index = i - NetItem.ArmorIndex.Item1;
+					Item item = new Item();
+					if (armor[index] != null && armor[index].netID != 0)
+					{
+						item.netDefaults(armor[index].netID);
+						item.Prefix(armor[index].prefix);
+						item.AffixName();
+						if (armor[index].stack > item.maxStack || armor[index].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove armor {0} ({1}) and then rejoin.", item.Name, armor[index].stack);
+							}
+						}
+					}
+				}
+				else if (i < NetItem.DyeIndex.Item2)
+				{
+					// 79-88
+					var index = i - NetItem.DyeIndex.Item1;
+					Item item = new Item();
+					if (dye[index] != null && dye[index].netID != 0)
+					{
+						item.netDefaults(dye[index].netID);
+						item.Prefix(dye[index].prefix);
+						item.AffixName();
+						if (dye[index].stack > item.maxStack || dye[index].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove dye {0} ({1}) and then rejoin.", item.Name, dye[index].stack);
+							}
+						}
+					}
+				}
+				else if (i < NetItem.MiscEquipIndex.Item2)
+				{
+					// 89-93
+					var index = i - NetItem.MiscEquipIndex.Item1;
+					Item item = new Item();
+					if (miscEquips[index] != null && miscEquips[index].netID != 0)
+					{
+						item.netDefaults(miscEquips[index].netID);
+						item.Prefix(miscEquips[index].prefix);
+						item.AffixName();
+						if (miscEquips[index].stack > item.maxStack || miscEquips[index].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove item {0} ({1}) and then rejoin.", item.Name, miscEquips[index].stack);
+							}
+						}
+					}
+				}
+				else if (i < NetItem.MiscDyeIndex.Item2)
+				{
+					// 93-98
+					var index = i - NetItem.MiscDyeIndex.Item1;
+					Item item = new Item();
+					if (miscDyes[index] != null && miscDyes[index].netID != 0)
+					{
+						item.netDefaults(miscDyes[index].netID);
+						item.Prefix(miscDyes[index].prefix);
+						item.AffixName();
+						if (miscDyes[index].stack > item.maxStack || miscDyes[index].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove item dye {0} ({1}) and then rejoin.", item.Name, miscDyes[index].stack);
+							}
+						}
+					}
+				}
+				else if (i < NetItem.PiggyIndex.Item2)
+				{
+					// 98-138
+					var index = i - NetItem.PiggyIndex.Item1;
+					Item item = new Item();
+					if (piggy[index] != null && piggy[index].netID != 0)
+					{
+						item.netDefaults(piggy[index].netID);
+						item.Prefix(piggy[index].prefix);
+						item.AffixName();
+
+						if (piggy[index].stack > item.maxStack || piggy[index].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove piggy-bank item {0} ({1}) and then rejoin.", item.Name, piggy[index].stack);
+							}
+						}
+					}
+				}
+				else if (i < NetItem.SafeIndex.Item2)
+				{
+					// 138-178
+					var index = i - NetItem.SafeIndex.Item1;
+					Item item = new Item();
+					if (safe[index] != null && safe[index].netID != 0)
+					{
+						item.netDefaults(safe[index].netID);
+						item.Prefix(safe[index].prefix);
+						item.AffixName();
+
+						if (safe[index].stack > item.maxStack || safe[index].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove safe item {0} ({1}) and then rejoin.", item.Name, safe[index].stack);
+							}
+						}
+					}
+				}
+				else if (i < NetItem.TrashIndex.Item2)
+				{
+					// 179-219
+					Item item = new Item();
+					if (trash != null && trash.netID != 0)
+					{
+						item.netDefaults(trash.netID);
+						item.Prefix(trash.prefix);
+						item.AffixName();
+
+						if (trash.stack > item.maxStack)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove trash item {0} ({1}) and then rejoin.", item.Name, trash.stack);
+							}
+						}
+					}
+				}
+				else
+				{
+					// 220
+					var index = i - NetItem.ForgeIndex.Item1;
+					Item item = new Item();
+					if (forge[index] != null && forge[index].netID != 0)
+					{
+						item.netDefaults(forge[index].netID);
+						item.Prefix(forge[index].prefix);
+						item.AffixName();
+
+						if (forge[index].stack > item.maxStack || forge[index].stack < 0)
+						{
+							check = true;
+							if (shouldWarnPlayer)
+							{
+								SendErrorMessage("Stack cheat detected. Remove Defender's Forge item {0} ({1}) and then rejoin.", item.Name, forge[index].stack);
+							}
+						}
+					}
+
+				}
+			}
+
+			return check;
+		}
 
 		/// <summary>
 		/// The player's server side inventory data.
@@ -448,7 +681,7 @@ namespace TShockAPI
 			{
 				if (HasPermission(Permissions.bypassssc))
 				{
-					TShock.Log.ConsoleInfo($"{User.Name}没有保存云端存档."); // Debug Code
+					TShock.Log.ConsoleInfo(Account.Name + "跳过了云端存档保存。"); // Debug Code
 					return true;
 				}
 				PlayerData.CopyCharacter(this);
@@ -550,11 +783,6 @@ namespace TShockAPI
 		}
 
 		/// <summary>
-		/// Unused.
-		/// </summary>
-		public bool TpLock;
-
-		/// <summary>
 		/// Checks if the player has any inventory slots available.
 		/// </summary>
 		public bool InventorySlotAvailable
@@ -646,8 +874,8 @@ namespace TShockAPI
 			PlayerHooks.OnPlayerLogout(this);
 			if (Main.ServerSideCharacter)
 			{
-				IgnoreActionsForInventory = $"云端存档/强制开荒 模式. 请使用 {Commands.Specifier}register \\ {Commands.Specifier}login 加入游戏!";
-				if (!IgnoreActionsForClearingTrashCan && (!Dead || TPlayer.difficulty != 2))
+				IsDisabledForSSC = true;
+				if (!IsDisabledPendingTrashRemoval && (!Dead || TPlayer.difficulty != 2))
 				{
 					PlayerData.CopyCharacter(this);
 					TShock.CharacterDB.InsertPlayerData(this);
@@ -661,7 +889,7 @@ namespace TShockAPI
 			{
 				tempGroupTimer.Stop();
 			}
-			User = null;
+			Account = null;
 			IsLoggedIn = false;
 		}
 
@@ -794,6 +1022,48 @@ namespace TShockAPI
 			}
 		}
 
+		/// <summary>Checks to see if this player object has access rights to a given projectile. Used by projectile bans.</summary>
+		/// <param name="index">The projectile index from Main.projectiles (NOT from a packet directly).</param>
+		/// <param name="type">The type of projectile, from Main.projectiles.</param>
+		/// <returns>If the player has access rights to the projectile.</returns>
+		public bool HasProjectilePermission(int index, int type)
+		{
+			// Players never have the rights to tombstones.
+			if (type == ProjectileID.Tombstone)
+			{
+				return false;
+			}
+
+			// Dirt balls are the projectiles from dirt rods.
+			// If the dirt rod item is banned, they probably shouldn't have this projectile.
+			if (type == ProjectileID.DirtBall && TShock.Itembans.ItemIsBanned("Dirt Rod", this))
+			{
+				return false;
+			}
+
+			// If the sandgun is banned, block sand bullets.
+			if (TShock.Itembans.ItemIsBanned("Sandgun", this))
+			{
+				if (type == ProjectileID.SandBallGun
+						|| type == ProjectileID.EbonsandBallGun
+						|| type == ProjectileID.PearlSandBallGun)
+				{
+					return false;
+				}
+			}
+
+			// If the projectile is hostile, block it?
+			Projectile tempProjectile = new Projectile();
+			tempProjectile.SetDefaults(type);
+
+			if (Main.projHostile[type])
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		/// <summary>
 		/// Removes the projectile with the given index and owner.
 		/// </summary>
@@ -813,6 +1083,15 @@ namespace TShockAPI
 			}
 		}
 
+		/// <summary>Sends a tile square at a location with a given size. 	
+		/// Typically used to revert changes by Bouncer through sending the
+		/// "old" version of modified data back to a client.
+		/// Prevents desync issues.
+		/// </summary>
+		/// <param name="x">The x coordinate to send.</param>
+		/// <param name="y">The y coordinate to send.</param>
+		/// <param name="size">The size square set of tiles to send.</param>
+		/// <returns>Status if the tile square was sent successfully (i.e. no exceptions).</returns>
 		public virtual bool SendTileSquare(int x, int y, int size = 10)
 		{
 			try

@@ -57,14 +57,13 @@ namespace TShockAPI
 		/// <summary>VersionNum - The version number the TerrariaAPI will return back to the API. We just use the Assembly info.</summary>
 		public static readonly Version VersionNum = Assembly.GetExecutingAssembly().GetName().Version;
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
-		public static readonly string VersionCodename = "Mintaka";
-		/// <summary>CNMode - 显示当前汉化版本信息.</summary>
-		public static readonly string CnMode = "开发版";
-		/// <summary>CNVersion - 显示当前汉化版本号.</summary>
-		public static readonly Version CnVersion = new Version(2, 6, 1, 0);
+		public static readonly string VersionCodename = "Alnitak";
 
-		/// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
-		public static string SavePath = "tshock";
+	    public static readonly string CnMode = "开发版";
+	    public static readonly Version CnVersion = new Version(3, 0);
+
+        /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
+        public static string SavePath = "tshock";
 		/// <summary>LogFormatDefault - This is the default log file naming format. Actually, this is the only log format, because it never gets set again.</summary>
 		private const string LogFormatDefault = "yyyy-MM-dd_HH-mm-ss";
 		//TODO: Set the log path in the config file.
@@ -98,7 +97,7 @@ namespace TShockAPI
 		/// <summary>Groups - Static reference to the group manager for accessing the group system.</summary>
 		public static GroupManager Groups;
 		/// <summary>Users - Static reference to the user manager for accessing the user database system.</summary>
-		public static UserManager Users;
+		public static UserAccountManager UserAccounts;
 		/// <summary>Itembans - Static reference to the item ban system.</summary>
 		public static ItemManager Itembans;
 		/// <summary>ProjectileBans - Static reference to the projectile ban system.</summary>
@@ -139,6 +138,9 @@ namespace TShockAPI
 		/// Used for implementing REST Tokens prior to the REST system starting up.
 		/// </summary>
 		public static Dictionary<string, SecureRest.TokenData> RESTStartupTokens = new Dictionary<string, SecureRest.TokenData>();
+
+		/// <summary>The TShock anti-cheat/anti-exploit system.</summary>
+		internal Bouncer Bouncer;
 
 		/// <summary>
 		/// Called after TShock is initialized. Useful for plugins that needs hooks before tshock but also depend on tshock being loaded.
@@ -314,7 +316,7 @@ namespace TShockAPI
 				Bans = new BanManager(DB);
 				Warps = new WarpManager(DB);
 				Regions = new RegionManager(DB);
-				Users = new UserManager(DB);
+				UserAccounts = new UserAccountManager(DB);
 				Groups = new GroupManager(DB);
 				Itembans = new ItemManager(DB);
 				ProjectileBans = new ProjectileManagager(DB);
@@ -324,6 +326,7 @@ namespace TShockAPI
 				RestApi = new SecureRest(Netplay.ServerIP, Config.RestApiPort);
 				RestManager = new RestManager(RestApi);
 				RestManager.RegisterRestfulCommands();
+				Bouncer = new Bouncer();
 
 				var geoippath = "GeoIP.dat";
 				if (Config.EnableGeoIP && File.Exists(geoippath))
@@ -372,13 +375,16 @@ namespace TShockAPI
 				if (Config.RestApiEnabled)
 					RestApi.Start();
 
-				Log.ConsoleInfo("自动保存 " + (Config.AutoSave ? "启用" : "关闭"));
-				Log.ConsoleInfo("备份状态 " + (Backups.Interval > 0 ? "启用" : "关闭"));
+				Log.ConsoleInfo("自动保存 - " + (Config.AutoSave ? "启用" : "关闭"));
+				Log.ConsoleInfo("定时备份 - " + (Backups.Interval > 0 ? "启用" : "关闭"));
 
 				if (Initialized != null)
 					Initialized();
 
-				Log.ConsoleInfo("欢迎使用TShock! 初始化过程结束.");
+				Log.ConsoleInfo("欢迎使用TShock！");
+				Log.ConsoleInfo("TShock是免费的无责软件。[本句需更好翻译]"); // todo: improve translation here
+				Log.ConsoleInfo("任何人都可以在GNU GPLv3下修改或发行TShock。");
+
 			}
 			catch (Exception ex)
 			{
@@ -392,7 +398,7 @@ namespace TShockAPI
 		{
 			foreach (TSPlayer player in TShock.Players)
 			{
-				player.User = null;
+				player.Account = null;
 			}
 		}
 
@@ -448,9 +454,9 @@ namespace TShockAPI
 		private void OnPlayerLogin(PlayerPostLoginEventArgs args)
 		{
 			List<String> KnownIps = new List<string>();
-			if (!string.IsNullOrWhiteSpace(args.Player.User.KnownIps))
+			if (!string.IsNullOrWhiteSpace(args.Player.Account.KnownIps))
 			{
-				KnownIps = JsonConvert.DeserializeObject<List<String>>(args.Player.User.KnownIps);
+				KnownIps = JsonConvert.DeserializeObject<List<String>>(args.Player.Account.KnownIps);
 			}
 
 			if (KnownIps.Count == 0)
@@ -471,22 +477,44 @@ namespace TShockAPI
 				}
 			}
 
-			args.Player.User.KnownIps = JsonConvert.SerializeObject(KnownIps, Formatting.Indented);
-			Users.UpdateLogin(args.Player.User);
+			args.Player.Account.KnownIps = JsonConvert.SerializeObject(KnownIps, Formatting.Indented);
+			UserAccounts.UpdateLogin(args.Player.Account);
+
+			Ban potentialBan = Bans.GetBanByAccountName(args.Player.Account.Name);
+
+			if (potentialBan != null)
+			{
+				// A user just signed in successfully despite being banned by account name.
+				// We should fix the ban database so that all of their ban info is up to date.
+				Bans.AddBan2(args.Player.IP, args.Player.Name, args.Player.UUID, args.Player.Account.Name,
+					potentialBan.Reason, false, potentialBan.BanningUser, potentialBan.Expiration);
+
+				// And then get rid of them.
+				if (potentialBan.Expiration == "")
+				{
+					Utils.ForceKick(args.Player, String.Format("被{0}永久封禁：{1}", potentialBan.BanningUser
+						,potentialBan.Reason), false, false);
+				}
+				else
+				{
+					Utils.ForceKick(args.Player, String.Format("被{0}暂时封禁：{1}", potentialBan.BanningUser,
+						potentialBan.Reason), false, false);
+				}
+			}
 		}
 
 		/// <summary>OnAccountDelete - Internal hook fired on account delete.</summary>
 		/// <param name="args">args - The AccountDeleteEventArgs object.</param>
 		private void OnAccountDelete(Hooks.AccountDeleteEventArgs args)
 		{
-			CharacterDB.RemovePlayer(args.User.ID);
+			CharacterDB.RemovePlayer(args.Account.ID);
 		}
 
 		/// <summary>OnAccountCreate - Internal hook fired on account creation.</summary>
 		/// <param name="args">args - The AccountCreateEventArgs object.</param>
 		private void OnAccountCreate(Hooks.AccountCreateEventArgs args)
 		{
-			CharacterDB.SeedInitialData(Users.GetUser(args.User));
+			CharacterDB.SeedInitialData(UserAccounts.GetUserAccount(args.Account));
 		}
 
 		/// <summary>OnPlayerPreLogin - Internal hook fired when on player pre login.</summary>
@@ -501,6 +529,11 @@ namespace TShockAPI
 		/// <param name="args">args - The NameCollisionEventArgs object.</param>
 		private void NetHooks_NameCollision(NameCollisionEventArgs args)
 		{
+			if (args.Handled)
+			{
+				return;
+			}
+
 			string ip = Utils.GetRealIP(Netplay.Clients[args.Who].Socket.GetRemoteAddress().ToString());
 
 			var player = Players.First(p => p != null && p.Name == args.Name && p.Index != args.Who);
@@ -514,7 +547,7 @@ namespace TShockAPI
 				}
 				if (player.IsLoggedIn)
 				{
-					var ips = JsonConvert.DeserializeObject<List<string>>(player.User.KnownIps);
+					var ips = JsonConvert.DeserializeObject<List<string>>(player.Account.KnownIps);
 					if (ips.Contains(ip))
 					{
 						Netplay.Clients[player.Index].PendingTermination = true;
@@ -741,20 +774,6 @@ namespace TShockAPI
 				.AddFlag("--no-restart", () => NoRestart = true);
 
 			CliParser.ParseFromSource(parms);
-
-			/*"-connperip": Todo - Requires an OTAPI modification
-			{
-				int limit;
-				if (int.TryParse(parms[++i], out limit))
-				{
-					//Netplay.MaxConnections = limit;
-					//ServerApi.LogWriter.PluginWriteLine(this, string.Format(
-					//	"Connections per IP have been limited to {0} connections.", limit), TraceLevel.Verbose);
-					ServerApi.LogWriter.PluginWriteLine(this, "\"-connperip\" is not supported in this version of TShock.", TraceLevel.Verbose);
-				}
-				else
-					ServerApi.LogWriter.PluginWriteLine(this, "Invalid value given for command line argument \"-connperip\".", TraceLevel.Warning);
-			}*/
 		}
 
 		/// <summary>HandleCommandLinePostConfigLoad - Handles additional command line options after the config file is read.</summary>
@@ -815,15 +834,15 @@ namespace TShockAPI
 			CliParser.ParseFromSource(parms);
 		}
 
-		/// <summary>AuthToken - The auth token used by the /auth system to grant temporary superadmin access to new admins.</summary>
-		public static int AuthToken = -1;
+		/// <summary>SetupToken - The auth token used by the setup system to grant temporary superadmin access to new admins.</summary>
+		public static int SetupToken = -1;
 		private string _cliPassword = null;
 
 		/// <summary>OnPostInit - Fired when the server loads a map, to perform world specific operations.</summary>
 		/// <param name="args">args - The EventArgs object.</param>
 		private void OnPostInit(EventArgs args)
 		{
-			SetConsoleTitle(false);
+			Utils.SetConsoleTitle(false);
 
 			//This is to prevent a bug where a CLI-defined password causes packets to be
 			//sent in an unexpected order, resulting in clients being unable to connect
@@ -835,95 +854,55 @@ namespace TShockAPI
 				Config.ServerPassword = _cliPassword;
 			}
 
-			// Disable the auth system if "auth.lck" is present or a superadmin exists
-			if (File.Exists(Path.Combine(SavePath, "auth.lck")) || Users.GetUsers().Exists(u => u.Group == new SuperAdminGroup().Name))
+			// Disable the auth system if "setup.lock" is present or a user account already exists
+			if (File.Exists(Path.Combine(SavePath, "setup.lock")) || (UserAccounts.GetUserAccounts().Count() > 0))
 			{
-				AuthToken = 0;
+				SetupToken = 0;
 
-				if (File.Exists(Path.Combine(SavePath, "authcode.txt")))
+				if (File.Exists(Path.Combine(SavePath, "setup-code.txt")))
 				{
-					Log.ConsoleInfo("在数据库中存在超管用户, 但是 authcode.txt 依旧存在.");
-					Log.ConsoleInfo("系统将禁用验证功能并删除此文件.");
-					File.Delete(Path.Combine(SavePath, "authcode.txt"));
+					Log.ConsoleInfo("您已设定管理员用户；系统将禁用初次配置功能。");
+					Log.ConsoleInfo("初次配置文件 setup-code.txt 将会被删除。");
+					File.Delete(Path.Combine(SavePath, "setup-code.txt"));
 				}
 
-				if (!File.Exists(Path.Combine(SavePath, "auth.lck")))
+				if (!File.Exists(Path.Combine(SavePath, "setup.lock")))
 				{
 					// This avoids unnecessary database work, which can get ridiculously high on old servers as all users need to be fetched
-					File.Create(Path.Combine(SavePath, "auth.lck"));
+					File.Create(Path.Combine(SavePath, "setup.lock"));
 				}
 			}
-			else if (!File.Exists(Path.Combine(SavePath, "authcode.txt")))
+			else if (!File.Exists(Path.Combine(SavePath, "setup-code.txt")))
 			{
 				var r = new Random((int)DateTime.Now.ToBinary());
-				AuthToken = r.Next(100000, 10000000);
+				SetupToken = r.Next(100000, 10000000);
 				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.WriteLine("提示: 进入游戏后输入\"{0}auth {1}\"(不含引号) 即可获得权限.", Commands.Specifier, AuthToken);
-				Console.WriteLine("该密码会在启动服务器时显示, 直到验证完毕. ({0}auth)", Commands.Specifier);
+				Console.WriteLine("进入游戏后使用 {0}setup {1} 以设定服务器。", Commands.Specifier, SetupToken);
+				Console.WriteLine("服务器设定完毕后，本提示会隐藏。 ({0}setup)", Commands.Specifier);
 				Console.ResetColor();
-				File.WriteAllText(Path.Combine(SavePath, "authcode.txt"), AuthToken.ToString());
+				File.WriteAllText(Path.Combine(SavePath, "setup-code.txt"), SetupToken.ToString());
 			}
 			else
 			{
-				AuthToken = Convert.ToInt32(File.ReadAllText(Path.Combine(SavePath, "authcode.txt")));
+				SetupToken = Convert.ToInt32(File.ReadAllText(Path.Combine(SavePath, "setup-code.txt")));
 				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.WriteLine(
-					"提示: 认证管理密码将继续采用 authcode.txt 中的数值.");
-				Console.WriteLine("进入游戏后输入\"{0}auth {1}\"(不含引号) 即可获得权限.", Commands.Specifier, AuthToken);
-				Console.WriteLine("该密码会在启动服务器时显示, 直到验证完毕. ({0}auth)", Commands.Specifier);
+				Console.WriteLine("初始配置 setup-code.txt 中的密码已经生效。");
+				Console.WriteLine("进入游戏后使用 {0}setup {1} 以设定服务器。", Commands.Specifier, SetupToken);
+				Console.WriteLine("服务器设定完毕后，本提示会隐藏。 ({0}setup)", Commands.Specifier);
 				Console.ResetColor();
 			}
 
 			Regions.Reload();
 			Warps.ReloadWarps();
 
-			ComputeMaxStyles();
-			FixChestStacks();
+			Utils.ComputeMaxStyles();
+			Utils.FixChestStacks();
 
 			Utils.UpgradeMotD();
 
 			if (Config.UseServerName)
 			{
 				Main.worldName = Config.ServerName;
-			}
-		}
-
-		/// <summary>ComputeMaxStyles - Computes the max styles...</summary>
-		private void ComputeMaxStyles()
-		{
-			var item = new Item();
-			for (int i = 0; i < Main.maxItemTypes; i++)
-			{
-				item.netDefaults(i);
-				if (item.placeStyle > 0)
-				{
-					if (GetDataHandlers.MaxPlaceStyles.ContainsKey(item.createTile))
-					{
-						if (item.placeStyle > GetDataHandlers.MaxPlaceStyles[item.createTile])
-							GetDataHandlers.MaxPlaceStyles[item.createTile] = item.placeStyle;
-					}
-					else
-						GetDataHandlers.MaxPlaceStyles.Add(item.createTile, item.placeStyle);
-				}
-			}
-		}
-
-		/// <summary>FixChestStacks - Verifies that each stack in each chest is valid and not over the max stack count.</summary>
-		private void FixChestStacks()
-		{
-			if (Config.IgnoreChestStacksOnLoad)
-				return;
-
-			foreach (Chest chest in Main.chest)
-			{
-				if (chest != null)
-				{
-					foreach (Item item in chest.item)
-					{
-						if (item != null && item.stack > item.maxStack)
-							item.stack = item.maxStack;
-					}
-				}
 			}
 		}
 
@@ -951,7 +930,7 @@ namespace TShockAPI
 				foreach (TSPlayer player in Players)
 				{
 					// prevent null point exceptions
-					if (player != null && player.IsLoggedIn && !player.IgnoreActionsForClearingTrashCan)
+					if (player != null && player.IsLoggedIn && !player.IsDisabledPendingTrashRemoval)
 					{
 
 						CharacterDB.InsertPlayerData(player);
@@ -1089,7 +1068,7 @@ namespace TShockAPI
 
 					if (Main.ServerSideCharacter && !player.IsLoggedIn)
 					{
-						if (CheckIgnores(player))
+						if (player.IsBeingDisabled())
 						{
 							player.Disable(flags: flags);
 						}
@@ -1101,19 +1080,11 @@ namespace TShockAPI
 					}
 					else if (!Main.ServerSideCharacter || (Main.ServerSideCharacter && player.IsLoggedIn))
 					{
-						string check = "none";
-						foreach (Item item in player.TPlayer.inventory)
+						if (!player.HasPermission(Permissions.ignorestackhackdetection))
 						{
-							if (!player.HasPermission(Permissions.ignorestackhackdetection) && (item.stack > item.maxStack || item.stack < 0) &&
-								item.type != 0)
-							{
-								check = $"你需要删除物品 {item.Name}({item.stack}), 因为该物品数量超过堆叠上限 {item.maxStack}.";
-								player.SendErrorMessage(check);
-								break;
-							}
+							player.IsDisabledForStackDetection = player.HasHackedItemStacks(shouldWarnPlayer: true);
 						}
-						player.IgnoreActionsForCheating = check;
-						check = "none";
+						string check = "none";
 						// Please don't remove this for the time being; without it, players wearing banned equipment will only get debuffed once
 						foreach (Item item in player.TPlayer.armor)
 						{
@@ -1167,9 +1138,10 @@ namespace TShockAPI
 								break;
 							}
 						}
-						player.IgnoreActionsForDisabledArmor = check;
+						if (check != "none")
+							player.IsDisabledForBannedWearable = true;
 
-						if (CheckIgnores(player))
+						if (player.IsBeingDisabled())
 						{
 							player.Disable(flags: flags);
 						}
@@ -1197,18 +1169,7 @@ namespace TShockAPI
 					}
 				}
 			}
-			SetConsoleTitle(false);
-		}
-
-		/// <summary>SetConsoleTitle - Updates the console title with some pertinent information.</summary>
-		/// <param name="empty">empty - True/false if the server is empty; determines if we should use Utils.ActivePlayers() for player count or 0.</param>
-		private void SetConsoleTitle(bool empty)
-		{
-			Console.Title = string.Format("{0}{1}/{2} {3} @ {4}:{5} (TShock v{6} / {7}v{8})",
-					!string.IsNullOrWhiteSpace(Config.ServerName) ? Config.ServerName + " - " : "",
-					empty ? 0 : Utils.ActivePlayers(),
-					Config.MaxSlots, Main.worldName, Netplay.ServerIP.ToString(), Netplay.ListenPort, Version,
-					CnMode, CnVersion);
+			Utils.SetConsoleTitle(false);
 		}
 
 		/// <summary>OnHardUpdate - Fired when a hardmode tile update event happens.</summary>
@@ -1365,8 +1326,8 @@ namespace TShockAPI
 					DateTime exp;
 					if (!DateTime.TryParse(ban.Expiration, out exp))
 					{
-						player.Disconnect($"你被永久封禁. 原因: {ban.Reason}");
-                    }
+						player.Disconnect("您因" + ban.Reason + "被永久封禁。");
+					}
 					else
 					{
 						TimeSpan ts = exp - DateTime.UtcNow;
@@ -1425,7 +1386,7 @@ namespace TShockAPI
 					Utils.Broadcast(tsplr.Name + " 离开游戏.", Color.Yellow);
 				Log.Info("{0} 断开连接.", tsplr.Name);
 
-				if (tsplr.IsLoggedIn && !tsplr.IgnoreActionsForClearingTrashCan && Main.ServerSideCharacter && (!tsplr.Dead || tsplr.TPlayer.difficulty != 2))
+				if (tsplr.IsLoggedIn && !tsplr.IsDisabledPendingTrashRemoval && Main.ServerSideCharacter && (!tsplr.Dead || tsplr.TPlayer.difficulty != 2))
 				{
 					tsplr.PlayerData.CopyCharacter(tsplr);
 					CharacterDB.InsertPlayerData(tsplr);
@@ -1453,7 +1414,7 @@ namespace TShockAPI
 			{
 				if (Config.SaveWorldOnLastPlayerExit)
 					SaveManager.Instance.SaveWorld();
-				SetConsoleTitle(true);
+				Utils.SetConsoleTitle(true);
 			}
 		}
 
@@ -1598,7 +1559,7 @@ namespace TShockAPI
 			if (args.Command == "autosave")
 			{
 				Main.autoSave = Config.AutoSave = !Config.AutoSave;
-				Log.ConsoleInfo("自动保存" + (Config.AutoSave ? "开启." : "关闭."));
+				Log.ConsoleInfo((Config.AutoSave ? "开启" : "关闭") + "自动保存。");
 			}
 			else if (args.Command.StartsWith(Commands.Specifier) || args.Command.StartsWith(Commands.SilentSpecifier))
 			{
@@ -1700,13 +1661,13 @@ namespace TShockAPI
 			{
 				if (Main.ServerSideCharacter)
 				{
-					player.SendErrorMessage(
-						player.IgnoreActionsForInventory = string.Format("云端存档/强制开荒 模式. 请使用 {0}register \\ {0}login 加入游戏!", Commands.Specifier));
+					player.IsDisabledForSSC = true;
+					player.SendErrorMessage(String.Format("您已加入云端存档服务器；请使用 {0}register 或 {0}login 加入游戏！", Commands.Specifier));
 					player.LoginHarassed = true;
 				}
 				else if (Config.RequireLogin)
 				{
-					player.SendErrorMessage("请使用 {0}register \\ {0}login 加入游戏!", Commands.Specifier);
+					player.SendErrorMessage("请使用 {0}register 或 {0}login 加入游戏！", Commands.Specifier);
 					player.LoginHarassed = true;
 				}
 			}
@@ -1774,62 +1735,7 @@ namespace TShockAPI
 		}
 
 
-		/// <summary>StartInvasion - Starts an invasion on the server.</summary>
-		/// <param name="type">type - The invasion type id.</param>
-		//TODO: Why is this in TShock's main class?
-		public static void StartInvasion(int type)
-		{
-			int invasionSize = 0;
 
-			if (Config.InfiniteInvasion)
-			{
-				invasionSize = 20000000;
-			}
-			else
-			{
-				invasionSize = 100 + (Config.InvasionMultiplier * Utils.ActivePlayers());
-			}
-
-			// Note: This is a workaround to previously providing the size as a parameter in StartInvasion
-			Main.invasionSize = invasionSize;
-
-			Main.StartInvasion(type);
-		}
-
-		/// <summary>CheckProjectilePermission - Checks if a projectile is banned.</summary>
-		/// <param name="player">player - The TSPlayer object that created the projectile.</param>
-		/// <param name="index">index - The projectile index.</param>
-		/// <param name="type">type - The projectile type.</param>
-		/// <returns>bool - True if the player does not have permission to use a projectile.</returns>
-		public static bool CheckProjectilePermission(TSPlayer player, int index, int type)
-		{
-			if (type == 43)
-			{
-				return true;
-			}
-
-			if (type == 17 && Itembans.ItemIsBanned("Dirt Rod", player))
-			//Dirt Rod Projectile
-			{
-				return true;
-			}
-
-			if ((type == 42 || type == 65 || type == 68) && Itembans.ItemIsBanned("Sandgun", player)) //Sandgun Projectiles
-			{
-				return true;
-			}
-
-			Projectile proj = new Projectile();
-			proj.SetDefaults(type);
-
-			if (Main.projHostile[type])
-			{
-				//player.SendMessage( proj.name, Color.Yellow);
-				return true;
-			}
-
-			return false;
-		}
 
 		/// <summary>CheckRangePermission - Checks if a player has permission to modify a tile dependent on range checks.</summary>
 		/// <param name="player">player - The TSPlayer object.</param>
@@ -1917,7 +1823,7 @@ namespace TShockAPI
 			{
 				if (!player.HasPermission(Permissions.editspawn))
 				{
-					if (CheckSpawn(tileX, tileY))
+					if (Utils.IsInSpawn(tileX, tileY))
 					{
 						if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.SPm) > 2000)
 						{
@@ -1984,7 +1890,7 @@ namespace TShockAPI
 			{
 				if (!player.HasPermission(Permissions.editspawn))
 				{
-					if (CheckSpawn(tileX, tileY))
+					if (Utils.IsInSpawn(tileX, tileY))
 					{
 						if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.SPm) > 1000)
 						{
@@ -1998,232 +1904,16 @@ namespace TShockAPI
 			return false;
 		}
 
-		/// <summary>CheckSpawn - Checks to see if a location is inside the spawn protection zone.</summary>
-		/// <param name="x">x - The x coordinate to check.</param>
-		/// <param name="y">y - The y coordinate to check.</param>
-		/// <returns>bool - True if the location is inside the spawn protection zone.</returns>
-		public static bool CheckSpawn(int x, int y)
-		{
-			Vector2 tile = new Vector2(x, y);
-			Vector2 spawn = new Vector2(Main.spawnTileX, Main.spawnTileY);
-			return Distance(spawn, tile) <= Config.SpawnProtectionRadius;
-		}
+
 
 		/// <summary>Distance - Determines the distance between two vectors.</summary>
 		/// <param name="value1">value1 - The first vector location.</param>
 		/// <param name="value2">value2 - The second vector location.</param>
 		/// <returns>float - The distance between the two vectors.</returns>
+		[Obsolete("Use TShock.Utils.Distance(Vector2, Vector2) instead.", true)]
 		public static float Distance(Vector2 value1, Vector2 value2)
 		{
-			float num2 = value1.X - value2.X;
-			float num = value1.Y - value2.Y;
-			float num3 = (num2 * num2) + (num * num);
-			return (float)Math.Sqrt(num3);
-		}
-
-		/// <summary>HackedInventory - Checks to see if a user has a hacked inventory. In addition, messages players the result.</summary>
-		/// <param name="player">player - The TSPlayer object.</param>
-		/// <returns>bool - True if the player has a hacked inventory.</returns>
-		public static bool HackedInventory(TSPlayer player)
-		{
-			bool check = false;
-
-			Item[] inventory = player.TPlayer.inventory;
-			Item[] armor = player.TPlayer.armor;
-			Item[] dye = player.TPlayer.dye;
-			Item[] miscEquips = player.TPlayer.miscEquips;
-			Item[] miscDyes = player.TPlayer.miscDyes;
-			Item[] piggy = player.TPlayer.bank.item;
-			Item[] safe = player.TPlayer.bank2.item;
-			Item[] forge = player.TPlayer.bank3.item;
-			Item trash = player.TPlayer.trashItem;
-			for (int i = 0; i < NetItem.MaxInventory; i++)
-			{
-				if (i < NetItem.InventoryIndex.Item2)
-				{
-					//0-58
-					Item item = new Item();
-					if (inventory[i] != null && inventory[i].netID != 0)
-					{
-						item.netDefaults(inventory[i].netID);
-						item.Prefix(inventory[i].prefix);
-						item.AffixName();
-						if (inventory[i].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else if (i < NetItem.ArmorIndex.Item2)
-				{
-					//59-78
-					var index = i - NetItem.ArmorIndex.Item1;
-					Item item = new Item();
-					if (armor[index] != null && armor[index].netID != 0)
-					{
-						item.netDefaults(armor[index].netID);
-						item.Prefix(armor[index].prefix);
-						item.AffixName();
-						if (armor[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该装备后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else if (i < NetItem.DyeIndex.Item2)
-				{
-					//79-88
-					var index = i - NetItem.DyeIndex.Item1;
-					Item item = new Item();
-					if (dye[index] != null && dye[index].netID != 0)
-					{
-						item.netDefaults(dye[index].netID);
-						item.Prefix(dye[index].prefix);
-						item.AffixName();
-						if (dye[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该染料后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else if (i < NetItem.MiscEquipIndex.Item2)
-				{
-					//89-93
-					var index = i - NetItem.MiscEquipIndex.Item1;
-					Item item = new Item();
-					if (miscEquips[index] != null && miscEquips[index].netID != 0)
-					{
-						item.netDefaults(miscEquips[index].netID);
-						item.Prefix(miscEquips[index].prefix);
-						item.AffixName();
-						if (miscEquips[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else if (i < NetItem.MiscDyeIndex.Item2)
-				{
-					//93-98
-					var index = i - NetItem.MiscDyeIndex.Item1;
-					Item item = new Item();
-					if (miscDyes[index] != null && miscDyes[index].netID != 0)
-					{
-						item.netDefaults(miscDyes[index].netID);
-						item.Prefix(miscDyes[index].prefix);
-						item.AffixName();
-						if (miscDyes[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该染料后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else if (i < NetItem.PiggyIndex.Item2)
-				{
-					//98-138
-					var index = i - NetItem.PiggyIndex.Item1;
-					Item item = new Item();
-					if (piggy[index] != null && piggy[index].netID != 0)
-					{
-						item.netDefaults(piggy[index].netID);
-						item.Prefix(piggy[index].prefix);
-						item.AffixName();
-
-						if (piggy[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"小猪储蓄罐内有{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else if (i < NetItem.SafeIndex.Item2)
-				{
-					//138-178
-					var index = i - NetItem.SafeIndex.Item1;
-					Item item = new Item();
-					if (safe[index] != null && safe[index].netID != 0)
-					{
-						item.netDefaults(safe[index].netID);
-						item.Prefix(safe[index].prefix);
-						item.AffixName();
-
-						if (safe[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"保险箱内有{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else if (i < NetItem.TrashIndex.Item2)
-				{
-					//179-219
-					Item item = new Item();
-					if (trash != null && trash.netID != 0)
-					{
-						item.netDefaults(trash.netID);
-						item.Prefix(trash.prefix);
-						item.AffixName();
-
-						if (trash.stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"垃圾箱物品{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-				}
-				else
-				{
-					//220
-					var index = i - NetItem.ForgeIndex.Item1;
-					Item item = new Item();
-					if (forge[index] != null && forge[index].netID != 0)
-					{
-						item.netDefaults(forge[index].netID);
-						item.Prefix(forge[index].prefix);
-						item.AffixName();
-
-						if (forge[index].stack > item.maxStack)
-						{
-							check = true;
-							player.SendMessage(
-								$"守卫者熔炉内有{item.Name}({inventory[i].stack})堆叠上限超出。丢掉该物品后，重新加入服务器。",
-								Color.Cyan);
-						}
-					}
-
-				}
-			}
-
-			return check;
-		}
-
-		/// <summary>CheckIgnores - Checks a players ignores...?</summary>
-		/// <param name="player">player - The TSPlayer object.</param>
-		/// <returns>bool - True if any ignore is not none, false, or login state differs from the required state.</returns>
-		public static bool CheckIgnores(TSPlayer player)
-		{
-			return player.IgnoreActionsForInventory != "none" || player.IgnoreActionsForCheating != "none" || player.IgnoreActionsForDisabledArmor != "none" || player.IgnoreActionsForClearingTrashCan || !player.IsLoggedIn && Config.RequireLogin;
+			return Utils.Distance(value1, value2);
 		}
 
 		/// <summary>OnConfigRead - Fired when the config file has been read.</summary>

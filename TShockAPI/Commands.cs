@@ -35,6 +35,7 @@ using Terraria.GameContent.Events;
 using Microsoft.Xna.Framework;
 using OTAPI.Tile;
 using TShockAPI.Localization;
+using System.Text.RegularExpressions;
 
 namespace TShockAPI
 {
@@ -192,11 +193,17 @@ namespace TShockAPI
 		public static List<Command> ChatCommands = new List<Command>();
 		public static ReadOnlyCollection<Command> TShockCommands = new ReadOnlyCollection<Command>(new List<Command>());
 
+		/// <summary>
+		/// The command specifier, defaults to "/"
+		/// </summary>
 		public static string Specifier
 		{
 			get { return string.IsNullOrWhiteSpace(TShock.Config.CommandSpecifier) ? "/" : TShock.Config.CommandSpecifier; }
 		}
 
+		/// <summary>
+		/// The silent command specifier, defaults to "."
+		/// </summary>
 		public static string SilentSpecifier
 		{
 			get { return string.IsNullOrWhiteSpace(TShock.Config.CommandSilentSpecifier) ? "." : TShock.Config.CommandSilentSpecifier; }
@@ -213,7 +220,7 @@ namespace TShockAPI
 				ChatCommands.Add(cmd);
 			};
 
-			add(new Command(AuthToken, "auth", "验证")
+			add(new Command(SetupToken, "setup")
 			{
 				AllowServer = false,
 				HelpText = "首次登入游戏时验证超管."
@@ -311,7 +318,15 @@ namespace TShockAPI
 			{
 				HelpText = "暂时更改用户组."
 			});
-			add(new Command(Permissions.userinfo, GrabUserUserInfo, "ui", "用户信息", "userinfo")
+			add(new Command(Permissions.su, SubstituteUser, "su")
+			{
+				HelpText = "临时提升玩家至超级管理。"
+			});
+			add(new Command(Permissions.su, SubstituteUserDo, "sudo")
+			{
+				HelpText = "以超级管理权限执行命令。"
+			});
+			add(new Command(Permissions.userinfo, GrabUserUserInfo, "userinfo", "ui")
 			{
 				HelpText = "显示用户信息."
 			});
@@ -351,11 +366,7 @@ namespace TShockAPI
 			{
 				HelpText = "重载服务器配置."
 			});
-			add(new Command(Permissions.maintenance, Restart, "restart", "重启")
-			{
-				HelpText = "重启服务器."
-			});
-			add(new Command(Permissions.cfgpassword, ServerPassword, "serverpassword", "服务器密码")
+			add(new Command(Permissions.cfgpassword, ServerPassword, "serverpassword")
 			{
 				HelpText = "更改服务器登入密码."
 			});
@@ -601,6 +612,10 @@ namespace TShockAPI
 			{
 				HelpText = "私信玩家."
 			});
+			add(new Command(Permissions.createdumps, CreateDumps, "dump-reference-data")
+			{
+				HelpText = "Creates a reference tables for Terraria data types and the TShock permission system in the server folder."
+			});
 			#endregion
 
 			add(new Command(Aliases, "aliases", "别名")
@@ -683,8 +698,12 @@ namespace TShockAPI
 			{
 				if (!cmd.CanRun(player))
 				{
-					TShock.Utils.SendLogs(string.Format("{0} 尝试执行 {1}{2}.", player.Name, Specifier, cmdText), Color.PaleVioletRed, player);
-					player.SendErrorMessage("缺少执行该指令的权限.");
+					TShock.Utils.SendLogs(string.Format("{0} 无权限执行 {1}{2}", player.Name, Specifier, cmdText), Color.PaleVioletRed, player);
+					player.SendErrorMessage("您无权执行。");
+					if (player.HasPermission(Permissions.su))
+					{
+						player.SendInfoMessage("您可以使用 {0}sudo {0}{1} 跳过权限检测执行命令。", Specifier, cmdText);
+					}
 				}
 				else if (!cmd.AllowServer && !player.RealPlayer)
 				{
@@ -774,7 +793,7 @@ namespace TShockAPI
 				return;
 			}
 
-			User user = TShock.Users.GetUserByName(args.Player.Name);
+			UserAccount account = TShock.UserAccounts.GetUserAccountByName(args.Player.Name);
 			string password = "";
 			bool usingUUID = false;
 			if (args.Parameters.Count == 0 && !TShock.Config.DisableUUIDLogin)
@@ -800,7 +819,7 @@ namespace TShockAPI
 				if (PlayerHooks.OnPlayerPreLogin(args.Player, args.Parameters[0], args.Parameters[1]))
 					return;
 
-				user = TShock.Users.GetUserByName(args.Parameters[0]);
+				account = TShock.UserAccounts.GetUserAccountByName(args.Parameters[0]);
 				password = args.Parameters[1];
 			}
 			else
@@ -813,23 +832,23 @@ namespace TShockAPI
 			}
 			try
 			{
-				if (user == null)
+				if (account == null)
 				{
-					args.Player.SendErrorMessage("不存在相应的账户. 尝试注册?");
+					args.Player.SendErrorMessage("账户不存在。");
 				}
-				else if (user.VerifyPassword(password) ||
-						(usingUUID && user.UUID == args.Player.UUID && !TShock.Config.DisableUUIDLogin &&
+				else if (account.VerifyPassword(password) ||
+						(usingUUID && account.UUID == args.Player.UUID && !TShock.Config.DisableUUIDLogin &&
 						!String.IsNullOrWhiteSpace(args.Player.UUID)))
 				{
-					args.Player.PlayerData = TShock.CharacterDB.GetPlayerData(args.Player, user.ID);
+					args.Player.PlayerData = TShock.CharacterDB.GetPlayerData(args.Player, account.ID);
 
-					var group = TShock.Utils.GetGroup(user.Group);
+					var group = TShock.Utils.GetGroup(account.Group);
 
 					args.Player.Group = group;
 					args.Player.tempGroup = null;
-					args.Player.User = user;
+					args.Player.Account = account;
 					args.Player.IsLoggedIn = true;
-					args.Player.IgnoreActionsForInventory = "none";
+					args.Player.IsDisabledForSSC = false;
 
 					if (Main.ServerSideCharacter)
 					{
@@ -843,14 +862,14 @@ namespace TShockAPI
 					args.Player.LoginFailsBySsi = false;
 
 					if (args.Player.HasPermission(Permissions.ignorestackhackdetection))
-						args.Player.IgnoreActionsForCheating = "none";
+						args.Player.IsDisabledForStackDetection = false;
 
 					if (args.Player.HasPermission(Permissions.usebanneditem))
-						args.Player.IgnoreActionsForDisabledArmor = "none";
+						args.Player.IsDisabledForBannedWearable = false;
 
-					args.Player.SendSuccessMessage($"已经验证 {user.Name} 登录完毕.");
+					args.Player.SendSuccessMessage(account.Name + "登录完毕。");
 
-					TShock.Log.ConsoleInfo(args.Player.Name + " 成功使用账户 " + user.Name + " 验证登录.");
+					TShock.Log.ConsoleInfo(args.Player.Name + "验证登录" + account.Name + "完毕。");
 					if ((args.Player.LoginHarassed) && (TShock.Config.RememberLeavePos))
 					{
 						if (TShock.RememberedPos.GetLeavePos(args.Player.Name, args.Player.IP) != Vector2.Zero)
@@ -861,7 +880,7 @@ namespace TShockAPI
 						args.Player.LoginHarassed = false;
 
 					}
-					TShock.Users.SetUserUUID(user, args.Player.UUID);
+					TShock.UserAccounts.SetUserAccountUUID(account, args.Player.UUID);
 
 					Hooks.PlayerHooks.OnPlayerPostLogin(args.Player);
 				}
@@ -875,7 +894,7 @@ namespace TShockAPI
 					{
 						args.Player.SendErrorMessage("密码无效!");
 					}
-					TShock.Log.Warn(args.Player.IP + " 尝试使用账户 " + user.Name + " 登录失败.");
+					TShock.Log.Warn(args.Player.IP + "登入" + account.Name + "失败。");
 					args.Player.LoginAttempts++;
 				}
 			}
@@ -909,15 +928,14 @@ namespace TShockAPI
 				if (args.Player.IsLoggedIn && args.Parameters.Count == 2)
 				{
 					string password = args.Parameters[0];
-					if (args.Player.User.VerifyPassword(password))
+					if (args.Player.Account.VerifyPassword(password))
 					{
 						try
 						{
-							args.Player.SendSuccessMessage("更改密码完毕!");
-							TShock.Users.SetUserPassword(args.Player.User, args.Parameters[1]); // SetUserPassword will hash it for you.
-							TShock.Log.ConsoleInfo($"玩家 {args.Player.Name}({args.Player.IP}) 更改了账户 {args.Player.User.Name} 的密码.");
-
-                        }
+							args.Player.SendSuccessMessage("更改密码完毕！");
+							TShock.UserAccounts.SetUserAccountPassword(args.Player.Account, args.Parameters[1]); // SetUserPassword will hash it for you.
+							TShock.Log.ConsoleInfo($"{args.Player.Name} ({args.Player.IP}) 更改了账户{args.Player.Account.Name}的密码。");
+						}
 						catch (ArgumentOutOfRangeException)
 						{
 							args.Player.SendErrorMessage("密码位数不能少于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
@@ -925,8 +943,8 @@ namespace TShockAPI
 					}
 					else
 					{
-						args.Player.SendErrorMessage("旧密码错误!");
-						TShock.Log.ConsoleError($"玩家 {args.Player.Name}({args.Player.IP}) 未能更改账户 {args.Player.User.Name} 的密码.");
+						args.Player.SendErrorMessage("旧密码输入错误！");
+						TShock.Log.ConsoleInfo($"{args.Player.Name} ({args.Player.IP}) 更改账户{args.Player.Account.Name}失败！");
 					}
 				}
 				else
@@ -934,7 +952,7 @@ namespace TShockAPI
 					args.Player.SendErrorMessage("未登录或语法无效! 正确语法: {0}password <旧密码> <新密码>", Specifier);
 				}
 			}
-			catch (UserManagerException ex)
+			catch (UserAccountManagerException ex)
 			{
 				args.Player.SendErrorMessage("对不起, 出现了异常: " + ex.Message + ".");
 				TShock.Log.ConsoleError("PasswordUser(更改密码) 方法出现异常: " + ex);
@@ -945,15 +963,15 @@ namespace TShockAPI
 		{
 			try
 			{
-				var user = new User();
+				var account = new UserAccount();
 				string echoPassword = "";
 				if (args.Parameters.Count == 1)
 				{
-					user.Name = args.Player.Name;
+					account.Name = args.Player.Name;
 					echoPassword = args.Parameters[0];
 					try
 					{
-						user.CreateBCryptHash(args.Parameters[0]);
+						account.CreateBCryptHash(args.Parameters[0]);
 					}
 					catch (ArgumentOutOfRangeException)
 					{
@@ -963,11 +981,11 @@ namespace TShockAPI
 				}
 				else if (args.Parameters.Count == 2 && TShock.Config.AllowRegisterAnyUsername)
 				{
-					user.Name = args.Parameters[0];
+					account.Name = args.Parameters[0];
 					echoPassword = args.Parameters[1];
 					try
 					{
-						user.CreateBCryptHash(args.Parameters[1]);
+						account.CreateBCryptHash(args.Parameters[1]);
 					}
 					catch (ArgumentOutOfRangeException)
 					{
@@ -981,24 +999,23 @@ namespace TShockAPI
 					return;
 				}
 
-				user.Group = TShock.Config.DefaultRegistrationGroupName; // FIXME -- we should get this from the DB. --Why?
-				user.UUID = args.Player.UUID;
+				account.Group = TShock.Config.DefaultRegistrationGroupName; // FIXME -- we should get this from the DB. --Why?
+				account.UUID = args.Player.UUID;
 
-				if (TShock.Users.GetUserByName(user.Name) == null && user.Name != TSServerPlayer.AccountName) // Cheap way of checking for existance of a user
+				if (TShock.UserAccounts.GetUserAccountByName(account.Name) == null && account.Name != TSServerPlayer.AccountName) // Cheap way of checking for existance of a user
 				{
-					args.Player.SendSuccessMessage("账户 {0} 注册成功.", user.Name);
-					args.Player.SendSuccessMessage("你的密码是 {0}.", echoPassword);
-					TShock.Users.AddUser(user);
-					TShock.Log.ConsoleInfo("玩家 {0} 注册了新账户: {1}.", args.Player.Name, user.Name);
+					args.Player.SendSuccessMessage("账户{0}注册成功。", account.Name);
+					args.Player.SendSuccessMessage("以下是您的密码：{0}", echoPassword);
+					TShock.UserAccounts.AddUserAccount(account);
+					TShock.Log.ConsoleInfo("{0}注册了账户{1}。", args.Player.Name, account.Name);
 				}
 				else
 				{
-					args.Player.SendErrorMessage("抱歉, 账号 " + user.Name + " 已经被其他人注册了.");
-					args.Player.SendErrorMessage("请用其他的名称注册.");
-					TShock.Log.ConsoleInfo(args.Player.Name + " 注册已有账户失败: " + user.Name);
+					args.Player.SendErrorMessage(account.Name + "已被注册；请更换账户名后注册。");
+					TShock.Log.ConsoleInfo(args.Player.Name + "注册已有账户失败。（" + account.Name + "）");
 				}
 			}
-			catch (UserManagerException ex)
+			catch (UserAccountManagerException ex)
 			{
 				args.Player.SendErrorMessage("对不起, 出现了异常: " + ex.Message + ".");
 				TShock.Log.ConsoleError("RegisterUser 出现异常:: " + ex);
@@ -1019,57 +1036,57 @@ namespace TShockAPI
 			// Add requires a username, password, and a group specified.
 			if (subcmd == "add" && args.Parameters.Count == 4)
 			{
-				var user = new User();
+				var account = new UserAccount();
 
-				user.Name = args.Parameters[1];
+				account.Name = args.Parameters[1];
 				try
 				{
-					user.CreateBCryptHash(args.Parameters[2]);
+					account.CreateBCryptHash(args.Parameters[2]);
 				}
 				catch (ArgumentOutOfRangeException)
 				{
 					args.Player.SendErrorMessage("密码位数不能少于 " + TShock.Config.MinimumPasswordLength + " 个字符.");
 					return;
 				}
-				user.Group = args.Parameters[3];
+				account.Group = args.Parameters[3];
 
 				try
 				{
-					TShock.Users.AddUser(user);
-					args.Player.SendSuccessMessage("添加账户 " + user.Name + " 至组 " + user.Group + " 完毕!");
-					TShock.Log.ConsoleInfo(args.Player.Name + " 添加了账户 " + user.Name + " 至组 " + user.Group);
+					TShock.UserAccounts.AddUserAccount(account);
+					args.Player.SendSuccessMessage("添加账户 " + account.Name + " 至组 " + account.Group + " 完毕!");
+					TShock.Log.ConsoleInfo(args.Player.Name + " 添加了账户 " + account.Name + " 至组 " + account.Group);
 				}
 				catch (GroupNotExistsException)
 				{
-					args.Player.SendErrorMessage("组 " + user.Group + " 不存在!");
+					args.Player.SendErrorMessage("组 " + account.Group + " 不存在!");
 				}
-				catch (UserExistsException)
+				catch (UserAccountExistsException)
 				{
-					args.Player.SendErrorMessage("账户 " + user.Name + " 已存在!");
+					args.Player.SendErrorMessage("账户 " + account.Name + " 已存在!");
 				}
-				catch (UserManagerException e)
+				catch (UserAccountManagerException e)
 				{
-					args.Player.SendErrorMessage("用户 " + user.Name + " 添加失败. 详细信息在控制台窗口.");
+					args.Player.SendErrorMessage("用户 " + account.Name + " 添加失败. 详细信息在控制台窗口.");
 					TShock.Log.ConsoleError(e.ToString());
 				}
 			}
 			// User deletion requires a username
 			else if (subcmd == "del" && args.Parameters.Count == 2)
 			{
-				var user = new User();
-				user.Name = args.Parameters[1];
+				var account = new UserAccount();
+				account.Name = args.Parameters[1];
 
 				try
 				{
-					TShock.Users.RemoveUser(user);
+					TShock.UserAccounts.RemoveUserAccount(account);
 					args.Player.SendSuccessMessage("成功移除账户.");
 					TShock.Log.ConsoleInfo(args.Player.Name + " 删除了账户: " + args.Parameters[1] + ".");
 				}
-				catch (UserNotExistException)
+				catch (UserAccountNotExistException)
 				{
-					args.Player.SendErrorMessage("账户 " + user.Name + " 不存在!");
+					args.Player.SendErrorMessage("账户 " + account.Name + " 不存在!");
 				}
-				catch (UserManagerException ex)
+				catch (UserAccountManagerException ex)
 				{
 					args.Player.SendErrorMessage(ex.Message);
 					TShock.Log.ConsoleError(ex.ToString());
@@ -1079,22 +1096,22 @@ namespace TShockAPI
 			// Password changing requires a username, and a new password to set
 			else if (subcmd == "password" && args.Parameters.Count == 3)
 			{
-				var user = new User();
-				user.Name = args.Parameters[1];
+				var account = new UserAccount();
+				account.Name = args.Parameters[1];
 
 				try
 				{
-					TShock.Users.SetUserPassword(user, args.Parameters[2]);
-					TShock.Log.ConsoleInfo(args.Player.Name + " 更改了账户 " + user.Name + "的密码");
-					args.Player.SendSuccessMessage("成功更改账户 " + user.Name + " 的密码.");
+					TShock.UserAccounts.SetUserAccountPassword(account, args.Parameters[2]);
+					TShock.Log.ConsoleInfo(args.Player.Name + " 更改了账户 " + account.Name + "的密码");
+					args.Player.SendSuccessMessage("成功更改账户 " + account.Name + " 的密码.");
 				}
-				catch (UserNotExistException)
+				catch (UserAccountNotExistException)
 				{
-					args.Player.SendErrorMessage("账户 " + user.Name + " 不存在!");
+					args.Player.SendErrorMessage("账户 " + account.Name + " 不存在!");
 				}
-				catch (UserManagerException e)
+				catch (UserAccountManagerException e)
 				{
-					args.Player.SendErrorMessage("账户 " + user.Name + " 更改密码失败! 请检查控制台异常消息.");
+					args.Player.SendErrorMessage("账户 " + account.Name + " 更改密码失败! 请检查控制台异常消息.");
 					TShock.Log.ConsoleError(e.ToString());
 				}
 				catch (ArgumentOutOfRangeException)
@@ -1105,26 +1122,26 @@ namespace TShockAPI
 			// Group changing requires a username or IP address, and a new group to set
 			else if (subcmd == "group" && args.Parameters.Count == 3)
 			{
-				var user = new User();
-				user.Name = args.Parameters[1];
+				var account = new UserAccount();
+				account.Name = args.Parameters[1];
 
 				try
 				{
-					TShock.Users.SetUserGroup(user, args.Parameters[2]);
-					TShock.Log.ConsoleInfo(args.Player.Name + " 更改了用户 " + user.Name + " 的用户组至 " + args.Parameters[2] + ".");
-					args.Player.SendSuccessMessage("用户 " + user.Name + " 的用户组被调整至 " + args.Parameters[2] + "!");
+					TShock.UserAccounts.SetUserGroup(account, args.Parameters[2]);
+					TShock.Log.ConsoleInfo(args.Player.Name + " 更改了账户 " + account.Name + " 的组至 " + args.Parameters[2] + ".");
+					args.Player.SendSuccessMessage(account.Name + "的组被调整至" + args.Parameters[2] + "。");
 				}
 				catch (GroupNotExistsException)
 				{
-					args.Player.SendErrorMessage("不存在该用户组!");
+					args.Player.SendErrorMessage("组不存在!");
 				}
-				catch (UserNotExistException)
+				catch (UserAccountNotExistException)
 				{
-					args.Player.SendErrorMessage("用户 " + user.Name + " 不存在!");
+					args.Player.SendErrorMessage("账户" + account.Name + "不存在!");
 				}
-				catch (UserManagerException e)
+				catch (UserAccountManagerException e)
 				{
-					args.Player.SendErrorMessage("用户 " + user.Name + " 无法被修改. 请检查控制台的异常消息!");
+					args.Player.SendErrorMessage("账户" + account.Name + "修改失败；请检查控制台的异常消息！");
 					TShock.Log.ConsoleError(e.ToString());
 				}
 			}
@@ -1184,8 +1201,8 @@ namespace TShockAPI
 			{
 				var message = new StringBuilder();
 				message.Append("IP地址: ").Append(players[0].IP);
-				if (players[0].User != null && players[0].IsLoggedIn)
-					message.Append(" | 用户名: ").Append(players[0].User.Name).Append(" | 用户组: ").Append(players[0].Group.Name);
+				if (players[0].Account != null && players[0].IsLoggedIn)
+					message.Append(" | 用户名: ").Append(players[0].Account.Name).Append(" | 用户组: ").Append(players[0].Group.Name);
 				args.Player.SendSuccessMessage(message.ToString());
 			}
 		}
@@ -1201,28 +1218,28 @@ namespace TShockAPI
 			string username = String.Join(" ", args.Parameters);
 			if (!string.IsNullOrWhiteSpace(username))
 			{
-				var user = TShock.Users.GetUserByName(username);
-				if (user != null)
+				var account = TShock.UserAccounts.GetUserAccountByName(username);
+				if (account != null)
 				{
 					DateTime LastSeen;
 					string Timezone = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Hours.ToString("+#;-#");
 
-					if (DateTime.TryParse(user.LastAccessed, out LastSeen))
+					if (DateTime.TryParse(account.LastAccessed, out LastSeen))
 					{
-						LastSeen = DateTime.Parse(user.LastAccessed).ToLocalTime();
-						args.Player.SendSuccessMessage("{0} 的上次登录时间为 {1} {2} UTC{3}.", user.Name, LastSeen.ToShortDateString(),
+						LastSeen = DateTime.Parse(account.LastAccessed).ToLocalTime();
+						args.Player.SendSuccessMessage("{0}最后一次登录时间是{1} {2} UTC{3}。", account.Name, LastSeen.ToShortDateString(),
 							LastSeen.ToShortTimeString(), Timezone);
 					}
 
 					if (args.Player.Group.HasPermission(Permissions.advaccountinfo))
 					{
-						List<string> KnownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps?.ToString() ?? string.Empty);
+						List<string> KnownIps = JsonConvert.DeserializeObject<List<string>>(account.KnownIps?.ToString() ?? string.Empty);
 						string ip = KnownIps?[KnownIps.Count - 1] ?? "N/A";
-						DateTime Registered = DateTime.Parse(user.Registered).ToLocalTime();
+						DateTime Registered = DateTime.Parse(account.Registered).ToLocalTime();
 
-						args.Player.SendSuccessMessage("{0} 的用户组是 {1}.", user.Name, user.Group);
-						args.Player.SendSuccessMessage("{0} 的上次登录IP地址是 {1}.", user.Name, ip);
-						args.Player.SendSuccessMessage("{0} 的注册时间是 {1} {2} UTC{3}.", user.Name, Registered.ToShortDateString(), Registered.ToShortTimeString(), Timezone);
+						args.Player.SendSuccessMessage("{0}的组是{1}。", account.Name, account.Group);
+						args.Player.SendSuccessMessage("{0}的上次登录IP地址是{1}。", account.Name, ip);
+						args.Player.SendSuccessMessage("{0}的注册时间是{1} {2} UTC{3}。", account.Name, Registered.ToShortDateString(), Registered.ToShortTimeString(), Timezone);
 					}
 				}
 				else
@@ -1272,204 +1289,197 @@ namespace TShockAPI
 			switch (subcmd)
 			{
 				case "add":
-                case "禁":
-					#region Add ban
+					#region Add Ban
 					{
 						if (args.Parameters.Count < 2)
 						{
-							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban add <玩家名> [原因]", Specifier);
+							args.Player.SendErrorMessage("命令无效。格式：{0}ban add <玩家> [时间] [原因]", Specifier);
+							args.Player.SendErrorMessage("示例：{0}ban add 庄生华年 10d 不当言行", Specifier);
+							args.Player.SendErrorMessage("示例：{0}ban add Shank", Specifier);
+							args.Player.SendErrorMessage("使用数字0（零）作为永久封禁的时间。");
 							return;
 						}
 
+						// Used only to notify if a ban was successful and who the ban was about
+						bool success = false;
+						string targetGeneralizedName = "";
+
+						// Effective ban target assignment
 						List<TSPlayer> players = TShock.Utils.FindPlayer(args.Parameters[1]);
-						string reason = args.Parameters.Count > 2 ? String.Join(" ", args.Parameters.Skip(2)) : "不当行为.";
-						if (players.Count == 0)
+						UserAccount offlineUserAccount = TShock.UserAccounts.GetUserAccountByName(args.Parameters[1]);
+
+						// Storage variable to determine if the command executor is the server console
+						// If it is, we assume they have full control and let them override permission checks
+						bool callerIsServerConsole = false;
+						
+						if (args.Player is TSServerPlayer)
 						{
-							var user = TShock.Users.GetUserByName(args.Parameters[1]);
-							if (user != null)
-							{
-								bool force = !args.Player.RealPlayer;
-
-								if (user.Name == args.Player.Name && !force)
-								{
-									args.Player.SendErrorMessage("你无法封禁你自己!");
-									return;
-								}
-
-								if (TShock.Groups.GetGroupByName(user.Group).HasPermission(Permissions.immunetoban) && !force)
-									args.Player.SendErrorMessage("你无法封禁玩家 {0}!", user.Name);
-								else
-								{
-									if (user.KnownIps == null)
-									{
-										args.Player.SendErrorMessage("无法封禁玩家 {0} 因为缺少历史IP信息.", user.Name);
-										return;
-									}
-									var knownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps);
-									TShock.Bans.AddBan(knownIps.Last(), user.Name, user.UUID, reason, false, args.Player.User.Name);
-									if (String.IsNullOrWhiteSpace(args.Player.User.Name))
-									{
-										if (args.Silent)
-										{
-											args.Player.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制" : "", reason);
-										} 
-										else 
-										{
-											TSPlayer.All.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制" : "", reason);
-										}
-									}
-									else
-									{
-										if (args.Silent)
-										{
-											args.Player.SendInfoMessage("{1} 被{0}封禁了, 原因: {2}.", force ? "强制" : "", user.Name, reason);
-										}
-										else
-										{
-											TSPlayer.All.SendInfoMessage("{0} {1}封禁了 {2}. 原因: {3}.", args.Player.Name, force ? "强制" : "",user.Name,reason);
-                                        }
-									}
-								}
-							}
-							else
-								args.Player.SendErrorMessage("无效玩家/玩家账户!");
+							callerIsServerConsole = true;
 						}
-						else if (players.Count > 1)
+
+						// The ban reason the ban is going to have
+						string banReason = "未知";
+
+						// The default ban length
+						// 0 is permanent ban, otherwise temp ban
+						int banLengthInSeconds = 0;
+
+						// Figure out if param 2 is a time or 0 or garbage
+						if (args.Parameters.Count >= 3)
+						{
+							bool parsedOkay = false;
+							if (!(args.Parameters[2] == "0"))
+							{
+								parsedOkay = TShock.Utils.TryParseTime(args.Parameters[2], out banLengthInSeconds);
+							} else {
+								parsedOkay = true;
+							}
+
+							if (!parsedOkay)
+							{
+								args.Player.SendErrorMessage("时间格式无效。示例：10d+5h+3m-2s.");
+								args.Player.SendErrorMessage("使用数字0（零）作为永久封禁的时间。");
+								return;
+							}
+						}
+
+						// If a reason exists, use the given reason.
+						if (args.Parameters.Count > 3)
+						{
+							banReason = String.Join(" ", args.Parameters.Skip(3));
+						}
+
+						// Bad case: Players contains more than 1 person so we can't ban them
+						if (players.Count > 1)
+						{
 							TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
-						else
-						{
-							if (!TShock.Utils.Ban(players[0], reason, !args.Player.RealPlayer, args.Player.User.Name))
-								args.Player.SendErrorMessage("你无法封禁玩家 {0}!", players[0].Name);
-						}
-					}
-					#endregion
-					return;
-				case "addip":
-                case "禁ip":
-					#region Add IP ban
-					{
-						if (args.Parameters.Count < 2)
-						{
-							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban addip <ip> [原因]", Specifier);
 							return;
 						}
 
-						string ip = args.Parameters[1];
-						string reason = args.Parameters.Count > 2
-											? String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 2))
-											: "手动添加IP地址封禁.";
-						TShock.Bans.AddBan(ip, "", "", reason, false, args.Player.User.Name);
-						args.Player.SendSuccessMessage("成功封禁 IP {0}.", ip);
-					}
-					#endregion
-					return;
-				case "addtemp":
-                case "临时禁":
-                    #region Add temp ban
-                    {
-						if (args.Parameters.Count < 3)
+						// Good case: Online ban for matching character.
+						if (players.Count == 1)
 						{
-							args.Player.SendErrorMessage("语法无效! 正确语法: {0}ban addtemp <玩家名> <时间> [原因]", Specifier);
-							return;
-						}
+							TSPlayer target = players[0];
 
-						int time;
-						if (!TShock.Utils.TryParseTime(args.Parameters[2], out time))
-						{
-							args.Player.SendErrorMessage("时间格式无效! 正确格式: _d_h_m_s(至少一个, 如5d).");
-							args.Player.SendErrorMessage("有效的格式: 1d \\ 10h-30m+2m, 无效: 2 \\ 5.");
-							return;
-						}
-
-						string reason = args.Parameters.Count > 3
-											? String.Join(" ", args.Parameters.Skip(3))
-											: "不当行为.";
-
-						List<TSPlayer> players = TShock.Utils.FindPlayer(args.Parameters[1]);
-						if (players.Count == 0)
-						{
-							var user = TShock.Users.GetUserByName(args.Parameters[1]);
-							if (user != null)
+							if (target.HasPermission(Permissions.immunetoban) && !callerIsServerConsole)
 							{
-								bool force = !args.Player.RealPlayer;
-								if (TShock.Groups.GetGroupByName(user.Group).HasPermission(Permissions.immunetoban) && !force)
-									args.Player.SendErrorMessage("你无法封禁玩家 {0}!", user.Name);
-								else
-								{
-									var knownIps = JsonConvert.DeserializeObject<List<string>>(user.KnownIps);
-									TShock.Bans.AddBan(knownIps.Last(), user.Name, user.UUID, reason, false, args.Player.User.Name, DateTime.UtcNow.AddSeconds(time).ToString("s"));
-									if (String.IsNullOrWhiteSpace(args.Player.User.Name))
-									{
-										if (args.Silent)
-										{
-                                            args.Player.SendSuccessMessage("{0} 被{1}封禁. 原因: {2}.",user.Name,force ? "强制" : "",reason);
-                                        }
-										else
-										{
-											TSPlayer.All.SendInfoMessage("{0} 被{1}封禁. 原因: {2}.", user.Name, force ? "强制 " : "", reason);
-										}
-									}
-									else
-									{
-									    if (args.Silent) 
-                                        {
-                                            args.Player.SendSuccessMessage("{0} 被{1}封禁. 原因: {2}.", players[0].Name,force ? "强制" : "", reason);
-									    }
-									    else 
-                                        {
-									        TSPlayer.All.SendSuccessMessage("{0} {1}封禁了 {2}. 原因: {3}.", args.Player.Name,force ? "强制" : "", players[0].Name,
-									            reason);
-									    }
-									}
-								}
-							}
-							else
-							{
-								args.Player.SendErrorMessage("无效玩家/玩家账户!");
-							}
-						}
-						else if (players.Count > 1)
-							TShock.Utils.SendMultipleMatchError(args.Player, players.Select(p => p.Name));
-						else
-						{
-							if (args.Player.RealPlayer && players[0].HasPermission(Permissions.immunetoban))
-							{
-								args.Player.SendErrorMessage("你无法封禁玩家 {0}!", players[0].Name);
+								args.Player.SendErrorMessage("目标玩家{0}无法被封禁。", target.Name);
 								return;
 							}
 
-							if (TShock.Bans.AddBan(players[0].IP, players[0].Name, players[0].UUID, reason,
-								false, args.Player.Name, DateTime.UtcNow.AddSeconds(time).ToString("s")))
+							targetGeneralizedName = target.Name;
+							success = TShock.Bans.AddBan2(target.IP, target.Name, target.UUID, target.Account.Name, banReason, false, args.Player.Account.Name,
+								banLengthInSeconds == 0 ? "" : DateTime.UtcNow.AddSeconds(banLengthInSeconds).ToString("s"));
+
+							// Since this is an online ban, we need to dc the player and tell them now.
+							if (success)
 							{
-								players[0].Disconnect(String.Format("你被封禁: {0}", reason));
-								string verb = args.Player.RealPlayer ? "强制" : "";
-								if (args.Player.RealPlayer)
-									if (args.Silent)
-									{
-										args.Player.SendSuccessMessage("{0}封禁 {1} 完毕. 原因: {2}", verb, players[0].Name, reason);
-									}
-									else
-									{
-										TSPlayer.All.SendSuccessMessage("{0} {1}封禁了 {2}. 原因: {3}", args.Player.Name, verb, players[0].Name, reason);
-									}
+								if (banLengthInSeconds == 0)
+								{
+									target.Disconnect(String.Format("您已被永久封禁：{0}", banReason));
+								}
 								else
 								{
-									if (args.Silent)
-									{
-										args.Player.SendSuccessMessage("{0}封禁 {1} 完毕. 原因: {2}", verb, players[0].Name, reason);
-									}
-									else
-									{
-										TSPlayer.All.SendSuccessMessage("{0} 被{1}封禁. 原因: {2}.", players[0].Name, verb, reason);
-									}
+									target.Disconnect(String.Format("Banned for {0} seconds for {1}", banLengthInSeconds, banReason));
 								}
 							}
-							else
-								args.Player.SendErrorMessage("封禁玩家 {0} 失败, 请检查日志.", players[0].Name);
 						}
+
+						// Case: Players & user are invalid, could be IP?
+						// Note: Order matters. If this method is above the online player check,
+						// This enables you to ban an IP even if the player exists in the database as a player.
+						// You'll get two bans for the price of one, in theory, because both IP and user named IP will be banned.
+						// ??? edge cases are weird, but this is going to happen
+						// The only way around this is to either segregate off the IP code or do something else.
+						if (players.Count == 0)
+						{
+							// If the target is a valid IP...
+							string pattern = @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+							Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
+							if (r.IsMatch(args.Parameters[1])) {
+								targetGeneralizedName = "IP: " + args.Parameters[1];
+								success = TShock.Bans.AddBan2(args.Parameters[1], "", "", "", banReason,
+									false, args.Player.Account.Name, banLengthInSeconds == 0 ? "" : DateTime.UtcNow.AddSeconds(banLengthInSeconds).ToString("s"));
+								if (success && offlineUserAccount != null)
+								{
+									args.Player.SendSuccessMessage("Target IP {0} was banned successfully.", targetGeneralizedName);
+									args.Player.SendErrorMessage("Note: An account named with this IP address also exists.");
+									args.Player.SendErrorMessage("Note: It will also be banned.");
+								}
+							} else {
+								// Apparently there is no way to not IP ban someone
+								// This means that where we would normally just ban a "character name" here
+								// We can't because it requires some IP as a primary key.
+								if (offlineUserAccount == null)
+								{
+									args.Player.SendErrorMessage("Unable to ban target {0}.", args.Parameters[1]);
+									args.Player.SendErrorMessage("Target is not a valid IP address, a valid online player, or a known offline user.");
+									return;
+								}
+							}
+
+						}
+
+						// Case: Offline ban
+						if (players.Count == 0 && offlineUserAccount != null)
+						{
+							// Catch: we don't know an offline player's last login character name
+							// This means that we're banning their *user name* on the assumption that
+							// user name == character name
+							// (which may not be true)
+							// This needs to be fixed in a future implementation.
+							targetGeneralizedName = offlineUserAccount.Name;
+
+							if (TShock.Groups.GetGroupByName(offlineUserAccount.Group).HasPermission(Permissions.immunetoban) && 
+								!callerIsServerConsole)
+							{
+								args.Player.SendErrorMessage("目标玩家{0}无法被封禁。", targetGeneralizedName);
+								return;
+							}
+
+							if (offlineUserAccount.KnownIps == null)
+							{
+								args.Player.SendErrorMessage("目标玩家没有已知IP地址，无法被封禁。", targetGeneralizedName);
+								return;
+							}
+
+							string lastIP = JsonConvert.DeserializeObject<List<string>>(offlineUserAccount.KnownIps).Last();
+
+							success = 
+								TShock.Bans.AddBan2(lastIP,
+									"", offlineUserAccount.UUID, offlineUserAccount.Name, banReason, false, args.Player.Account.Name,
+									banLengthInSeconds == 0 ? "" : DateTime.UtcNow.AddSeconds(banLengthInSeconds).ToString("s"));
+						}
+
+						if (success)
+						{
+							args.Player.SendSuccessMessage("{0}已被封禁。", targetGeneralizedName);
+							args.Player.SendInfoMessage("时长：{0}", banLengthInSeconds == 0 ? "永久。" : banLengthInSeconds + "秒。");
+							args.Player.SendInfoMessage("原因：{0}", banReason);
+							if (!args.Silent)
+							{
+								if (banLengthInSeconds == 0)
+								{
+									TSPlayer.All.SendErrorMessage("{0} was permanently banned by {1} for: {2}",
+										targetGeneralizedName, args.Player.Account.Name, banReason);
+								}
+								else
+								{
+									TSPlayer.All.SendErrorMessage("{0} was temp banned for {1} seconds by {2} for: {3}",
+										targetGeneralizedName, banLengthInSeconds, args.Player.Account.Name, banReason);
+								}
+							}
+						}
+						else
+						{
+							args.Player.SendErrorMessage("{0}因数据库或其他系统错误没有被封禁。", targetGeneralizedName);
+							args.Player.SendErrorMessage("如果该玩家在线，他/她并没有被驱逐。");
+							args.Player.SendErrorMessage("检查系统日志以获取更多信息。");
+						}
+
+						return;
 					}
 					#endregion
-					return;
 				case "del":
                 case "解禁":
                     #region Delete ban
@@ -1528,15 +1538,13 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"禁(add) <玩家名> [原因] - 封禁在线用户或离线账户.",
-							"禁IP(addip) <ip> [原因] - 封禁指定IP.",
-							"临时禁(addtemp) <玩家名> <时间> [原因] - 临时封禁某玩家.",
-							"解禁(del) <玩家名> - 解除对玩家的封禁.",
-							"解禁IP(delip) <ip> - 解除对特定IP的封禁.",
-							"列表(list) [页码] - 显示所有被封禁的玩家.",
-							"IP列表(listip) [页码] - 显示所有被封禁的IP."
-                        };
-						
+							"add <玩家> <时长> [原因] - 封禁玩家或对应的账户。",
+							"del <玩家> - 解除对某玩家的封禁。",
+							"delip <ip> - 解除对某IP的封禁。",
+							"list [页码] - 列出所有封禁玩家。",
+							"listip [页码] - 列出所有封禁IP。"
+						};
+
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
 							new PaginationTools.Settings
 							{
@@ -1630,9 +1638,9 @@ namespace TShockAPI
 				args.Player.SendSuccessMessage("云存档保存完毕.");
 				foreach (TSPlayer player in TShock.Players)
 				{
-					if (player != null && player.IsLoggedIn && !player.IgnoreActionsForClearingTrashCan)
+					if (player != null && player.IsLoggedIn && !player.IsDisabledPendingTrashRemoval)
 					{
-						TShock.CharacterDB.InsertPlayerData(player);
+						TShock.CharacterDB.InsertPlayerData(player, true);
 					}
 				}
 			}
@@ -1675,7 +1683,7 @@ namespace TShockAPI
 				args.Player.SendErrorMessage("玩家 {0} 需要先执行一次 /login 尝试.", matchedPlayer.Name);
 				return;
 			}
-			if (matchedPlayer.IgnoreActionsForClearingTrashCan)
+			if (matchedPlayer.IsDisabledPendingTrashRemoval)
 			{
 				args.Player.SendErrorMessage("玩家 {0} 首先需要重新连接服务器.", matchedPlayer.Name);
 				return;
@@ -1780,7 +1788,7 @@ namespace TShockAPI
 
 			if (ply.Count > 1)
 			{
-				TShock.Utils.SendMultipleMatchError(args.Player, ply.Select(p => p.User.Name));
+				TShock.Utils.SendMultipleMatchError(args.Player, ply.Select(p => p.Account.Name));
 			}
 
 			if (!TShock.Groups.GroupExists(args.Parameters[1]))
@@ -1822,9 +1830,47 @@ namespace TShockAPI
 			}
 		}
 
+		private static void SubstituteUser(CommandArgs args)
+		{
+
+			if (args.Player.tempGroup != null)
+			{
+				args.Player.tempGroup = null;
+				args.Player.tempGroupTimer.Stop();
+				args.Player.SendSuccessMessage("Your previous permission set has been restored.");
+				return;
+			}
+			else
+			{
+				args.Player.tempGroup = new SuperAdminGroup();
+				args.Player.tempGroupTimer = new System.Timers.Timer(600 * 1000);
+				args.Player.tempGroupTimer.Elapsed += args.Player.TempGroupTimerElapsed;
+				args.Player.tempGroupTimer.Start();
+				args.Player.SendSuccessMessage("Your account has been elevated to Super Admin for 10 minutes.");
+				return;
+			}
+		}
+
 		#endregion Player Management Commands
 
 		#region Server Maintenence Commands
+
+		// Executes a command as a superuser if you have sudo rights.
+		private static void SubstituteUserDo(CommandArgs args)
+		{
+			if (args.Parameters.Count == 0)
+			{
+				args.Player.SendErrorMessage("Usage: /sudo [command].");
+				args.Player.SendErrorMessage("Example: /sudo /ban add Shank 2d Hacking.");
+				return;
+			}
+
+			string replacementCommand = String.Join(" ", args.Parameters);
+			args.Player.tempGroup = new SuperAdminGroup();
+			HandleCommand(args.Player, replacementCommand);
+			args.Player.tempGroup = null;
+			return;
+		}
 
 		private static void Broadcast(CommandArgs args)
 		{
@@ -1843,7 +1889,7 @@ namespace TShockAPI
 			{
 				foreach (TSPlayer player in TShock.Players)
 				{
-					if (player != null && player.IsLoggedIn && !player.IgnoreActionsForClearingTrashCan)
+					if (player != null && player.IsLoggedIn && !player.IsDisabledPendingTrashRemoval)
 					{
 						player.SaveServerCharacter();
 					}
@@ -1852,25 +1898,6 @@ namespace TShockAPI
 
 			string reason = ((args.Parameters.Count > 0) ? "关服: " + String.Join(" ", args.Parameters) : "服务器已关闭!");
 			TShock.Utils.StopServer(true, reason);
-		}
-
-		private static void Restart(CommandArgs args)
-		{
-			if (TShock.NoRestart)
-			{
-				args.Player.SendErrorMessage("该指令被禁用.");
-				return;
-			}
-
-			if (ServerApi.RunningMono)
-			{
-				TShock.Log.ConsoleInfo("该指令无法在Mono环境下使用.");
-			}
-			else
-			{
-				string reason = ((args.Parameters.Count > 0) ? "关服: " + String.Join(" ", args.Parameters) : "服务器已关闭!");
-				TShock.Utils.RestartServer(true, reason);
-			}
 		}
 
 		private static void OffNoSave(CommandArgs args)
@@ -2009,19 +2036,19 @@ namespace TShockAPI
 					case "goblin":
 					case "goblins":
 						TSPlayer.All.SendInfoMessage("{0} 开始了哥布林入侵.", args.Player.Name);
-						TShock.StartInvasion(1);
+						TShock.Utils.StartInvasion(1);
 						break;
 
 					case "snowman":
 					case "snowmen":
 						TSPlayer.All.SendInfoMessage("{0} 开始了雪人军团入侵.", args.Player.Name);
-						TShock.StartInvasion(2);
+						TShock.Utils.StartInvasion(2);
 						break;
 
 					case "pirate":
 					case "pirates":
 						TSPlayer.All.SendInfoMessage("{0} 开始了海盗入侵.", args.Player.Name);
-						TShock.StartInvasion(3);
+						TShock.Utils.StartInvasion(3);
 						break;
 
 					case "pumpkin":
@@ -2062,8 +2089,8 @@ namespace TShockAPI
 
 					case "martian":
 					case "martians":
-						TSPlayer.All.SendInfoMessage("{0} 开始了火星入侵.", args.Player.Name);
-						TShock.StartInvasion(4);
+						TSPlayer.All.SendInfoMessage("{0} has started a martian invasion.", args.Player.Name);
+						TShock.Utils.StartInvasion(4);
 						break;
 				}
 			}
@@ -2879,16 +2906,17 @@ namespace TShockAPI
 
 						var lines = new List<string>
 						{
-							"add <名称> <权限...> - 添加新用户组.",
-							"addperm <组名> <权限...> - 给指定组添加权限.",
-							"color <组名> <rrr,ggg,bbb> - 改变分组的对话颜色.",
-							"del <组名> - 删除分组.",
-							"delperm <组名> <权限...> - 移除指定组的权限.",
-							"list [页码] - 显示当前组列表.",
-							"listperm <组名> [页码] - 显示指定组的所有权限.",
-							"parent <组名> <父组> - 改变指定组的父组.",
-							"prefix <组名> <前缀> - 改变指定组的前缀.",
-                            "suffix <组名> <后缀> - 改变指定组的后缀."
+							"add <名称> <权限...> - 添加新用户组。",
+							"addperm <组名> <权限...> - 给指定组添加权限。",
+							"color <组名> <rrr,ggg,bbb> - 改变分组的对话颜色。",
+							"rename <组名> <新组名> - 改变分组的名称。",
+							"del <组名> - 删除分组。",
+							"delperm <组名> <权限...> - 移除指定组的权限。",
+							"list [页码] - 显示当前组列表。",
+							"listperm <组名> [页码] - 显示指定组的所有权限。",
+							"parent <组名> <父组> - 改变指定组的父组。",
+							"prefix <组名> <前缀> - 改变指定组的前缀。",
+                            "suffix <组名> <后缀> - 改变指定组的后缀。"
                         };
 
 						PaginationTools.SendPage(args.Player, pageNumber, lines,
@@ -3087,6 +3115,29 @@ namespace TShockAPI
 						else
 						{
 							args.Player.SendSuccessMessage("组 {0} 的对话颜色为 {1} .", group.Name, group.ChatColor);
+						}
+					}
+					#endregion
+					return;
+				case "rename":
+					#region Rename group
+					{
+						if (args.Parameters.Count != 3)
+						{
+							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}group rename <group> <new name>", Specifier);
+							return;
+						}
+
+						string group = args.Parameters[1];
+						string newName = args.Parameters[2];
+						try
+						{
+							string response = TShock.Groups.RenameGroup(group, newName);
+							args.Player.SendSuccessMessage(response);
+						}
+						catch (GroupManagerException ex)
+						{
+							args.Player.SendErrorMessage(ex.Message);
 						}
 					}
 					#endregion
@@ -4136,7 +4187,7 @@ namespace TShockAPI
 								var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
 								var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
 
-								if (TShock.Regions.AddRegion(x, y, width, height, regionName, args.Player.User.Name,
+								if (TShock.Regions.AddRegion(x, y, width, height, regionName, args.Player.Account.Name,
 															 Main.worldID.ToString()))
 								{
 									args.Player.TempPoints[0] = Point.Zero;
@@ -4225,7 +4276,7 @@ namespace TShockAPI
 									regionName = regionName + " " + args.Parameters[i];
 								}
 							}
-							if (TShock.Users.GetUserByName(playerName) != null)
+							if (TShock.UserAccounts.GetUserAccountByName(playerName) != null)
 							{
 								if (TShock.Regions.AddNewUser(regionName, playerName))
 								{
@@ -4260,7 +4311,7 @@ namespace TShockAPI
 								regionName = regionName + " " + args.Parameters[i];
 							}
 						}
-						if (TShock.Users.GetUserByName(playerName) != null)
+						if (TShock.UserAccounts.GetUserAccountByName(playerName) != null)
 						{
 							if (TShock.Regions.RemoveUser(regionName, playerName))
 							{
@@ -4401,9 +4452,9 @@ namespace TShockAPI
 						{
 							IEnumerable<string> sharedUsersSelector = region.AllowedIDs.Select(userId =>
 							{
-								User user = TShock.Users.GetUserByID(userId);
-								if (user != null)
-									return user.Name;
+								UserAccount account = TShock.UserAccounts.GetUserAccountByID(userId);
+								if (account != null)
+									return account.Name;
 
 								return string.Concat("{ID: ", userId, "}");
 							});
@@ -4549,6 +4600,51 @@ namespace TShockAPI
 							args.Player.SendErrorMessage("语法无效! 正确语法: {0}region resize <区域> <u/d/l/r> <量>", Specifier);
 						break;
 					}
+				case "rename":
+					{
+						if (args.Parameters.Count != 3)
+						{
+							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: {0}region rename <region> <new name>", Specifier);
+							break;
+						}
+						else
+						{
+							string oldName = args.Parameters[1];
+							string newName = args.Parameters[2];
+
+							if (oldName == newName)
+							{
+								args.Player.SendErrorMessage("Error: both names are the same.");
+								break;
+							}
+
+							Region oldRegion = TShock.Regions.GetRegionByName(oldName);
+
+							if (oldRegion == null)
+							{
+								args.Player.SendErrorMessage("Invalid region \"{0}\".", oldName);
+								break;
+							}
+
+							Region newRegion = TShock.Regions.GetRegionByName(newName);
+
+							if (newRegion != null)
+							{
+								args.Player.SendErrorMessage("Region \"{0}\" already exists.", newName);
+								break;
+							}
+							
+							if(TShock.Regions.RenameRegion(oldName, newName))
+							{
+								args.Player.SendInfoMessage("Region renamed successfully!");
+							}
+							else
+							{
+								args.Player.SendErrorMessage("Failed to rename the region.");
+							}
+						}
+						break;
+					}
 				case "tp":
 					{
 						if (!args.Player.HasPermission(Permissions.tp))
@@ -4584,21 +4680,22 @@ namespace TShockAPI
 							return;
 
 						List<string> lines = new List<string> {
-                          "set <1/2> - 设置区域临时坐标点.",
-                          "clear - 清空设置过的临时坐标点.",
-                          "define <名称> - 使用指定的名称来定义新区域.",
-                          "delete <名称> - 删除给定的区域.",
-                          "name [-u][-z][-p] - 显示给定坐标点所在的区域.",
-                          "list - 显示所有区域.",
-                          "resize <区域> <u/d/l/r> <改变值> - 重新调整区域的大小.",
-                          "allow <user> <区域> - 允许玩家使用某区域.",
-                          "remove <user> <区域> - 移除某区域内有权限的玩家.",
-                          "allowg <组名> <区域> - 允许玩家使用某区域.",
-                          "removeg <组名> <区域> - 移除某区域内有权限的用户组.",
-                          "info <区域> [-d] - 显示给定区域的详细信息.",
-                          "protect <名称> <true/false> - 设定区域的物块保护状态.",
-                          "z <名称> <#> - 设置区域的优先值(Z值).",
-                        };
+							"set <1/2> - 设置区域临时坐标点.",
+							"clear - 清空设置过的临时坐标点.",
+							"define <名称> - 使用指定的名称来定义新区域.",
+							"delete <名称> - 删除给定的区域.",
+							"name [-u][-z][-p] - 显示给定坐标点所在的区域.",
+							"rename <region> <new name> - Renames the given region.",
+							"list - 显示所有区域.",
+							"resize <区域> <u/d/l/r> <改变值> - 重新调整区域的大小.",
+							"allow <user> <区域> - 允许玩家使用某区域.",
+							"remove <user> <区域> - 移除某区域内有权限的玩家.",
+							"allowg <组名> <区域> - 允许玩家使用某区域.",
+							"removeg <组名> <区域> - 移除某区域内有权限的用户组.",
+							"info <区域> [-d] - 显示给定区域的详细信息.",
+							"protect <名称> <true/false> - 设定区域的物块保护状态.",
+							"z <名称> <#> - 设置区域的优先值(Z值).",
+						};
 						if (args.Player.HasPermission(Permissions.tp))
 							lines.Add("tp <区域> - Teleports you to the given region's center.");
 
@@ -4652,10 +4749,10 @@ namespace TShockAPI
 				}
 
 				IEnumerable<string> cmdNames = from cmd in ChatCommands
-											   where cmd.CanRun(args.Player) && (cmd.Name != "auth" || TShock.AuthToken != 0)
-											   select cmd.Names.Count>1?$"{Specifier}{cmd.Names[1]}({cmd.Name})" :$"{Specifier}{cmd.Name}";
+											   where cmd.CanRun(args.Player) && (cmd.Name != "auth" || TShock.SetupToken != 0)
+											   select cmd.Names.Count > 1 ? $"{Specifier}{cmd.Names[1]}({cmd.Name})" : $"{Specifier}{cmd.Name}";
 
-                PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(cmdNames),
+				PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(cmdNames),
 					new PaginationTools.Settings
 					{
 						HeaderFormat = "指令列表 ({0}/{1}):",
@@ -4746,59 +4843,59 @@ namespace TShockAPI
 			);
 		}
 
-		private static void AuthToken(CommandArgs args)
+		private static void SetupToken(CommandArgs args)
 		{
-			if (TShock.AuthToken == 0)
+			if (TShock.SetupToken == 0)
 			{
 				if (args.Player.Group.Name == new SuperAdminGroup().Name)
-					args.Player.SendInfoMessage("验证系统已经被关闭.");
+					args.Player.SendInfoMessage("初次设定系统已经被关闭。");
 				else
 				{
-					args.Player.SendWarningMessage("验证系统被禁用; 本次尝试验证将被记录.");
-					TShock.Utils.ForceKick(args.Player, "验证系统被禁用.", true, true);
-					TShock.Log.Warn("{0} 在验证系统被禁用的情况下尝试执行 {1}auth", args.Player.IP, Specifier);
+					args.Player.SendWarningMessage("初次设定系统被禁用；本次破坏将被记录。"); // todo: better translation?
+					TShock.Utils.ForceKick(args.Player, "初次设定系统被禁用。", true, true);
+					TShock.Log.Warn("{0}尝试访问被禁用的初次设定系统。", args.Player.IP);
 					return;
 				}
 			}
 
 			// If the user account is already a superadmin (permanent), disable the system
-			if (args.Player.IsLoggedIn && args.Player.tempGroup == null && args.Player.Group.Name == new SuperAdminGroup().Name)
+			if (args.Player.IsLoggedIn && args.Player.tempGroup == null)
 			{
-				args.Player.SendSuccessMessage("你的新账户已经验证完毕, 同时 {0}auth 指令已被禁用.", Specifier);
+				args.Player.SendSuccessMessage("你的新账户已经验证完毕, 同时 {0}setup 系统已被禁用.", Specifier);
 				args.Player.SendSuccessMessage("你可使用 {0}user 指令管理用户权限.", Specifier);
-				args.Player.SendSuccessMessage("验证系统会持续关闭. (删除 auth.lck 文件也不会开启).");
-				args.Player.SendSuccessMessage("你可以在官方论坛分享你的服务器, 跟其他管理交流经验等.-- https://tshock.co/");
-				args.Player.SendSuccessMessage("若需汉化方面的帮助, 请访问在Github的项目.-- https://github.com/mistzzt/TShock");
-				args.Player.SendSuccessMessage("感谢使用 TShock ! 感谢对该汉化版本的支持.");
-				FileTools.CreateFile(Path.Combine(TShock.SavePath, "auth.lck"));
-				File.Delete(Path.Combine(TShock.SavePath, "authcode.txt"));
-				TShock.AuthToken = 0;
+				args.Player.SendSuccessMessage("初次设定系统会在超管用户存在时禁用。");
+				args.Player.SendSuccessMessage("你可以在官方论坛分享你的服务器, 跟其他管理交流经验等 https://tshock.co/");
+				args.Player.SendSuccessMessage("若需汉化方面的帮助, 请访问在Github的项目 https://github.com/mistzzt/TShock");
+				args.Player.SendSuccessMessage("感谢使用TShock及对中文本地化版本的支持！");
+				FileTools.CreateFile(Path.Combine(TShock.SavePath, "setup.lock"));
+				File.Delete(Path.Combine(TShock.SavePath, "setup-code.txt"));
+				TShock.SetupToken = 0;
 				return;
 			}
 
 			if (args.Parameters.Count == 0)
 			{
-				args.Player.SendErrorMessage("你必须提供验证码!");
+				args.Player.SendErrorMessage("缺少验证密码。");
 				return;
 			}
 
 			int givenCode;
-			if (!Int32.TryParse(args.Parameters[0], out givenCode) || givenCode != TShock.AuthToken)
+			if (!Int32.TryParse(args.Parameters[0], out givenCode) || givenCode != TShock.SetupToken)
 			{
-				args.Player.SendErrorMessage("管理验证密码不正确; 该次尝试将被记录.");
-				TShock.Log.Warn(args.Player.IP + " 尝试使用一个不正确的超管验证码.");
+				args.Player.SendErrorMessage("密码不正确；该次尝试将被记录。");
+				TShock.Log.Warn(args.Player.IP + "输入了不正确的初次设定验证码。");
 				return;
 			}
 
 			if (args.Player.Group.Name != "superadmin")
 				args.Player.tempGroup = new SuperAdminGroup();
 
-			args.Player.SendInfoMessage("你现在已经拥有临时超级管理权, 退出游戏后就会被系统收回.");
-			args.Player.SendInfoMessage("若想长期使用, 请按照下面步骤创建永久超级管理账户.");
-			args.Player.SendInfoMessage("执行 -- {0}user add <用户名> <密码> superadmin", Specifier);
-			args.Player.SendInfoMessage("结果 -- <用户名>(<密码>) 会被添加到超管组.");
-			args.Player.SendInfoMessage("完成上述操作后, 执行 -- {0}login <用户名(若和玩家名一致, 可省略)> <密码> --.", Specifier);
-			args.Player.SendInfoMessage("若明白, 请按照上述说的执行; 完成后, 输入 {0}auth", Specifier);
+			args.Player.SendInfoMessage("你现在已经拥有临时超级管理权，退出游戏后就会被系统收回。");
+			args.Player.SendInfoMessage("若想长期使用，请按照下面步骤创建永久超级管理账户。");
+			args.Player.SendInfoMessage("执行 - {0}user add <用户名> <密码> superadmin", Specifier);
+			args.Player.SendInfoMessage("结果 - <用户名> (<密码>) 会被添加到超管组.");
+			args.Player.SendInfoMessage("完成上述操作后，执行 - {0}login <用户名> <密码>", Specifier);
+			args.Player.SendInfoMessage("若明白，请按照上述说的执行；完成后，输入 {0}auth", Specifier);
 			return;
 		}
 
@@ -5075,6 +5172,14 @@ namespace TShockAPI
 
 			if (!didMatch)
 				args.Player.SendErrorMessage("未找到名或别称为 \"{0}\" 的指令.", givenCommandName);
+		}
+
+		private static void CreateDumps(CommandArgs args)
+		{
+			TShock.Utils.DumpPermissionMatrix("PermissionMatrix.txt");
+			TShock.Utils.Dump(false);
+			args.Player.SendSuccessMessage("Your reference dumps have been created in the server folder.");
+			return;
 		}
 
 		#endregion General Commands

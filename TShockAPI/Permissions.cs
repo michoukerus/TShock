@@ -125,8 +125,8 @@ namespace TShockAPI
 		[Description("User can reload the configurations file.")]
 		public static readonly string cfgreload = "tshock.cfg.reload";
 
-		[Description("User can download updates to plugins that are currently running.")]
-		public static readonly string updateplugins = "tshock.cfg.updateplugins";
+		[Description("User can create reference files of Terraria IDs and the permission matrix in the server folder.")]
+		public static readonly string createdumps = "tshock.cfg.createdumps";
 
 		// tshock.ignore nodes
 
@@ -220,6 +220,9 @@ namespace TShockAPI
 
 		[Description("Meant for super admins only.")]
 		public static readonly string user = "tshock.superadmin.user";
+
+		[Description("Allows a user to elevate to superadmin for 10 minutes.")]
+		public static readonly string su = "tshock.su";
 
 		// tshock.tp nodes
 

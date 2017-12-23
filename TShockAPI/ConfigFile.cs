@@ -97,14 +97,14 @@ namespace TShockAPI
 		public bool DisableBuild;
 
 		/// <summary>SuperAdminChatRGB - The chat color for the superadmin group.</summary>
-		[Description("#.#.# => R/G/B - superadmin组聊天颜色. 单项最大值: 255")]
+		[Description("#.#.# => R/G/B - superadmin组聊天颜色。单项最大值：255。")]
 		[JsonProperty("超级管理聊天颜色")]
-		public int[] SuperAdminChatRGB = { 255, 0, 0 };
+		public int[] SuperAdminChatRGB = { 255, 255, 255 };
 
 		/// <summary>SuperAdminChatPrefix - The superadmin chat prefix.</summary>
 		[Description("superadmin组前缀.")]
 		[JsonProperty("超级管理聊天前缀")]
-		public string SuperAdminChatPrefix = "(管理) ";
+		public string SuperAdminChatPrefix = "[管理] ";
 
 		/// <summary>SuperAdminChatSuffix - The superadmin chat suffix.</summary>
 		[Description("superadmin组后缀.")]

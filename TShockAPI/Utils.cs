@@ -90,7 +90,7 @@ namespace TShockAPI
 				{
 					if (includeIDs)
 					{
-						players.Add(String.Format("{0} (IX: {1}{2})", ply.Name, ply.Index, ply.User != null ? ", ID: " + ply.User.ID : ""));
+						players.Add(String.Format("{0} (IX: {1}{2})", ply.Name, ply.Index, ply.Account != null ? ", ID: " + ply.Account.ID : ""));
 					}
 					else
 					{
@@ -581,24 +581,6 @@ namespace TShockAPI
 		}
 
 		/// <summary>
-		/// Stops the server after kicking all players with a reason message, and optionally saving the world then attempts to
-		/// restart it.
-		/// </summary>
-		/// <param name="save">bool perform a world save before stop (default: true)</param>
-		/// <param name="reason">string reason (default: "服务器已关闭!")</param>
-		public void RestartServer(bool save = true, string reason = "服务器已关闭!")
-		{
-			if (Main.ServerSideCharacter)
-				foreach (TSPlayer player in TShock.Players)
-					if (player != null && player.IsLoggedIn && !player.IgnoreActionsForClearingTrashCan)
-						TShock.CharacterDB.InsertPlayerData(player);
-
-			StopServer(true, reason);
-			System.Diagnostics.Process.Start(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
-			Environment.Exit(0);
-		}
-
-		/// <summary>
 		/// Reloads all configuration settings, groups, regions and raises the reload event.
 		/// </summary>
 		public void Reload(TSPlayer player)
@@ -675,14 +657,14 @@ namespace TShockAPI
 				string ip = player.IP;
 				string uuid = player.UUID;
 				string playerName = player.Name;
-				TShock.Bans.AddBan(ip, playerName, uuid, reason, false, adminUserName);
-				player.Disconnect($"你被封禁. 原因: {reason}.");
-                string verb = force ? "强制" : "";
-                if(string.IsNullOrWhiteSpace(adminUserName))
-                    Broadcast($"{playerName} 被{verb}封禁. 原因: {reason}.",Color.Yellow);
-                else
-                    Broadcast($"{adminUserName} {verb}封禁了 {playerName}. 原因: {reason}.",Color.Yellow);
-                return true;
+				TShock.Bans.AddBan2(ip, playerName, uuid, "", reason, false, adminUserName);
+				player.Disconnect(string.Format("您已被封禁：{0}", reason));
+				string verb = force ? "强制" : "";
+				if (string.IsNullOrWhiteSpace(adminUserName))
+					TSPlayer.All.SendInfoMessage("{0}被{1}封禁：{2}", playerName, verb, reason);
+				else
+					TSPlayer.All.SendInfoMessage("{0}{1}封禁了{2}：{3}", adminUserName, verb, playerName, reason);
+				return true;
 			}
 			return false;
 		}
@@ -943,7 +925,7 @@ namespace TShockAPI
 		/// </summary>
 		/// <param name="identity">identity</param>
 		/// <param name="owner">owner</param>
-		/// <returns>projectile ID</returns>
+		/// <returns>projectile ID or -1 if not found</returns>
 		public int SearchProjectile(short identity, int owner)
 		{
 			for (int i = 0; i < Main.maxProjectiles; i++)
@@ -951,7 +933,7 @@ namespace TShockAPI
 				if (Main.projectile[i].identity == identity && Main.projectile[i].owner == owner)
 					return i;
 			}
-			return 1000;
+			return -1;
 		}
 
 		/// <summary>
@@ -1205,13 +1187,14 @@ namespace TShockAPI
 			ServerSideCharacters.ServerSideConfig.DumpDescriptions();
 			RestManager.DumpDescriptions();
 			DumpBuffs("BuffList.txt");
-			DumpItems("Items-1_0.txt", -48, 235);
+			DumpItems("Items-1_0.txt", 1, 235);
 			DumpItems("Items-1_1.txt", 235, 604);
 			DumpItems("Items-1_2.txt", 604, 2749);
 			DumpItems("Items-1_3.txt", 2749, Main.maxItemTypes);
 			DumpNPCs("NPCs.txt");
 			DumpProjectiles("Projectiles.txt");
 			DumpPrefixes("Prefixes.txt");
+
 			if (exit)
 			{
 				Environment.Exit(1);
@@ -1222,6 +1205,52 @@ namespace TShockAPI
 		{
 			for(int i = 0; i < Main.recipe.Length; i++)
 				Main.recipe[i] = new Recipe();
+		}
+		
+		/// <summary>Dumps a matrix of all permissions & all groups in Markdown table format.</summary>
+		/// <param name="path">The save destination.</param>
+		internal void DumpPermissionMatrix(string path)
+		{
+			StringBuilder output = new StringBuilder();
+			output.Append("|Permission|");
+
+			// Traverse to build group name list
+			foreach (Group g in TShock.Groups.groups)
+			{
+				output.Append(g.Name);
+				output.Append("|");
+			}
+
+			output.AppendLine();
+			output.Append("|-------|");
+
+			foreach (Group g in TShock.Groups.groups)
+			{
+				output.Append("-------|");
+			}
+			output.AppendLine();
+
+			foreach (var field in typeof(Permissions).GetFields().OrderBy(f => f.Name))
+			{
+				output.Append("|");
+				output.Append((string) field.GetValue(null));
+				output.Append("|");
+
+				foreach (Group g in TShock.Groups.groups)
+				{
+					if (g.HasPermission((string) field.GetValue(null)))
+					{
+						output.Append("✔|");
+					}
+					else
+					{
+						output.Append("|");
+					}
+				}
+				output.AppendLine();
+			}
+
+			File.WriteAllText(path, output.ToString());
 		}
 
 		public void DumpBuffs(string path)
@@ -1424,6 +1453,105 @@ namespace TShockAPI
 						if (j != rows - 1 || i != columns - 1)
 							buffer.AppendLine(",");
 					}
+				}
+			}
+		}
+
+		/// <summary>Starts an invasion on the server.</summary>
+		/// <param name="type">The invasion type id.</param>
+		internal void StartInvasion(int type)
+		{
+			int invasionSize = 0;
+
+			if (TShock.Config.InfiniteInvasion)
+			{
+				// Not really an infinite size
+				invasionSize = 20000000;
+			}
+			else
+			{
+				invasionSize = 100 + (TShock.Config.InvasionMultiplier * ActivePlayers());
+			}
+
+			// Order matters
+			// StartInvasion will reset the invasion size
+
+			Main.StartInvasion(type);
+
+			// Note: This is a workaround to previously providing the size as a parameter in StartInvasion
+			// Have to set start size to report progress correctly
+			Main.invasionSizeStart = invasionSize;
+			Main.invasionSize = invasionSize;
+		}
+
+		/// <summary>Verifies that each stack in each chest is valid and not over the max stack count.</summary>
+		internal void FixChestStacks()
+		{
+			if (TShock.Config.IgnoreChestStacksOnLoad)
+				return;
+
+			foreach (Chest chest in Main.chest)
+			{
+				if (chest != null)
+				{
+					foreach (Item item in chest.item)
+					{
+						if (item != null && item.stack > item.maxStack)
+							item.stack = item.maxStack;
+					}
+				}
+			}
+		}
+
+		/// <summary>Updates the console title with some pertinent information.</summary>
+		/// <param name="empty">If the server is empty; determines if we should use Utils.ActivePlayers() for player count or 0.</param>
+		internal void SetConsoleTitle(bool empty)
+		{
+			Console.Title = string.Format("{0}{1}/{2} on {3} @ {4}:{5} (TShock for Terraria v{6})",
+					!string.IsNullOrWhiteSpace(TShock.Config.ServerName) ? TShock.Config.ServerName + " - " : "",
+					empty ? 0 : ActivePlayers(),
+					TShock.Config.MaxSlots, Main.worldName, Netplay.ServerIP.ToString(), Netplay.ListenPort, TShock.VersionNum);
+		}
+
+		/// <summary>Determines the distance between two vectors.</summary>
+		/// <param name="value1">The first vector location.</param>
+		/// <param name="value2">The second vector location.</param>
+		/// <returns>The distance between the two vectors.</returns>
+		public static float Distance(Vector2 value1, Vector2 value2)
+		{
+			float num2 = value1.X - value2.X;
+			float num = value1.Y - value2.Y;
+			float num3 = (num2 * num2) + (num * num);
+			return (float)Math.Sqrt(num3);
+		}
+
+		/// <summary>Checks to see if a location is in the spawn protection area.</summary>
+		/// <param name="x">The x coordinate to check.</param>
+		/// <param name="y">The y coordinate to check.</param>
+		/// <returns>If the given x,y location is in the spawn area.</returns>
+		public static bool IsInSpawn(int x, int y)
+		{
+			Vector2 tile = new Vector2(x, y);
+			Vector2 spawn = new Vector2(Main.spawnTileX, Main.spawnTileY);
+			return Distance(spawn, tile) <= TShock.Config.SpawnProtectionRadius;
+		}
+
+		/// <summary>Computes the max styles...</summary>
+		internal void ComputeMaxStyles()
+		{
+			var item = new Item();
+			for (int i = 0; i < Main.maxItemTypes; i++)
+			{
+				item.netDefaults(i);
+				if (item.placeStyle > 0)
+				{
+					if (GetDataHandlers.MaxPlaceStyles.ContainsKey(item.createTile))
+					{
+						if (item.placeStyle > GetDataHandlers.MaxPlaceStyles[item.createTile])
+							GetDataHandlers.MaxPlaceStyles[item.createTile] = item.placeStyle;
+					}
+					else
+						GetDataHandlers.MaxPlaceStyles.Add(item.createTile, item.placeStyle);
 				}
 			}
 		}
