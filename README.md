@@ -1,14 +1,14 @@
 <p align="center">
   <img src="https://tshock.co/newlogo.png" alt="TShock for Terraria"><br />
-  <a href="https://travis-ci.org/Pryaxis/TShock"><img src="https://travis-ci.org/Pryaxis/TShock.svg?branch=general-devel" alt="Build Status"></a><a href="https://ci.appveyor.com/project/hakusaro/tshock"><img src="https://ci.appveyor.com/api/projects/status/chhe61q227lqdlg1?svg=true" alt="AppVeyor Build Status"></a><br />
+  <a href="https://ci.appveyor.com/project/mistzzt/tshock/build/artifacts"><img src="https://ci.appveyor.com/api/projects/status/cfpkv7rdscgwr1dd?svg=true" alt="AppVeyor Build Status"></a><br />
 </p>
 
-TShock is a toolbox for Terraria servers and communities. That toolbox is jam packed with anti-cheat tools, server-side characters, groups, permissions, item bans, tons of commands, and limitless potential. It's one of a kind.
+TShock是Terraria服务器/社区的“工具箱”：它有反作弊、用户组权限、物品封禁系统，命令系统——及无限的可能性。
 
-* Download: [Stable](https://github.com/TShock/TShock/releases) or [Experimental](https://travis.tshock.co/).
-* Read [the documentation](https://tshock.readme.io/) to quickly get up to speed.
-* Join [Discord](https://discord.gg/XUJdH58) to get help, chat, and enjoy some swell Australian company.
-* Download [other plugins](https://tshock.co/xf/index.php?resources/) to supercharge your server.
+* 下载：[稳定版](https://github.com/mistzzt/TShock/releases/latest) or [实验版](https://ci.appveyor.com/project/mistzzt/tshock/build/artifacts).
+* 查阅[文档](https://tshock.readme.io/)可以帮助设定服务器。
+* 加入[Discord](https://discord.gg/XUJdH58)组交流/获取帮助。
+* 安装[插件](https://tshock.co/xf/index.php?resources/)可以增加服务器功能。
 
 ----
 
