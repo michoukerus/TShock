@@ -26,7 +26,7 @@ namespace TShockAPI
 	public class FileTools
 	{
 		private const string MotdFormat =
-			"欢迎!\n%255,000,000%地图: %map%\n在线玩家: %players%";
+			"欢迎来到[c/FF0000:%map%]的[c/00FFFF:TShock服务器]。\n[c/00FF00:在线玩家：] [c/FFFF00:%players%]";
 		/// <summary>
 		/// Path to the file containing the rules.
 		/// </summary>
@@ -154,7 +154,7 @@ namespace TShockAPI
 					{
 						if (string.IsNullOrWhiteSpace(line))
 							continue;
-						contains = TShock.Utils.GetIPv4Address(line).Equals(ip);
+						contains = TShock.Utils.GetIPv4AddressFromHostname(line).Equals(ip);
 						if (contains)
 							return true;
 					}

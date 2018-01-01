@@ -59,8 +59,7 @@ namespace TShockAPI
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
 		public static readonly string VersionCodename = "Alnitak";
 
-	    public static readonly string CnMode = "开发版";
-	    public static readonly Version CnVersion = new Version(3, 0);
+	    public static readonly Version ChineseLocalizationVersion = new Version(3, 0);
 
         /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
         public static string SavePath = "tshock";
@@ -75,11 +74,6 @@ namespace TShockAPI
 		private static string LogPath = LogPathDefault;
 		/// <summary>LogClear - Determines whether or not the log file should be cleared on initialization.</summary>
 		private static bool LogClear;
-
-		/// <summary>
-		/// Set by the command line, disables the '/restart' command.
-		/// </summary>
-		internal static bool NoRestart;
 
 		/// <summary>Will be set to true once Utils.StopServer() is called.</summary>
 		public static bool ShuttingDown;
@@ -226,10 +220,6 @@ namespace TShockAPI
 
 				Main.ServerSideCharacter = ServerSideCharacterConfig.Enabled;
 
-				//TSAPI previously would do this automatically, but the vanilla server wont
-				if (Netplay.ServerIP == null)
-					Netplay.ServerIP = IPAddress.Any;
-
 				DateTime now = DateTime.Now;
 				// Log path was not already set by the command line parameter?
 				if (LogPath == LogPathDefault)
@@ -332,13 +322,12 @@ namespace TShockAPI
 				if (Config.EnableGeoIP && File.Exists(geoippath))
 					Geo = new GeoIPCountry(geoippath);
 
-				Log.ConsoleInfo("TShock运行版本: {0} ({1}).", Version, VersionCodename);
-			    Log.ConsoleInfo("TShock汉化版本: {0} ({1}).", CnVersion, CnMode);
+				Log.ConsoleInfo("TShock版本：{0} ({1})；本地化 v{2}", Version, VersionCodename, ChineseLocalizationVersion);
 
 				var systemRam = StatTracker.GetFreeSystemRam(ServerApi.RunningMono);
 				if (systemRam > -1 && systemRam < 2048)
 				{
-					Log.ConsoleError("This machine has less than 2 gigabytes of RAM free. Be advised that it might not be enough to run TShock.");
+					Log.ConsoleError("本程序建议在系统可用内存超过2GB的情况下运行。");
 				}
 
 				ServerApi.Hooks.GamePostInitialize.Register(this, OnPostInit);
@@ -378,8 +367,7 @@ namespace TShockAPI
 				Log.ConsoleInfo("自动保存 - " + (Config.AutoSave ? "启用" : "关闭"));
 				Log.ConsoleInfo("定时备份 - " + (Backups.Interval > 0 ? "启用" : "关闭"));
 
-				if (Initialized != null)
-					Initialized();
+				Initialized?.Invoke();
 
 				Log.ConsoleInfo("欢迎使用TShock！");
 				Log.ConsoleInfo("TShock是免费的无责软件。[本句需更好翻译]"); // todo: improve translation here
@@ -388,7 +376,7 @@ namespace TShockAPI
 			}
 			catch (Exception ex)
 			{
-				Log.Error("致命的初始化异常.");
+				Log.Error("致命的初始化异常。");
 				Log.Error(ex.ToString());
 				Environment.Exit(1);
 			}
@@ -486,19 +474,19 @@ namespace TShockAPI
 			{
 				// A user just signed in successfully despite being banned by account name.
 				// We should fix the ban database so that all of their ban info is up to date.
-				Bans.AddBan2(args.Player.IP, args.Player.Name, args.Player.UUID, args.Player.Account.Name,
+				Bans.AddBan(args.Player.IP, args.Player.Name, args.Player.UUID, args.Player.Account.Name,
 					potentialBan.Reason, false, potentialBan.BanningUser, potentialBan.Expiration);
 
 				// And then get rid of them.
 				if (potentialBan.Expiration == "")
 				{
-					Utils.ForceKick(args.Player, String.Format("被{0}永久封禁：{1}", potentialBan.BanningUser
-						,potentialBan.Reason), false, false);
+					args.Player.Kick(String.Format("被{0}永久封禁：{1}", potentialBan.BanningUser
+						,potentialBan.Reason), true, true);
 				}
 				else
 				{
-					Utils.ForceKick(args.Player, String.Format("被{0}暂时封禁：{1}", potentialBan.BanningUser,
-						potentialBan.Reason), false, false);
+					args.Player.Kick(String.Format("被{0}暂时封禁：{1}", potentialBan.BanningUser,
+						potentialBan.Reason), true, true);
 				}
 			}
 		}
@@ -587,7 +575,7 @@ namespace TShockAPI
 					return;
 				}
 
-				if (CheckRangePermission(tsplr, args.Chest.x, args.Chest.y))
+				if (!tsplr.IsInRange(args.Chest.x, args.Chest.y))
 				{
 					args.Handled = true;
 					return;
@@ -770,8 +758,7 @@ namespace TShockAPI
 				.AddFlag("-logclear", () => LogClear = true)
 				.AddFlag("-autoshutdown", () => Main.instance.EnableAutoShutdown())
 				.AddFlag("-dump", () => Utils.Dump())
-				.AddFlag("--stats-optout", () => { })
-				.AddFlag("--no-restart", () => NoRestart = true);
+				.AddFlag("--stats-optout", () => StatTracker.OptOut = true);
 
 			CliParser.ParseFromSource(parms);
 		}
@@ -897,8 +884,6 @@ namespace TShockAPI
 
 			Utils.ComputeMaxStyles();
 			Utils.FixChestStacks();
-
-			Utils.UpgradeMotD();
 
 			if (Config.UseServerName)
 			{
@@ -1252,16 +1237,16 @@ namespace TShockAPI
 
 			var player = new TSPlayer(args.Who);
 
-			if (Utils.ActivePlayers() + 1 > Config.MaxSlots + Config.ReservedSlots)
+			if (Utils.GetActivePlayerCount() + 1 > Config.MaxSlots + Config.ReservedSlots)
 			{
-				Utils.ForceKick(player, Config.ServerFullNoReservedReason, true, false);
+				player.Kick(Config.ServerFullNoReservedReason, true, true, null, false);
 				args.Handled = true;
 				return;
 			}
 
 			if (!FileTools.OnWhitelist(player.IP))
 			{
-				Utils.ForceKick(player, Config.WhitelistKickReason, true, false);
+				player.Kick(Config.WhitelistKickReason, true, true, null, false);
 				args.Handled = true;
 				return;
 			}
@@ -1274,7 +1259,7 @@ namespace TShockAPI
 				{
 					if (Config.KickProxyUsers)
 					{
-						Utils.ForceKick(player, "不允许使用代理.", true, false);
+						player.Kick("不允许使用代理。", true, true, null, false);
 						args.Handled = true;
 						return;
 					}
@@ -1296,7 +1281,7 @@ namespace TShockAPI
 
 			if (Config.KickEmptyUUID && String.IsNullOrWhiteSpace(player.UUID))
 			{
-				Utils.ForceKick(player, "不允许跳过UUID发送过程.", true);
+				player.Kick("您的游戏发送了无效的UUID。", true, true, null, false);
 				args.Handled = true;
 				return;
 			}
@@ -1321,7 +1306,7 @@ namespace TShockAPI
 
 			if (ban != null)
 			{
-				if (!Utils.HasBanExpired(ban))
+				if (!Bans.RemoveBanIfExpired(ban))
 				{
 					DateTime exp;
 					if (!DateTime.TryParse(ban.Expiration, out exp))
@@ -1410,7 +1395,7 @@ namespace TShockAPI
 			}
 
 			// The last player will leave after this hook is executed.
-			if (Utils.ActivePlayers() == 1)
+			if (Utils.GetActivePlayerCount() == 1)
 			{
 				if (Config.SaveWorldOnLastPlayerExit)
 					SaveManager.Instance.SaveWorld();
@@ -1434,7 +1419,7 @@ namespace TShockAPI
 
 			if (args.Text.Length > 500)
 			{
-				Utils.Kick(tsplr, "试图发送长聊天语句破坏服务器.", true);
+				tsplr.Kick("试图发送长聊天语句破坏服务器。", true);
 				args.Handled = true;
 				return;
 			}
@@ -1631,7 +1616,7 @@ namespace TShockAPI
 			if (Config.EnableGeoIP && TShock.Geo != null)
 			{
 				Log.Info("{0} ({1}) [组:{2}] 从 {3} 加入. ({4}/{5})", player.Name, player.IP,
-									   player.Group.Name, player.Country, TShock.Utils.ActivePlayers(),
+									   player.Group.Name, player.Country, TShock.Utils.GetActivePlayerCount(),
 									   TShock.Config.MaxSlots);
 				if (!player.SilentJoinInProgress)
 					Utils.Broadcast($"{player.Name} ({player.Country}) 加入游戏.", Color.Yellow);
@@ -1639,7 +1624,7 @@ namespace TShockAPI
 			else
 			{
 				Log.Info("{0} ({1}) [组:{2}] 加入. ({3}/{4})", player.Name, player.IP,
-									   player.Group.Name, TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots);
+									   player.Group.Name, TShock.Utils.GetActivePlayerCount(), TShock.Config.MaxSlots);
 				if (!player.SilentJoinInProgress)
 					Utils.Broadcast(player.Name + " 加入游戏.", Color.Yellow);
 			}
@@ -1647,7 +1632,7 @@ namespace TShockAPI
 			if (Config.DisplayIPToAdmins)
 				Utils.SendLogs(string.Format("{0} 加入游戏. IP: {1}", player.Name, player.IP), Color.Blue);
 
-			Utils.ShowFileToUser(player, FileTools.MotdPath);
+			player.SendFileTextAsMessage(FileTools.MotdPath);
 
 			string pvpMode = Config.PvPMode.ToLowerInvariant();
 			if (pvpMode == "always")
@@ -1732,188 +1717,6 @@ namespace TShockAPI
 		{
 			if (Config.DisableHardmode)
 				e.Handled = true;
-		}
-
-
-
-
-		/// <summary>CheckRangePermission - Checks if a player has permission to modify a tile dependent on range checks.</summary>
-		/// <param name="player">player - The TSPlayer object.</param>
-		/// <param name="x">x - The x coordinate of the tile.</param>
-		/// <param name="y">y - The y coordinate of the tile.</param>
-		/// <param name="range">range - The range to check for.</param>
-		/// <returns>bool - True if the player should not be able to place the tile. False if they can, or if range checks are off.</returns>
-		public static bool CheckRangePermission(TSPlayer player, int x, int y, int range = 32)
-		{
-			if (Config.RangeChecks && ((Math.Abs(player.TileX - x) > range) || (Math.Abs(player.TileY - y) > range)))
-			{
-				return true;
-			}
-			return false;
-		}
-
-		/// <summary>CheckTilePermission - Checks to see if a player has permission to modify a tile in general.</summary>
-		/// <param name="player">player - The TSPlayer object.</param>
-		/// <param name="tileX">tileX - The x coordinate of the tile.</param>
-		/// <param name="tileY">tileY - The y coordinate of the tile.</param>
-		/// <param name="tileType">tileType - The tile type.</param>
-		/// <param name="actionType">actionType - The type of edit that took place.</param>
-		/// <returns>bool - True if the player should not be able to modify a tile.</returns>
-		public static bool CheckTilePermission(TSPlayer player, int tileX, int tileY, short tileType, GetDataHandlers.EditAction actionType)
-		{
-			if (!player.HasPermission(Permissions.canbuild))
-			{
-				if (TShock.Config.AllowIce && actionType != GetDataHandlers.EditAction.PlaceTile)
-				{
-					foreach (Point p in player.IceTiles)
-					{
-						if (p.X == tileX && p.Y == tileY && (Main.tile[p.X, p.Y].type == 0 || Main.tile[p.X, p.Y].type == 127))
-						{
-							player.IceTiles.Remove(p);
-							return false;
-						}
-					}
-
-					if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.BPm) > 2000)
-					{
-						player.SendErrorMessage("你没有建筑权, 破坏/放置 物块将会被还原.");
-						player.BPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-					}
-					return true;
-				}
-
-				if (TShock.Config.AllowIce && actionType == GetDataHandlers.EditAction.PlaceTile && tileType == 127)
-				{
-					player.IceTiles.Add(new Point(tileX, tileY));
-					return false;
-				}
-
-				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.BPm) > 2000)
-				{
-					player.SendErrorMessage("你没有建筑权, 破坏/放置 物块将会被还原.");
-					player.BPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-				}
-				return true;
-			}
-
-			if (!Regions.CanBuild(tileX, tileY, player))
-			{
-				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.RPm) > 2000)
-				{
-					player.SendErrorMessage("该区域被保护, 破坏/放置 物块将会被还原.");
-					player.RPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-				}
-				return true;
-			}
-
-			if (Config.DisableBuild)
-			{
-				if (!player.HasPermission(Permissions.antibuild))
-				{
-					if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.WPm) > 2000)
-					{
-						player.SendErrorMessage("当前世界被保护, 破坏/放置 物块将会被还原.");
-						player.WPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-					}
-					return true;
-				}
-			}
-
-			if (Config.SpawnProtection)
-			{
-				if (!player.HasPermission(Permissions.editspawn))
-				{
-					if (Utils.IsInSpawn(tileX, tileY))
-					{
-						if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.SPm) > 2000)
-						{
-							player.SendErrorMessage("出生点被保护, 破坏/放置 物块将会被还原.");
-							player.SPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-						}
-						return true;
-					}
-				}
-			}
-			return false;
-		}
-
-		/// <summary>CheckTilePermission - Checks to see if a player has the ability to modify a tile at a given position.</summary>
-		/// <param name="player">player - The TSPlayer object.</param>
-		/// <param name="tileX">tileX - The x coordinate of the tile.</param>
-		/// <param name="tileY">tileY - The y coordinate of the tile.</param>
-		/// <param name="paint">paint - Whether or not the tile is paint.</param>
-		/// <returns>bool - True if the player should not be able to modify the tile.</returns>
-		public static bool CheckTilePermission(TSPlayer player, int tileX, int tileY, bool paint = false)
-		{
-			if ((!paint && !player.HasPermission(Permissions.canbuild)) ||
-				(paint && !player.HasPermission(Permissions.canpaint)))
-			{
-				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.BPm) > 2000)
-				{
-					if (paint)
-					{
-						player.SendErrorMessage("你没有给物块上色的权限.");
-					}
-					else
-					{
-						player.SendErrorMessage("你没有建筑权, 破坏/放置 物块将会被还原.");
-					}
-					player.BPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-				}
-				return true;
-			}
-
-			if (!Regions.CanBuild(tileX, tileY, player))
-			{
-				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.RPm) > 2000)
-				{
-					player.SendErrorMessage("你没有建筑权, 破坏/放置 物块将会被还原.");
-					player.RPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-				}
-				return true;
-			}
-
-			if (Config.DisableBuild)
-			{
-				if (!player.HasPermission(Permissions.antibuild))
-				{
-					if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.WPm) > 2000)
-					{
-						player.SendErrorMessage("当前世界被保护, 破坏/放置 物块将会被还原.");
-						player.WPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-					}
-					return true;
-				}
-			}
-
-			if (Config.SpawnProtection)
-			{
-				if (!player.HasPermission(Permissions.editspawn))
-				{
-					if (Utils.IsInSpawn(tileX, tileY))
-					{
-						if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.SPm) > 1000)
-						{
-							player.SendErrorMessage("出生点被保护, 破坏/放置 物块将会被还原.");
-							player.SPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-						}
-						return true;
-					}
-				}
-			}
-			return false;
-		}
-
-
-
-		/// <summary>Distance - Determines the distance between two vectors.</summary>
-		/// <param name="value1">value1 - The first vector location.</param>
-		/// <param name="value2">value2 - The second vector location.</param>
-		/// <returns>float - The distance between the two vectors.</returns>
-		[Obsolete("Use TShock.Utils.Distance(Vector2, Vector2) instead.", true)]
-		public static float Distance(Vector2 value1, Vector2 value2)
-		{
-			return Utils.Distance(value1, value2);
 		}
 
 		/// <summary>OnConfigRead - Fired when the config file has been read.</summary>

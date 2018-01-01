@@ -391,10 +391,7 @@ namespace TShockAPI
 		[JsonProperty("忽略玩家破坏抛射体")]
 		public bool IgnoreProjKill = false;
 
-		[Description("Ignores all no clip checks for players.")]
-		[JsonProperty("忽略玩家卡入物块")]
-		public bool IgnoreNoClip = false;
-
+		/// <summary>AlllowIce - Allows ice placement even where a user cannot usually build.</summary>
 		[Description("Allow ice placement even when user does not have canbuild.")]
 		[JsonProperty("允许放置冰")]
 		public bool AllowIce = false;
@@ -557,14 +554,10 @@ namespace TShockAPI
 		[JsonProperty("REST统计减少间隔分钟")]
 		public int RESTRequestBucketDecreaseIntervalMinutes = 1;
 
-		/// <summary>RESTLimitOnlyFailedLoginRequests - Whether or not to limit only the max failed login requests, or all login requests.</summary>
-		[Obsolete("This value is no longer used and will be removed next version.")]
-		[Description("Whether we should limit only the max failed login requests, or all login requests")]
-		[JsonProperty("REST只限制失败登入")]
-		public bool RESTLimitOnlyFailedLoginRequests = true;
-
+		/// <summary>ShowBackupAutosaveMessages - Whether or not to show backup auto save messages.</summary>
 		[JsonProperty("显示自动备份提示")]
-		[Description("Show backup autosave messages.")] public bool ShowBackupAutosaveMessages = true;
+		[Description("Show backup autosave messages.")]
+		public bool ShowBackupAutosaveMessages = true;
 
 		/// <summary>
 		/// Reads a configuration file from a given path

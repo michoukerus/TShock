@@ -34,6 +34,7 @@ using TShockAPI.DB;
 using TShockAPI.Hooks;
 using TShockAPI.Net;
 using Timer = System.Timers.Timer;
+using System.Linq;
 
 namespace TShockAPI
 {
@@ -72,6 +73,43 @@ namespace TShockAPI
 		/// This player represents all the players.
 		/// </summary>
 		public static readonly TSPlayer All = new TSPlayer("All");
+
+		/// <summary>
+		/// Finds a TSPlayer based on name or ID
+		/// </summary>
+		/// <param name="plr">Player name or ID</param>
+		/// <returns>A list of matching players</returns>
+		public static List<TSPlayer> FindByNameOrID(string plr)
+		{
+			var found = new List<TSPlayer>();
+			// Avoid errors caused by null search
+			if (plr == null)
+				return found;
+
+			byte plrID;
+			if (byte.TryParse(plr, out plrID) && plrID < Main.maxPlayers)
+			{
+				TSPlayer player = TShock.Players[plrID];
+				if (player != null && player.Active)
+				{
+					return new List<TSPlayer> { player };
+				}
+			}
+
+			string plrLower = plr.ToLower();
+			foreach (TSPlayer player in TShock.Players)
+			{
+				if (player != null)
+				{
+					// Must be an EXACT match
+					if (player.Name == plr)
+						return new List<TSPlayer> { player };
+					if (player.Name.ToLower().StartsWith(plrLower))
+						found.Add(player);
+				}
+			}
+			return found;
+		}
 
 		/// <summary>
 		/// The amount of tiles that the player has killed in the last second.
@@ -532,30 +570,147 @@ namespace TShockAPI
 
 		public bool SilentJoinInProgress;
 
+		/// <summary>Checks if a player is in range of a given tile if range checks are enabled.</summary>
+		/// <param name="x"> The x coordinate of the tile.</param>
+		/// <param name="y">The y coordinate of the tile.</param>
+		/// <param name="range">The range to check for.</param>
+		/// <returns>True if the player is in range of a tile or if range checks are off. False if not.</returns>
+		public bool IsInRange(int x, int y, int range = 32)
+		{
+			if (TShock.Config.RangeChecks && ((Math.Abs(TileX - x) > range) || (Math.Abs(TileY - y) > range)))
+			{
+				return false;
+			}
+			return true;
+		}
+
+		private enum BuildPermissionFailPoint
+		{
+			GeneralBuild,
+			SpawnProtect,
+			Regions
+		}
+
+		/// <summary>Determines if the player can build on a given point.</summary>
+		/// <param name="x">The x coordinate they want to build at.</param>
+		/// <param name="y">The y coordinate they want to paint at.</param>
+		/// <returns>True if the player can build at the given point from build, spawn, and region protection.</returns>
+		public bool HasBuildPermission(int x, int y, bool shouldWarnPlayer = true)
+		{
+			BuildPermissionFailPoint failure = BuildPermissionFailPoint.GeneralBuild;
+			// The goal is to short circuit on easy stuff as much as possible.
+			// Don't compute permissions unless needed, and don't compute taxing stuff unless needed.
+
+			// If the player has bypass on build protection or building is enabled; continue
+			// (General build protection takes precedence over spawn protection)
+			if (!TShock.Config.DisableBuild || HasPermission(Permissions.antibuild))
+			{
+				failure = BuildPermissionFailPoint.SpawnProtect;
+				// If they have spawn protect bypass, or it isn't spawn, or it isn't in spawn; continue
+				// (If they have spawn protect bypass, we don't care if it's spawn or not)
+				if (!TShock.Config.SpawnProtection || HasPermission(Permissions.editspawn) || !Utils.IsInSpawn(x, y))
+				{
+					failure = BuildPermissionFailPoint.Regions;
+					// If they have build permission in this region, then they're allowed to continue
+					if (TShock.Regions.CanBuild(x, y, this))
+					{
+						return true;
+					}
+				}
+			}
+			// If they lack build permission, they end up here.
+			// If they have build permission but lack the ability to edit spawn and it's spawn, they end up here.
+			// If they have build, it isn't spawn, or they can edit spawn, but they fail the region check, they end up here.
+
+			// If they shouldn't be warned, exit early.
+			if (!shouldWarnPlayer)
+				return false;
+
+			// Space out warnings by 2 seconds so that they don't get spammed.
+			if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - lastPermissionWarning) < 2000)
+			{
+				return false;
+			}
+
+			// If they should be warned, warn them.
+			switch (failure)
+			{
+				case BuildPermissionFailPoint.GeneralBuild:
+					SendErrorMessage("You lack permission to build on this server.");
+					break;
+				case BuildPermissionFailPoint.SpawnProtect:
+					SendErrorMessage("You lack permission to build in the spawn point.");
+					break;
+				case BuildPermissionFailPoint.Regions:
+					SendErrorMessage("You lack permission to build in this region.");
+					break;
+			}
+
+			// Set the last warning time to now.
+			lastPermissionWarning = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+
+			return false;
+		}
+
+		/// <summary>Determines if the player can paint on a given point. Checks general build permissions, then paint.</summary>
+		/// <param name="x">The x coordinate they want to paint at.</param>
+		/// <param name="y">The y coordinate they want to paint at.</param>
+		/// <returns>True if they can paint.</returns>
+		public bool HasPaintPermission(int x, int y)
+		{
+			return HasBuildPermission(x, y) || HasPermission(Permissions.canpaint);
+		}
+
+		/// <summary>Checks if a player can place ice, and if they can, tracks ice placements and removals.</summary>
+		/// <param name="x">The x coordinate of the suspected ice block.</param>
+		/// <param name="y">The y coordinate of the suspected ice block.</param>
+		/// <param name="tileType">The tile type of the suspected ice block.</param>
+		/// <param name="editAction">The EditAction on the suspected ice block.</param>
+		/// <returns>True if a player successfully places an ice tile or removes one of their past ice tiles.</returns>
+		public bool HasModifiedIceSuccessfully(int x, int y, short tileType, GetDataHandlers.EditAction editAction)
+		{
+			// The goal is to short circuit ASAP.
+			// A subsequent call to HasBuildPermission can figure this out if not explicitly ice.
+			if (!TShock.Config.AllowIce)
+			{
+				return false;
+			}
+
+			// They've placed some ice. Horrible!
+			if (editAction == GetDataHandlers.EditAction.PlaceTile && tileType == TileID.MagicalIceBlock)
+			{
+				IceTiles.Add(new Point(x, y));
+				return true;
+			}
+
+			// The edit wasn't an add, so we check to see if the position matches any of the known ice tiles
+			if (editAction == GetDataHandlers.EditAction.KillTile)
+			{
+				foreach (Point p in IceTiles)
+				{
+					// If they're trying to kill ice or dirt, and the tile was in the list, we allow it.
+					if (p.X == x && p.Y == y && (Main.tile[p.X, p.Y].type == TileID.Dirt || Main.tile[p.X, p.Y].type == TileID.MagicalIceBlock))
+					{
+						IceTiles.Remove(p);
+						return true;
+					}
+				}
+			}
+
+			// Only a small number of cases let this happen.
+			return false;
+		}
+
 		/// <summary>
 		/// A list of points where ice tiles have been placed.
 		/// </summary>
 		public List<Point> IceTiles;
 
 		/// <summary>
-		/// Unused, can be removed.
+		/// The last time the player was warned for build permissions.
+		/// In MS, defaults to 1 (so it will warn on the first attempt).
 		/// </summary>
-		public long RPm = 1;
-
-		/// <summary>
-		/// World protection message cool down.
-		/// </summary>
-		public long WPm = 1;
-
-		/// <summary>
-		/// Spawn protection message cool down.
-		/// </summary>
-		public long SPm = 1;
-
-		/// <summary>
-		/// Permission to build message cool down.
-		/// </summary>
-		public long BPm = 1;
+		public long lastPermissionWarning = 1;
 
 		/// <summary>
 		/// The time in ms when the player has logged in.
@@ -1161,27 +1316,6 @@ namespace TShockAPI
 		}
 
 		/// <summary>
-		/// Gives an item to the player. Includes banned item spawn prevention to check if the player can spawn the item.
-		/// </summary>
-		/// <param name="type">The item ID.</param>
-		/// <param name="name">The item name.</param>
-		/// <param name="width">The width of the receiver.</param>
-		/// <param name="height">The height of the receiver.</param>
-		/// <param name="stack">The item stack.</param>
-		/// <param name="prefix">The item prefix.</param>
-		/// <returns>True or false, depending if the item passed the check or not.</returns>
-		[Obsolete("Use the GiveItemCheck overload with fewer parameters.")]
-		public bool GiveItemCheck(int type, string name, int width, int height, int stack, int prefix = 0)
-		{
-			if ((TShock.Itembans.ItemIsBanned(name) && TShock.Config.PreventBannedItemSpawn) &&
-			    (TShock.Itembans.ItemIsBanned(name, this) || !TShock.Config.AllowAllowedGroupsToSpawnBannedItems))
-				return false;
-
-			GiveItem(type, name, width, height, stack, prefix);
-			return true;
-		}
-
-		/// <summary>
 		/// Gives an item to the player.
 		/// </summary>
 		/// <param name="type">The item ID.</param>
@@ -1190,22 +1324,6 @@ namespace TShockAPI
 		public virtual void GiveItem(int type, int stack, int prefix = 0)
 		{
 			int itemIndex = Item.NewItem((int)X, (int)Y, TPlayer.width, TPlayer.height, type, stack, true, prefix, true);
-			SendData(PacketTypes.ItemDrop, "", itemIndex);
-		}
-
-		/// <summary>
-		/// Gives an item to the player.
-		/// </summary>
-		/// <param name="type">The item ID.</param>
-		/// <param name="name">The item name. This parameter is unused.</param>
-		/// <param name="width">The width of the receiver.</param>
-		/// <param name="height">The height of the receiver.</param>
-		/// <param name="stack">The item stack.</param>
-		/// <param name="prefix">The item prefix.</param>
-		[Obsolete("Use the GiveItem overload with fewer parameters.")]
-		public virtual void GiveItem(int type, string name, int width, int height, int stack, int prefix = 0)
-		{
-			int itemIndex = Item.NewItem((int)X, (int)Y, width, height, type, stack, true, prefix, true);
 			SendData(PacketTypes.ItemDrop, "", itemIndex);
 		}
 
@@ -1343,6 +1461,43 @@ namespace TShockAPI
 		}
 
 		/// <summary>
+		/// Sends the text of a given file to the player. Replacement of %map% and %players% if in the file.
+		/// </summary>
+		/// <param name="file">Filename relative to <see cref="TShock.SavePath"></see></param>
+		public void SendFileTextAsMessage(string file)
+		{
+			string foo = "";
+			bool containsOldFormat = false;
+			using (var tr = new StreamReader(file))
+			{
+				Color lineColor;
+				while ((foo = tr.ReadLine()) != null)
+				{
+					lineColor = Color.White;
+					if (string.IsNullOrWhiteSpace(foo))
+					{
+						continue;
+					}
+
+					var players = new List<string>();
+
+					foreach (TSPlayer ply in TShock.Players)
+					{
+						if (ply != null && ply.Active)
+						{
+							players.Add(ply.Name);
+						}
+					}
+
+					foo = foo.Replace("%map%", (TShock.Config.UseServerName ? TShock.Config.ServerName : Main.worldName));
+					foo = foo.Replace("%players%", String.Join(",", players));
+
+					SendMessage(foo, lineColor);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Wounds the player with the given damage.
 		/// </summary>
 		/// <param name="damage">The amount of damage the player will take.</param>
@@ -1425,6 +1580,79 @@ namespace TShockAPI
 			 * in release builds.  Use a conditional call instead.
 			 */
 			LogStackFrame();
+		}
+
+		/// <summary>
+		/// Disconnects this player from the server with a reason.
+		/// </summary>
+		/// <param name="reason">The reason to display to the user and to the server on kick.</param>
+		/// <param name="force">If the kick should happen regardless of immunity to kick permissions.</param>
+		/// <param name="silent">If no message should be broadcasted to the server.</param>
+		/// <param name="adminUserName">The originator of the kick, for display purposes.</param>
+		/// <param name="saveSSI">If the player's server side character should be saved on kick.</param>
+		public bool Kick(string reason, bool force = false, bool silent = false, string adminUserName = null, bool saveSSI = false)
+		{
+			if (!ConnectionAlive)
+				return true;
+			if (force || !HasPermission(Permissions.immunetokick))
+			{
+				SilentKickInProgress = silent;
+				if (IsLoggedIn && saveSSI)
+					SaveServerCharacter();
+				Disconnect(string.Format("Kicked: {0}", reason));
+				TShock.Log.ConsoleInfo(string.Format("Kicked {0} for : '{1}'", Name, reason));
+				string verb = force ? "force " : "";
+				if (!silent)
+				{
+					if (string.IsNullOrWhiteSpace(adminUserName))
+						TShock.Utils.Broadcast(string.Format("{0} was {1}kicked for '{2}'", Name, verb, reason.ToLower()), Color.Green);
+					else
+						TShock.Utils.Broadcast(string.Format("{0} {1}kicked {2} for '{3}'", adminUserName, verb, Name, reason.ToLower()), Color.Green);
+				}
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Bans and disconnects the player from the server.
+		/// </summary>
+		/// <param name="reason">The reason to be displayed to the server.</param>
+		/// <param name="force">If the ban should bypass immunity to ban checks.</param>
+		/// <param name="adminUserName">The player who initiated the ban.</param>
+		public bool Ban(string reason, bool force = false, string adminUserName = null)
+		{
+			if (!ConnectionAlive)
+				return true;
+			if (force || !HasPermission(Permissions.immunetoban))
+			{
+				string ip = IP;
+				string uuid = UUID;
+				TShock.Bans.AddBan(ip, Name, uuid, "", reason, false, adminUserName);
+				Disconnect(string.Format("Banned: {0}", reason));
+				string verb = force ? "force " : "";
+				if (string.IsNullOrWhiteSpace(adminUserName))
+					TSPlayer.All.SendInfoMessage("{0} was {1}banned for '{2}'.", Name, verb, reason);
+				else
+					TSPlayer.All.SendInfoMessage("{0} {1}banned {2} for '{3}'.", adminUserName, verb, Name, reason);
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Sends the player an error message stating that more than one match was found
+		/// appending a csv list of the matches.
+		/// </summary>
+		/// <param name="matches">An enumerable list with the matches</param>
+		public void SendMultipleMatchError(IEnumerable<object> matches)
+		{
+			SendErrorMessage("More than one match found: ");
+			
+			var lines = PaginationTools.BuildLinesFromTerms(matches.ToArray());
+			lines.ForEach(SendInfoMessage);
+
+			SendErrorMessage("Use \"my query\" for items with spaces.");
 		}
 
 		[Conditional("DEBUG")]

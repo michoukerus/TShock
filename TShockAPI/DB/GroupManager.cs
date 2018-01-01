@@ -146,7 +146,6 @@ namespace TShockAPI.DB
 						Permissions.ignorekilltiledetection,
 						Permissions.ignoreliquidsetdetection,
 						Permissions.ignoremp,
-						Permissions.ignorenoclipdetection,
 						Permissions.ignorepaintdetection,
 						Permissions.ignoreplacetiledetection,
 						Permissions.ignoreprojectiledetection,
@@ -435,8 +434,8 @@ namespace TShockAPI.DB
 
 			if (database.Query("DELETE FROM GroupList WHERE GroupName=@0", name) == 1)
 			{
-				groups.Remove(TShock.Utils.GetGroup(name));
-				return "组 " + name + " 成功被删除.";
+				groups.Remove(TShock.Groups.GetGroupByName(name));
+				return "组 " + name + " 成功被删除。";
 			}
 
 			if (exceptions)
@@ -455,7 +454,7 @@ namespace TShockAPI.DB
 			if (!GroupExists(name))
 				return "错误: 组不存在.";
 
-			var group = TShock.Utils.GetGroup(name);
+			var group = TShock.Groups.GetGroupByName(name);
 			var oldperms = group.Permissions; // Store old permissions in case of error
 			permissions.ForEach(p => group.AddPermission(p));
 
@@ -478,7 +477,7 @@ namespace TShockAPI.DB
 			if (!GroupExists(name))
 				return "错误: 组不存在.";
 
-			var group = TShock.Utils.GetGroup(name);
+			var group = TShock.Groups.GetGroupByName(name);
 			var oldperms = group.Permissions; // Store old permissions in case of error
 			permissions.ForEach(p => group.RemovePermission(p));
 

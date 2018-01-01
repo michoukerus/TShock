@@ -63,6 +63,7 @@ namespace TShockAPI
 			GetDataHandlers.SendTileSquare += OnSendTileSquare;
 			GetDataHandlers.HealOtherPlayer += OnHealOtherPlayer;
 			GetDataHandlers.TileEdit += OnTileEdit;
+			GetDataHandlers.MassWireOperation += OnMassWireOperation;
 		}
 
 		internal void OnGetSection(object sender, GetDataHandlers.GetSectionEventArgs args)
@@ -76,7 +77,7 @@ namespace TShockAPI
 
 			if (String.IsNullOrEmpty(args.Player.Name))
 			{
-				TShock.Utils.ForceKick(args.Player, "Blank name.", true);
+				args.Player.Kick("Your client sent a blank character name.", true, true);
 				args.Handled = true;
 				return;
 			}
@@ -99,14 +100,14 @@ namespace TShockAPI
 				return;
 			}
 
-			if (TShock.CheckTilePermission(args.Player, args.X, args.Y))
+			if (!args.Player.HasBuildPermission(args.X, args.Y))
 			{
 				NetMessage.SendData((int)PacketTypes.UpdateTileEntity, -1, -1, NetworkText.Empty, args.ItemFrame.ID, 0, 1);
 				args.Handled = true;
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, args.X, args.Y))
+			if (!args.Player.IsInRange(args.X, args.Y))
 			{
 				NetMessage.SendData((int)PacketTypes.UpdateTileEntity, -1, -1, NetworkText.Empty, args.ItemFrame.ID, 0, 1);
 				args.Handled = true;
@@ -137,7 +138,7 @@ namespace TShockAPI
 				return;
 			}
 
-			if (TShock.CheckTilePermission(args.Player, args.X, args.Y))
+			if (!args.Player.HasBuildPermission(args.X, args.Y))
 			{
 				args.Handled = true;
 				return;
@@ -155,13 +156,13 @@ namespace TShockAPI
 				return;
 			}
 
-			if (TShock.CheckTilePermission(args.Player, args.X, args.Y))
+			if (!args.Player.HasBuildPermission(args.X, args.Y))
 			{
 				args.Handled = true;
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, args.X, args.Y))
+			if (!args.Player.IsInRange(args.X, args.Y))
 			{
 				args.Handled = true;
 				return;
@@ -206,7 +207,7 @@ namespace TShockAPI
 					return;
 				}
 
-				if (TShock.CheckTilePermission(args.Player, x, y))
+				if (!args.Player.HasBuildPermission(x, y))
 				{
 					args.Handled = true;
 					return;
@@ -255,7 +256,7 @@ namespace TShockAPI
 			{
 				if (TShock.Config.KickOnDamageThresholdBroken)
 				{
-					TShock.Utils.Kick(args.Player, string.Format("NPC damage exceeded {0}.", TShock.Config.MaxDamage));
+					args.Player.Kick(string.Format("NPC damage exceeded {0}.", TShock.Config.MaxDamage));
 					args.Handled = true;
 					return;
 				}
@@ -276,7 +277,7 @@ namespace TShockAPI
 			}
 
 			if (TShock.Config.RangeChecks &&
-				TShock.CheckRangePermission(args.Player, (int)(Main.npc[id].position.X / 16f), (int)(Main.npc[id].position.Y / 16f), 128))
+				!args.Player.IsInRange((int)(Main.npc[id].position.X / 16f), (int)(Main.npc[id].position.Y / 16f), 128))
 			{
 				args.Player.SendData(PacketTypes.NpcUpdate, "", id);
 				args.Handled = true;
@@ -312,7 +313,7 @@ namespace TShockAPI
 			{
 				if (TShock.Config.KickOnDamageThresholdBroken)
 				{
-					TShock.Utils.Kick(args.Player, string.Format("Player damage exceeded {0}.", TShock.Config.MaxDamage));
+					args.Player.Kick(string.Format("Player damage exceeded {0}.", TShock.Config.MaxDamage));
 					args.Handled = true;
 					return;
 				}
@@ -342,7 +343,7 @@ namespace TShockAPI
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, TShock.Players[id].TileX, TShock.Players[id].TileY, 100))
+			if (!args.Player.IsInRange(TShock.Players[id].TileX, TShock.Players[id].TileY, 100))
 			{
 				args.Player.SendData(PacketTypes.PlayerHp, "", id);
 				args.Player.SendData(PacketTypes.PlayerUpdate, "", id);
@@ -396,7 +397,7 @@ namespace TShockAPI
 			// client side (but only if it passed the range check) (i.e., return false)
 			if (type == 0)
 			{
-				if (TShock.CheckRangePermission(args.Player, (int)(Main.item[id].position.X / 16f), (int)(Main.item[id].position.Y / 16f)))
+				if (!args.Player.IsInRange((int)(Main.item[id].position.X / 16f), (int)(Main.item[id].position.Y / 16f)))
 				{
 					// Causes item duplications. Will be re added if necessary
 					//args.Player.SendData(PacketTypes.ItemDrop, "", id);
@@ -408,7 +409,7 @@ namespace TShockAPI
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, (int)(pos.X / 16f), (int)(pos.Y / 16f)))
+			if (!args.Player.IsInRange((int)(pos.X / 16f), (int)(pos.Y / 16f)))
 			{
 				args.Player.SendData(PacketTypes.ItemDrop, "", id);
 				args.Handled = true;
@@ -488,7 +489,7 @@ namespace TShockAPI
 				return;
 			}
 			
-			if (TShock.CheckRangePermission(args.Player, TShock.Players[id].TileX, TShock.Players[id].TileY, 50))
+			if (!args.Player.IsInRange(TShock.Players[id].TileX, TShock.Players[id].TileY, 50))
 			{
 				args.Player.SendData(PacketTypes.PlayerAddBuff, "", id);
 				args.Handled = true;
@@ -533,13 +534,13 @@ namespace TShockAPI
 				return;
 			}
 
-			if (TShock.CheckTilePermission(args.Player, Main.chest[id].x, Main.chest[id].y) && TShock.Config.RegionProtectChests)
+			if (!args.Player.HasBuildPermission(Main.chest[id].x, Main.chest[id].y) && TShock.Config.RegionProtectChests)
 			{
 				args.Handled = true;
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, Main.chest[id].x, Main.chest[id].y))
+			if (!args.Player.IsInRange(Main.chest[id].x, Main.chest[id].y))
 			{
 				args.Handled = true;
 				return;
@@ -556,18 +557,15 @@ namespace TShockAPI
 			short y = args.Y;
 			byte homeless = args.Homeless;
 
-			// Calls to TShock.CheckTilePermission need to be broken up into different subsystems
-			// In particular, this handles both regions and other things. Ouch.
-			if (TShock.CheckTilePermission(args.Player, x, y))
+			if (!args.Player.HasBuildPermission(x, y))
 			{
-				args.Player.SendErrorMessage("You do not have access to modify this area.");
 				args.Player.SendData(PacketTypes.UpdateNPCHome, "", id, Main.npc[id].homeTileX, Main.npc[id].homeTileY,
 									 Convert.ToByte(Main.npc[id].homeless));
 				args.Handled = true;
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, x, y))
+			if (!args.Player.IsInRange(x, y))
 			{
 				args.Player.SendData(PacketTypes.UpdateNPCHome, "", id, Main.npc[id].homeTileX, Main.npc[id].homeTileY,
 									 Convert.ToByte(Main.npc[id].homeless));
@@ -587,13 +585,13 @@ namespace TShockAPI
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, args.X, args.Y))
+			if (!args.Player.IsInRange(args.X, args.Y))
 			{
 				args.Handled = true;
 				return;
 			}
 
-			if (TShock.CheckTilePermission(args.Player, args.X, args.Y) && TShock.Config.RegionProtectChests)
+			if (!args.Player.HasBuildPermission(args.X, args.Y) && TShock.Config.RegionProtectChests)
 			{
 				args.Handled = true;
 				return;
@@ -629,7 +627,7 @@ namespace TShockAPI
 				&& Main.tile[tileX, tileY].type != TileID.Containers
 				&& Main.tile[tileX, tileY].type != TileID.Dressers
 				&& Main.tile[tileX, tileY].type != TileID.Containers2
-				&& (!TShock.Utils.MaxChests() && Main.tile[tileX, tileY].type != TileID.Dirt)) //Chest
+				&& (!TShock.Utils.HasWorldReachedMaxChests() && Main.tile[tileX, tileY].type != TileID.Dirt)) //Chest
 			{
 				args.Player.SendTileSquare(tileX, tileY, 3);
 				args.Handled = true;
@@ -648,14 +646,14 @@ namespace TShockAPI
 				}
 			}
 
-			if (TShock.CheckTilePermission(args.Player, tileX, tileY))
+			if (!args.Player.HasBuildPermission(tileX, tileY))
 			{
 				args.Player.SendTileSquare(tileX, tileY, 3);
 				args.Handled = true;
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, tileX, tileY))
+			if (!args.Player.IsInRange(tileX, tileY))
 			{
 				args.Player.SendTileSquare(tileX, tileY, 3);
 				args.Handled = true;
@@ -781,14 +779,14 @@ namespace TShockAPI
 				}
 			}
 
-			if (TShock.CheckTilePermission(args.Player, tileX, tileY))
+			if (!args.Player.HasBuildPermission(tileX, tileY))
 			{
 				args.Player.SendTileSquare(tileX, tileY, 1);
 				args.Handled = true;
 				return;
 			}
 
-			if (TShock.CheckRangePermission(args.Player, tileX, tileY, 16))
+			if (!args.Player.IsInRange(tileX, tileY, 16))
 			{
 				args.Player.SendTileSquare(tileX, tileY, 1);
 				args.Handled = true;
@@ -911,22 +909,6 @@ namespace TShockAPI
 					args.Handled = true;
 					return;
 				}
-
-				// Noclip detection
-				if (!args.Player.HasPermission(Permissions.ignorenoclipdetection) &&
-					TSCheckNoclip(pos, args.Player.TPlayer.width, args.Player.TPlayer.height - (args.Player.TPlayer.mount.Active ? args.Player.TPlayer.mount.HeightBoost : 0)) && !TShock.Config.IgnoreNoClip
-					&& !args.Player.TPlayer.tongued)
-				{
-					var lastTileX = args.Player.LastNetPosition.X;
-					var lastTileY = args.Player.LastNetPosition.Y;
-					if (!args.Player.Teleport(lastTileX, lastTileY))
-					{
-						args.Player.SendErrorMessage("You got stuck in a solid object, Sent to spawn point.");
-						args.Player.Spawn();
-					}
-					args.Handled = true;
-					return;
-				}
 			}
 
 			return;
@@ -943,7 +925,7 @@ namespace TShockAPI
 
 			if (damage > 20000) //Abnormal values have the potential to cause infinite loops in the server.
 			{
-				TShock.Utils.ForceKick(args.Player, "Crash Exploit Attempt", true);
+				args.Player.Kick("Failed to shade polygon normals.", true, true);
 				TShock.Log.ConsoleError("Death Exploit Attempt: Damage {0}", damage);
 				args.Handled = true;
 				return;
@@ -960,7 +942,7 @@ namespace TShockAPI
 			{
 				if (playerDeathReason.GetDeathText(TShock.Players[id].Name).ToString().Length > 500)
 				{
-					TShock.Utils.Kick(TShock.Players[id], "Death reason outside of normal bounds.", true);
+					TShock.Players[id].Kick("Death reason outside of normal bounds.", true);
 					args.Handled = true;
 					return;
 				}
@@ -981,7 +963,7 @@ namespace TShockAPI
 			short type = args.Type;
 			int index = args.Index;
 
-			if (index > Main.maxProjectiles || index < 0)
+			if (index > Main.maxProjectiles)
 			{
 				args.Player.RemoveProjectile(ident, owner);
 				args.Handled = true;
@@ -1169,7 +1151,8 @@ namespace TShockAPI
 			{
 				for (int j = y; j < y + tileData.Height; j++)
 				{
-					if (TShock.CheckTilePermission(args.Player, i, j, type, EditAction.PlaceTile))
+					if (!args.Player.HasModifiedIceSuccessfully(i, j, type, EditAction.PlaceTile)
+						&& !args.Player.HasBuildPermission(i, j))
 					{
 						args.Player.SendTileSquare(i, j, 4);
 						args.Handled = true;
@@ -1183,7 +1166,7 @@ namespace TShockAPI
 					|| type != TileID.SilkRope
 					|| type != TileID.VineRope
 					|| type != TileID.WebRope)
-					&& TShock.CheckRangePermission(args.Player, x, y))
+					&& !args.Player.IsInRange(x, y))
 			{
 				args.Player.SendTileSquare(x, y, 4);
 				args.Handled = true;
@@ -1426,7 +1409,7 @@ namespace TShockAPI
 					}
 					if (action == EditAction.PlaceTile && (editData == TileID.Containers || editData == TileID.Containers2))
 					{
-						if (TShock.Utils.MaxChests())
+						if (TShock.Utils.HasWorldReachedMaxChests())
 						{
 							args.Player.SendErrorMessage("The world's chest limit has been reached - unable to place more.");
 							args.Player.SendTileSquare(tileX, tileY, 3);
@@ -1500,14 +1483,15 @@ namespace TShockAPI
 					return;
 				}
 
-				if (TShock.CheckTilePermission(args.Player, tileX, tileY, editData, action))
+				if (!args.Player.HasModifiedIceSuccessfully(tileX, tileY, editData, action)
+					&& !args.Player.HasBuildPermission(tileX, tileY))
 				{
 					args.Player.SendTileSquare(tileX, tileY, 4);
 					args.Handled = true;
 					return;
 				}
 
-				if (TShock.CheckRangePermission(args.Player, tileX, tileY))
+				if (!args.Player.IsInRange(tileX, tileY))
 				{
 					if (action == EditAction.PlaceTile && (editData == TileID.Rope || editData == TileID.SilkRope || editData == TileID.VineRope || editData == TileID.WebRope))
 					{
@@ -1683,8 +1667,8 @@ namespace TShockAPI
 
 						var tile = Main.tile[realx, realy];
 						var newtile = tiles[x, y];
-						if (TShock.CheckTilePermission(args.Player, realx, realy) ||
-							TShock.CheckRangePermission(args.Player, realx, realy))
+						if (!args.Player.HasBuildPermission(realx, realy) ||
+							!args.Player.IsInRange(realx, realy))
 						{
 							continue;
 						}
@@ -1802,7 +1786,7 @@ namespace TShockAPI
 			{
 				args.Player.SendTileSquare(tileX, tileY, size);
 			}
-			args.Handled = false;
+			args.Handled = true;
 			return;
 		}
 
