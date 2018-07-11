@@ -1,1 +1,3 @@
+#!/bin/bash
+
 mono TerrariaServer.exe -language zh-Hans
