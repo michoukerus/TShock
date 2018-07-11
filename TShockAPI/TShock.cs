@@ -59,7 +59,7 @@ namespace TShockAPI
 		/// <summary>VersionCodename - The version codename is displayed when the server starts. Inspired by software codenames conventions.</summary>
 		public static readonly string VersionCodename = "Alnitak";
 
-	    public static readonly Version ChineseLocalizationVersion = new Version(3, 0);
+	    public static readonly Version ChineseLocalizationVersion = new Version(3, 1);
 
         /// <summary>SavePath - This is the path TShock saves its data in. This path is relative to the TerrariaServer.exe (not in ServerPlugins).</summary>
         public static string SavePath = "tshock";
@@ -372,8 +372,8 @@ namespace TShockAPI
 				Initialized?.Invoke();
 
 				Log.ConsoleInfo("欢迎使用TShock！");
-				Log.ConsoleInfo("TShock是免费的无责软件。[本句需更好翻译]"); // todo: improve translation here
-				Log.ConsoleInfo("任何人都可以在GNU GPLv3下修改或发行TShock。");
+				Log.ConsoleInfo("TShock为免费、无担保软件。"); // todo: improve translation here
+				Log.ConsoleInfo("你可以在GNU GPLv3许可证下修改或发行TShock。");
 
 			}
 			catch (Exception ex)
