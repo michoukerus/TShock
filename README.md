@@ -122,7 +122,7 @@ You need to re-run the patcher any time `OTAPI` updates. You need to rebuild `Te
 
 ##### TShock
 
-1. Open the `TShockAPI.sln` solution in the root of the repository.
+1. Open the `TShock.sln` solution in the root of the repository.
 
 1. Build the solution. It should correctly download NuGet packages automatically and build against the aforementioned `TerrariaServerAPI` project you just built.
 
@@ -155,9 +155,10 @@ You need to re-run the patcher any time `OTAPI` updates. You need to rebuild `Te
 
 1. You need to get NuGet. Download the latest `nuget.exe` from [NuGet](https://www.nuget.org/downloads).
 
-1. Make a `~/bin` folder if you don't have one.
+1. Make a `~/bin` folder if you don't have one. Then, put `nuget.exe` inside it.
 
           $ mkdir ~/bin/
+          $ cp ~/downloads/nuget.exe ~/bin/
 
 1. Set an environment variable to store if you plan to build in debug or release.
 

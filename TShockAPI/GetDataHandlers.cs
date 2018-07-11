@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -803,7 +803,7 @@ namespace TShockAPI
 			/// <summary>
 			/// The Terraria playerID of the player
 			/// </summary>
-			public byte PlayerID { get; set; }
+			public byte PlayerId { get; set; }
 			/// <summary>
 			/// X location of the player's spawn
 			/// </summary>
@@ -827,7 +827,7 @@ namespace TShockAPI
 			{
 				Player = player,
 				Data = data,
-				PlayerID = pid,
+				PlayerId = pid,
 				SpawnX = spawnX,
 				SpawnY = spawnY,
 			};
@@ -1488,7 +1488,8 @@ namespace TShockAPI
 					{ PacketTypes.PlayerHealOther, HandleHealOther },
 					{ PacketTypes.CrystalInvasionStart, HandleOldOnesArmy },
 					{ PacketTypes.PlayerHurtV2, HandlePlayerDamageV2 },
-					{ PacketTypes.PlayerDeathV2, HandlePlayerKillMeV2 }
+					{ PacketTypes.PlayerDeathV2, HandlePlayerKillMeV2 },
+					{ PacketTypes.PlayerTeleportPortal, HandlePlayerPortalTeleport }
 				};
 		}
 
@@ -1508,6 +1509,67 @@ namespace TShockAPI
 				}
 			}
 			return false;
+		}
+
+		/// <summary>The event args object for the PortalTeleport event</summary>
+		public class TeleportThroughPortalEventArgs : GetDataHandledEventArgs
+		{
+			/// <summary>The Terraria player index of the target player</summary>
+			public byte TargetPlayerIndex { get; set; }
+
+			/// <summary>
+			/// The position the target player will be at after going through the portal
+			/// </summary>
+			public Vector2 NewPosition { get; set; }
+
+			/// <summary>
+			/// The velocity the target player will have after going through the portal
+			/// </summary>
+			public Vector2 NewVelocity { get; set; }
+
+			/// <summary>
+			/// Index of the portal's color (for use with <see cref="Terraria.GameContent.PortalHelper.GetPortalColor(int)"/>)
+			/// </summary>
+			public int PortalColorIndex { get; set; }
+		}
+
+		/// <summary>When a player passes through a portal</summary>
+		public static HandlerList<TeleportThroughPortalEventArgs> PortalTeleport = new HandlerList<TeleportThroughPortalEventArgs>();
+
+		private static bool OnPlayerTeleportThroughPortal(TSPlayer sender, byte targetPlayerIndex, MemoryStream data, Vector2 position, Vector2 velocity, int colorIndex)
+		{
+			TeleportThroughPortalEventArgs args = new TeleportThroughPortalEventArgs
+			{
+				TargetPlayerIndex = targetPlayerIndex,
+				Data = data,
+				Player = sender,
+				NewPosition = position,
+				NewVelocity = velocity,
+				PortalColorIndex = colorIndex
+			};
+
+			PortalTeleport.Invoke(null, args);
+
+			return args.Handled;
+		}
+
+		private static bool HandlePlayerPortalTeleport(GetDataHandlerArgs args)
+		{
+			byte plr = args.Data.ReadInt8();
+			short portalColorIndex = args.Data.ReadInt16();
+			float newPositionX = args.Data.ReadSingle();
+			float newPositionY = args.Data.ReadSingle();
+			float newVelocityX = args.Data.ReadSingle();
+			float newVelocityY = args.Data.ReadSingle();
+
+			return OnPlayerTeleportThroughPortal(
+				args.Player,
+				plr,
+				args.Data,
+				new Vector2(newPositionX, newPositionY),
+				new Vector2(newVelocityX, newVelocityY),
+				portalColorIndex
+			);
 		}
 
 		private static bool HandleHealOther(GetDataHandlerArgs args)
@@ -2380,16 +2442,21 @@ namespace TShockAPI
 				}
 			}
 
-			if (args.TPlayer.difficulty == 2 && (TShock.Config.KickOnHardcoreDeath || TShock.Config.BanOnHardcoreDeath))
+			// Handle kicks/bans on mediumcore/hardcore deaths.
+			if (args.TPlayer.difficulty != 0) // Player is not softcore
 			{
-				if (TShock.Config.BanOnHardcoreDeath)
-				{
-					if (!args.Player.Ban(TShock.Config.HardcoreBanReason, false, "hardcore-death"))
+				bool mediumcore = args.TPlayer.difficulty == 1;
+				bool shouldBan    = mediumcore ? TShock.Config.BanOnMediumcoreDeath  : TShock.Config.BanOnHardcoreDeath;
+				bool shouldKick   = mediumcore ? TShock.Config.KickOnMediumcoreDeath : TShock.Config.KickOnHardcoreDeath;
+				string banReason  = mediumcore ? TShock.Config.MediumcoreBanReason   : TShock.Config.HardcoreBanReason;
+				string kickReason = mediumcore ? TShock.Config.MediumcoreKickReason  : TShock.Config.HardcoreKickReason;
+
+				if(shouldBan) {
+					if (!args.Player.Ban(banReason, false, "TShock"))
 						args.Player.Kick("You died! Normally, you'd be banned.", true, true);
 				}
-				else
-				{
-					args.Player.Kick(TShock.Config.HardcoreKickReason, true, true, null, false);
+				else if(shouldKick) {
+					args.Player.Kick(kickReason, true, true, null, false);
 				}
 			}
 
@@ -2439,28 +2506,6 @@ namespace TShockAPI
 
 			if (OnPlayerSpawn(args.Player, args.Data, player, spawnx, spawny))
 				return true;
-
-			if (args.Player.InitSpawn && args.TPlayer.inventory[args.TPlayer.selectedItem].type != 50)
-			{
-				if (args.TPlayer.difficulty == 1 && (TShock.Config.KickOnMediumcoreDeath || TShock.Config.BanOnMediumcoreDeath))
-				{
-					if (args.TPlayer.selectedItem != 50)
-					{
-						if (TShock.Config.BanOnMediumcoreDeath)
-						{
-							if (!args.Player.Ban(TShock.Config.MediumcoreBanReason, false, "mediumcore-death"))
-								args.Player.Kick("你死了！正常来说，你会被封禁。", true, true);
-						}
-						else
-						{
-							args.Player.Kick(TShock.Config.MediumcoreKickReason, true, true, null, false);
-						}
-						return true;
-					}
-				}
-			}
-			else
-				args.Player.InitSpawn = true;
 
 			if ((Main.ServerSideCharacter) && (args.Player.sX > 0) && (args.Player.sY > 0) && (args.TPlayer.SpawnX > 0) && ((args.TPlayer.SpawnX != args.Player.sX) && (args.TPlayer.SpawnY != args.Player.sY)))
 			{
@@ -3148,11 +3193,6 @@ namespace TShockAPI
 			if (OnGemLockToggle(args.Player, args.Data, x, y, on))
 			{
 				return true;
-			}
-
-			if (!TShock.Config.RegionProtectGemLocks)
-			{
-				return false;
 			}
 
 			return false;

@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -1306,16 +1306,20 @@ namespace TShockAPI
 
 						// Effective ban target assignment
 						List<TSPlayer> players = TSPlayer.FindByNameOrID(args.Parameters[1]);
+
+						// Bad case: Players contains more than 1 person so we can't ban them
+						if (players.Count > 1)
+						{
+							//Fail fast
+							args.Player.SendMultipleMatchError(players.Select(p => p.Name));
+							return;
+						}
+						
 						UserAccount offlineUserAccount = TShock.UserAccounts.GetUserAccountByName(args.Parameters[1]);
 
 						// Storage variable to determine if the command executor is the server console
 						// If it is, we assume they have full control and let them override permission checks
-						bool callerIsServerConsole = false;
-						
-						if (args.Player is TSServerPlayer)
-						{
-							callerIsServerConsole = true;
-						}
+						bool callerIsServerConsole = args.Player is TSServerPlayer;
 
 						// The ban reason the ban is going to have
 						string banReason = "未知";
@@ -1328,17 +1332,20 @@ namespace TShockAPI
 						if (args.Parameters.Count >= 3)
 						{
 							bool parsedOkay = false;
-							if (!(args.Parameters[2] == "0"))
+							if (args.Parameters[2] != "0")
 							{
 								parsedOkay = TShock.Utils.TryParseTime(args.Parameters[2], out banLengthInSeconds);
-							} else {
+							} 
+							else 
+							{
 								parsedOkay = true;
 							}
 
 							if (!parsedOkay)
 							{
-								args.Player.SendErrorMessage("时间格式无效。示例：10d+5h+3m-2s.");
+								args.Player.SendErrorMessage("时间格式无效。示例：10d 5h 3m 2s.");
 								args.Player.SendErrorMessage("使用数字0（零）作为永久封禁的时间。");
+
 								return;
 							}
 						}
@@ -1347,13 +1354,6 @@ namespace TShockAPI
 						if (args.Parameters.Count > 3)
 						{
 							banReason = String.Join(" ", args.Parameters.Skip(3));
-						}
-
-						// Bad case: Players contains more than 1 person so we can't ban them
-						if (players.Count > 1)
-						{
-							args.Player.SendMultipleMatchError(players.Select(p => p.Name));
-							return;
 						}
 
 						// Good case: Online ban for matching character.
@@ -1368,7 +1368,7 @@ namespace TShockAPI
 							}
 
 							targetGeneralizedName = target.Name;
-							success = TShock.Bans.AddBan(target.IP, target.Name, target.UUID, target.Account.Name, banReason, false, args.Player.Account.Name,
+							success = TShock.Bans.AddBan(target.IP, target.Name, target.UUID, target.Account?.Name ?? "", banReason, false, args.Player.Account.Name,
 								banLengthInSeconds == 0 ? "" : DateTime.UtcNow.AddSeconds(banLengthInSeconds).ToString("s"));
 
 							// Since this is an online ban, we need to dc the player and tell them now.
@@ -1396,7 +1396,8 @@ namespace TShockAPI
 							// If the target is a valid IP...
 							string pattern = @"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 							Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
-							if (r.IsMatch(args.Parameters[1])) {
+							if (r.IsMatch(args.Parameters[1]))
+							{
 								targetGeneralizedName = "IP: " + args.Parameters[1];
 								success = TShock.Bans.AddBan(args.Parameters[1], "", "", "", banReason,
 									false, args.Player.Account.Name, banLengthInSeconds == 0 ? "" : DateTime.UtcNow.AddSeconds(banLengthInSeconds).ToString("s"));
@@ -1406,7 +1407,9 @@ namespace TShockAPI
 									args.Player.SendErrorMessage("Note: An account named with this IP address also exists.");
 									args.Player.SendErrorMessage("Note: It will also be banned.");
 								}
-							} else {
+							} 
+							else 
+							{
 								// Apparently there is no way to not IP ban someone
 								// This means that where we would normally just ban a "character name" here
 								// We can't because it requires some IP as a primary key.

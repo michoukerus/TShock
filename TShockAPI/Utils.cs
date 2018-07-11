@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -534,7 +534,7 @@ namespace TShockAPI
 			var sb = new StringBuilder(3);
 			for (int i = 0; i < str.Length; i++)
 			{
-				if (Char.IsDigit(str[i]) || (str[i] == '-' || str[i] == '+'))
+				if (Char.IsDigit(str[i]) || (str[i] == '-' || str[i] == '+' || str[i] == ' '))
 					sb.Append(str[i]);
 				else
 				{

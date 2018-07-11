@@ -1,4 +1,4 @@
-﻿/*
+'''
 TShock, a server mod for Terraria
 Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
@@ -14,27 +14,22 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+'''
 
-using System.IO;
+import subprocess
+import shutil
+import os.path
+import zipfile
 
-namespace TShockAPI
-{
-	/// <summary>
-	/// Derived objects can be written to and read from streams.
-	/// </summary>
-	public interface IPackable
-	{
-		/// <summary>
-		/// Writes object information to the stream
-		/// </summary>
-		/// <param name="stream">Stream to write to</param>
-		void Pack(Stream stream);
+def generate_release():
+    zip = zipfile.ZipFile("tshock_release.zip", "r")
+    zip.extractall()
 
-		/// <summary>
-		/// Reads object information from the stream
-		/// </summary>
-		/// <param name="stream">Stream to read from</param>
-		void Unpack(Stream stream);
-	}
-}
+def generate_configs():
+    subprocess.call(['/usr/local/bin/mono', 'TerrariaServer.exe', '-dump'])
+    if not os.path.isfile('ConfigDescriptions.txt') or not os.path.isfile('PermissionsDescriptions.txt') or not os.path.isfile('ServerSideConfigDescriptions.txt') or not os.path.isfile('RestDescriptions.txt'):
+        raise CalledProcessError(1)
+
+if __name__ == '__main__':
+  generate_release()
+  generate_configs()

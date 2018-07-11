@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -227,8 +227,6 @@ namespace TShockAPI
 		/// The last time a player broke a grief check.
 		/// </summary>
 		public DateTime LastThreat { get; set; }
-
-		public bool InitSpawn;
 
 		/// <summary>
 		/// Whether the player should see logs.
@@ -1522,7 +1520,6 @@ namespace TShockAPI
 		{
 			Main.player[Index].team = team;
 			NetMessage.SendData((int)PacketTypes.PlayerTeam, -1, -1, NetworkText.Empty, Index);
-			NetMessage.SendData((int)PacketTypes.PlayerTeam, -1, Index, NetworkText.Empty, Index);
 		}
 
 		private DateTime LastDisableNotification = DateTime.UtcNow;

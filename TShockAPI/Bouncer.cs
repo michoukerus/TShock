@@ -1,6 +1,6 @@
 /*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -64,6 +64,7 @@ namespace TShockAPI
 			GetDataHandlers.HealOtherPlayer += OnHealOtherPlayer;
 			GetDataHandlers.TileEdit += OnTileEdit;
 			GetDataHandlers.MassWireOperation += OnMassWireOperation;
+			GetDataHandlers.PortalTeleport += OnPlayerPortalTeleport;
 		}
 
 		internal void OnGetSection(object sender, GetDataHandlers.GetSectionEventArgs args)
@@ -1232,82 +1233,6 @@ namespace TShockAPI
 					return;
 				}
 
-				// TODO: Remove from bouncer (does't look like Bouncer code)
-				if (args.Player.AwaitingName)
-				{
-					bool includeUnprotected = false;
-					bool includeZIndexes = false;
-					bool persistentMode = false;
-					foreach (string parameter in args.Player.AwaitingNameParameters)
-					{
-						if (parameter.Equals("-u", StringComparison.InvariantCultureIgnoreCase))
-							includeUnprotected = true;
-						if (parameter.Equals("-z", StringComparison.InvariantCultureIgnoreCase))
-							includeZIndexes = true;
-						if (parameter.Equals("-p", StringComparison.InvariantCultureIgnoreCase))
-							persistentMode = true;
-					}
-
-
-					// TODO: REMOVE. This does NOT look like Bouncer code.
-					List<string> outputRegions = new List<string>();
-					foreach (Region region in TShock.Regions.Regions.OrderBy(r => r.Z).Reverse())
-					{
-						if (!includeUnprotected && !region.DisableBuild)
-							continue;
-						if (tileX < region.Area.Left || tileX > region.Area.Right)
-							continue;
-						if (tileY < region.Area.Top || tileY > region.Area.Bottom)
-							continue;
-
-						string format = "{1}";
-						if (includeZIndexes)
-							format = "{1} (z:{0})";
-
-						outputRegions.Add(string.Format(format, region.Z, region.Name));
-					}
-
-					if (outputRegions.Count == 0)
-					{
-						if (includeUnprotected)
-							args.Player.SendInfoMessage("There are no regions at this point.");
-						else
-							args.Player.SendInfoMessage("There are no regions at this point or they are not protected.");
-					}
-					else
-					{
-						if (includeUnprotected)
-							args.Player.SendSuccessMessage("Regions at this point:");
-						else
-							args.Player.SendSuccessMessage("Protected regions at this point:");
-
-						foreach (string line in PaginationTools.BuildLinesFromTerms(outputRegions))
-							args.Player.SendMessage(line, Color.White);
-					}
-
-					if (!persistentMode)
-					{
-						args.Player.AwaitingName = false;
-						args.Player.AwaitingNameParameters = null;
-					}
-
-					args.Player.SendTileSquare(tileX, tileY, 4);
-					args.Handled = true;
-					return;
-				}
-
-				// TODO: REMOVE. This does NOT look like Bouncer code.
-				if (args.Player.AwaitingTempPoint > 0)
-				{
-					args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = tileX;
-					args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = tileY;
-					args.Player.SendInfoMessage("Set temp point {0}.", args.Player.AwaitingTempPoint);
-					args.Player.SendTileSquare(tileX, tileY, 4);
-					args.Player.AwaitingTempPoint = 0;
-					args.Handled = true;
-					return;
-				}
-
 				Item selectedItem = args.Player.SelectedItem;
 				int lastKilledProj = args.Player.LastKilledProjectile;
 				ITile tile = Main.tile[tileX, tileY];
@@ -1709,14 +1634,20 @@ namespace TShockAPI
 							Main.tile[realx, realy].frameY = newtile.FrameY;
 							changed = true;
 						}
+
 						// Landmine
 						if (tile.type == TileID.LandMine && !newtile.Active)
 						{
 							Main.tile[realx, realy].active(false);
 							changed = true;
 						}
-						// Sensors
-						if(newtile.Type == TileID.LogicSensor && !Main.tile[realx, realy].active())
+
+						// Tile entities: sensors, item frames, training dummies
+						// here it handles all tile entities listed in `TileEntityID`
+						if ((newtile.Type == TileID.LogicSensor ||
+							newtile.Type == TileID.ItemFrame ||
+							newtile.Type == TileID.TargetDummy) &&
+							!Main.tile[realx, realy].active())
 						{
 							Main.tile[realx, realy].type = newtile.Type;
 							Main.tile[realx, realy].frameX = newtile.FrameX;
@@ -1748,6 +1679,7 @@ namespace TShockAPI
 								changed = true;
 							}
 						}
+
 						// Stone wall <-> Stone wall
 						if (((tile.wall == 1 || tile.wall == 3 || tile.wall == 28 || tile.wall == 83) &&
 							(newtile.Wall == 1 || newtile.Wall == 3 || newtile.Wall == 28 || newtile.Wall == 83)) ||
@@ -1786,8 +1718,36 @@ namespace TShockAPI
 			{
 				args.Player.SendTileSquare(tileX, tileY, size);
 			}
+
 			args.Handled = true;
-			return;
+		}
+
+		internal void OnPlayerPortalTeleport(object sender, GetDataHandlers.TeleportThroughPortalEventArgs args)
+		{
+			//Packet 96 (player teleport through portal) has no validation on whether or not the player id provided
+			//belongs to the player who sent the packet.
+			if (args.Player.Index != args.TargetPlayerIndex)
+			{
+				//If the player who sent the packet is not the player being teleported, cancel this packet
+				args.Player.Disable("Malicious portal attempt.", DisableFlags.WriteToLogAndConsole); //Todo: this message is not particularly clear - suggestions wanted
+				args.Handled = true;
+				return;
+			}
+
+			//Generic bounds checking, though I'm not sure if anyone would willingly hack themselves outside the map?
+			if (args.NewPosition.X > Main.maxTilesX || args.NewPosition.X < 0
+				|| args.NewPosition.Y > Main.maxTilesY || args.NewPosition.Y < 0)
+			{
+				args.Handled = true;
+				return;
+			}
+
+			//May as well reject teleport attempts if the player is being throttled
+			if (args.Player.IsBeingDisabled() || args.Player.IsBouncerThrottled())
+			{
+				args.Handled = true;
+				return;
+			}
 		}
 
 		/// <summary>

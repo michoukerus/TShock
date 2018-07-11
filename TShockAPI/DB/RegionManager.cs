@@ -1,6 +1,6 @@
 ﻿/*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,6 +26,9 @@ using Microsoft.Xna.Framework;
 
 namespace TShockAPI.DB
 {
+	/// <summary>
+	/// Represents the Region database manager.
+	/// </summary>
 	public class RegionManager
 	{
 		/// <summary>

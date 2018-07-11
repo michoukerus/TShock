@@ -1,6 +1,6 @@
 /*
 TShock, a server mod for Terraria
-Copyright (C) 2011-2017 Nyx Studios (fka. The TShock Team)
+Copyright (C) 2011-2018 Pryaxis & TShock Contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -118,8 +118,6 @@ namespace TShockAPI
 		public static RestManager RestManager;
 		/// <summary>Utils - Static reference to the utilities class, which contains a variety of utility functions.</summary>
 		public static Utils Utils = Utils.Instance;
-		/// <summary>StatTracker - Static reference to the stat tracker, which sends some server metrics every 5 minutes.</summary>
-		public static StatTracker StatTracker = new StatTracker();
 		/// <summary>Log - Static reference to the log system, which outputs to either SQL or a text file, depending on user config.</summary>
 		public static ILog Log;
 		/// <summary>instance - Static reference to the TerrariaPlugin instance.</summary>
@@ -135,6 +133,11 @@ namespace TShockAPI
 
 		/// <summary>The TShock anti-cheat/anti-exploit system.</summary>
 		internal Bouncer Bouncer;
+
+		/// <summary>
+		/// TShock's Region subsystem.
+		/// </summary>
+		internal RegionHandler RegionSystem;
 
 		/// <summary>
 		/// Called after TShock is initialized. Useful for plugins that needs hooks before tshock but also depend on tshock being loaded.
@@ -219,6 +222,10 @@ namespace TShockAPI
 				FileTools.SetupConfig();
 
 				Main.ServerSideCharacter = ServerSideCharacterConfig.Enabled;
+
+				//TSAPI previously would do this automatically, but the vanilla server wont
+				if (Netplay.ServerIP == null)
+					Netplay.ServerIP = IPAddress.Any;
 
 				DateTime now = DateTime.Now;
 				// Log path was not already set by the command line parameter?
@@ -317,18 +324,13 @@ namespace TShockAPI
 				RestManager = new RestManager(RestApi);
 				RestManager.RegisterRestfulCommands();
 				Bouncer = new Bouncer();
+				RegionSystem = new RegionHandler(Regions);
 
 				var geoippath = "GeoIP.dat";
 				if (Config.EnableGeoIP && File.Exists(geoippath))
 					Geo = new GeoIPCountry(geoippath);
 
 				Log.ConsoleInfo("TShock版本：{0} ({1})；本地化 v{2}", Version, VersionCodename, ChineseLocalizationVersion);
-
-				var systemRam = StatTracker.GetFreeSystemRam(ServerApi.RunningMono);
-				if (systemRam > -1 && systemRam < 2048)
-				{
-					Log.ConsoleError("本程序建议在系统可用内存超过2GB的情况下运行。");
-				}
 
 				ServerApi.Hooks.GamePostInitialize.Register(this, OnPostInit);
 				ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
@@ -433,6 +435,8 @@ namespace TShockAPI
 
 				RestApi.Dispose();
 				Log.Dispose();
+
+				RegionSystem.Dispose();
 			}
 			base.Dispose(disposing);
 		}
@@ -752,13 +756,11 @@ namespace TShockAPI
 						}
 					})
 
-				.AddFlag("--provider-token", (token) => { })
 
 				//Flags without arguments
 				.AddFlag("-logclear", () => LogClear = true)
 				.AddFlag("-autoshutdown", () => Main.instance.EnableAutoShutdown())
-				.AddFlag("-dump", () => Utils.Dump())
-				.AddFlag("--stats-optout", () => StatTracker.OptOut = true);
+				.AddFlag("-dump", () => Utils.Dump());
 
 			CliParser.ParseFromSource(parms);
 		}
@@ -1134,22 +1136,6 @@ namespace TShockAPI
 						{
 							player.Disable($"持有被禁用的物品: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}", flags);
 							player.SendErrorMessage($"你选中了被禁止的物品. 请取消选中: {player.TPlayer.inventory[player.TPlayer.selectedItem].Name}");
-						}
-					}
-
-					var oldRegion = player.CurrentRegion;
-					player.CurrentRegion = Regions.GetTopRegion(Regions.InAreaRegion(player.TileX, player.TileY));
-
-					if (oldRegion != player.CurrentRegion)
-					{
-						if (oldRegion != null)
-						{
-							RegionHooks.OnRegionLeft(player, oldRegion);
-						}
-
-						if (player.CurrentRegion != null)
-						{
-							RegionHooks.OnRegionEntered(player, player.CurrentRegion);
 						}
 					}
 				}

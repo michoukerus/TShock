@@ -51,7 +51,7 @@ Thumbs.db
 *.csproj.user
 */_ReSharper*/*
 *.user
-/.vs
+.vs/*
 
 #Template Bat file#
 ###################
